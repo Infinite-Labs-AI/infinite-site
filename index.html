@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infinite — The marketing agent that grows your startup</title>
+  <meta name="description" content="Infinite is a self-hosted runtime that unifies GA4, Meta Ads, PostHog, Stripe & X into a local-first data layer you own and query." />
+  <meta name="theme-color" content="#05060d" />
+
+  <!-- Open Graph / Twitter (og:image TODO once we have a share card) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Infinite — The marketing agent that grows your startup" />
+  <meta property="og:description" content="A self-hosted runtime that unifies GA4, Meta Ads, PostHog, Stripe & X into a local-first data layer you own and query." />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Favicon (generated from logo.png) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+  <!-- One display font that fits the space theme; everything else is system -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:        #05060d;
+      --text:      #e8ebf7;
+      --muted:     #8b93b0;
+      --dim:       #5a6184;
+      --violet:    #8b7cff;
+      --cyan:      #4dd0e1;
+      --line:      rgba(255, 255, 255, 0.08);
+      --card:      rgba(13, 16, 30, 0.55);
+      --display:   "Space Grotesk", system-ui, sans-serif;
+      --body:      system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --mono:      ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+      --logo:      43px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      grid-template-columns: minmax(0, 1fr);
+      position: relative;
+    }
+
+    /* ---- cosmic backdrop ---- */
+    #stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* soft nebula glows for depth */
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .glow.violet { width: 50vw; height: 50vw; top: -15vw; left: -10vw;
+      background: radial-gradient(circle, rgba(139,124,255,0.35), transparent 70%); }
+    .glow.cyan   { width: 45vw; height: 45vw; bottom: -15vw; right: -10vw;
+      background: radial-gradient(circle, rgba(77,208,225,0.22), transparent 70%); }
+    .glow.center { width: 60vw; height: 60vw; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(120,90,200,0.12), transparent 65%); opacity: 0.7; }
+
+    /* subtle vignette to pull focus center */
+    body::after {
+      content: "";
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+    }
+
+    /* top bar: logo aligned to container's left edge + centered kicker */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+    .logo {
+      flex: 0 0 auto;
+      width: var(--logo);
+      height: var(--logo);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+      object-fit: cover;
+    }
+    .topbar .spacer { flex: 0 0 auto; width: var(--logo); }
+
+    /* ---- content ---- */
+    main {
+      position: relative;
+      z-index: 1;
+      width: min(92vw, 660px);
+      min-width: 0;
+      max-width: 100%;
+      padding: 6vh 0;
+      text-align: center;
+      animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .kicker {
+      flex: 1 1 auto;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      color: var(--dim);
+      text-transform: uppercase;
+      text-align: center;
+      margin: 0;
+    }
+    .kicker .dot { color: var(--violet); margin: 0 8px; opacity: 0.7; }
+
+    h1 {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(58px, 13vw, 116px);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      background: linear-gradient(105deg, #c9bdff 0%, var(--violet) 38%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 40px rgba(139, 124, 255, 0.25));
+    }
+
+    .tagline {
+      font-family: var(--display);
+      font-weight: 500;
+      font-size: clamp(14px, 3.4vw, 19px);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #c3c9e6;
+      margin-top: 22px;
+    }
+
+    .subline {
+      font-size: clamp(14px, 3.6vw, 16px);
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 460px;
+      margin: 18px auto 0;
+    }
+
+    /* ---- terminal card ---- */
+    .term {
+      margin-top: 40px;
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+    }
+    .term__bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .term__dots { display: flex; gap: 7px; }
+    .term__dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+    .term__dots i:nth-child(1) { background: #ff5f57; }
+    .term__dots i:nth-child(2) { background: #febc2e; }
+    .term__dots i:nth-child(3) { background: #28c840; }
+    .term__label {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--dim);
+      margin-left: 6px;
+    }
+    .copy {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 5px 11px;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+    }
+    .copy:hover { color: var(--text); background: rgba(255, 255, 255, 0.09); border-color: rgba(255,255,255,0.18); }
+    .copy.ok { color: #28c840; border-color: rgba(40, 200, 64, 0.4); }
+
+    .term__body {
+      padding: 20px 20px 22px;
+      font-family: var(--mono);
+      font-size: clamp(12.5px, 3vw, 14px);
+      line-height: 1.85;
+      overflow-x: auto;
+    }
+    .term__body .comment { color: var(--dim); }
+    .term__body .line { white-space: pre; }
+    .term__body .prompt { color: var(--violet); user-select: none; }
+    .term__body .cmd { color: #e8ebf7; }
+    .term__body .arg { color: var(--cyan); }
+    .term__body .spacer { height: 12px; }
+
+    .connectors {
+      margin-top: 26px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      letter-spacing: 0.04em;
+      color: var(--dim);
+    }
+    .connectors b { color: var(--muted); font-weight: 500; }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 0;
+      padding: 26px 0 30px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: var(--dim);
+      text-align: center;
+    }
+    footer a { color: var(--muted); text-decoration: none; transition: color 0.15s; }
+    footer a:hover { color: var(--text); }
+    footer .sep { margin: 0 10px; opacity: 0.5; }
+    footer .x-link { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
+    footer .x-link svg { display: block; }
+    footer .credit { margin-top: 11px; color: var(--dim); }
+    footer .credit a { color: var(--muted); text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.22); text-underline-offset: 2px; transition: color 0.15s; }
+    footer .credit a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      :root { --logo: 38px; }
+      .kicker { font-size: 11px; letter-spacing: 0.14em; }
+      .topbar { gap: 10px; margin-bottom: 26px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      main { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="glow violet"></div>
+  <div class="glow cyan"></div>
+  <div class="glow center"></div>
+
+  <main>
+    <header class="topbar">
+      <img class="logo" src="logo.png" alt="Infinite" width="43" height="43" />
+      <p class="kicker">Open Source <span class="dot">·</span> Self-Hosted <span class="dot">·</span> MIT</p>
+      <span class="spacer" aria-hidden="true"></span>
+    </header>
+
+    <h1>Infinite</h1>
+
+    <p class="tagline">All your marketing data. One CLI.</p>
+
+    <p class="subline">
+      A self-hosted runtime that unifies GA4, Meta Ads, PostHog, Stripe &amp; X
+      into a local-first data layer you own and query.
+    </p>
+
+    <!-- PLACEHOLDER COMMANDS — swap repo URL / steps once finalized -->
+    <div class="term" id="term">
+      <div class="term__bar">
+        <span class="term__dots"><i></i><i></i><i></i></span>
+        <span class="term__label">bash</span>
+        <button class="copy" id="copy" aria-label="Copy commands">Copy</button>
+      </div>
+      <div class="term__body">
+        <div class="line comment"># clone &amp; enter</div>
+        <div class="line"><span class="prompt">$ </span><span class="cmd">git clone https://github.com/Infinite-Labs-OS/infinite.git</span></div>
+        <div class="line"><span class="prompt">$ </span><span class="cmd">cd infinite</span></div>
+        <div class="spacer"></div>
+        <div class="line comment"># configure &amp; run</div>
+        <div class="line"><span class="prompt">$ </span><span class="cmd">./infinite</span> <span class="arg">setup</span></div>
+        <div class="line"><span class="prompt">$ </span><span class="cmd">./infinite</span></div>
+      </div>
+    </div>
+
+    <p class="connectors">Connects <b>GA4 · Meta Ads · PostHog · Stripe · X</b><br>your data never leaves your machine.</p>
+  </main>
+
+  <footer>
+    <div class="foot-links">
+      <a href="https://github.com/Infinite-Labs-OS" target="_blank" rel="noopener">GitHub</a>
+      <span class="sep">·</span>
+      <a href="https://x.com/infiniteOS_" target="_blank" rel="noopener noreferrer" class="x-link" aria-label="Infinite on X"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@infiniteOS_</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/Infinite-Labs-OS/infinite-site/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+      <span class="sep">·</span>
+      <span>Infinite Labs</span>
+    </div>
+    <div class="credit">Made with 🤖 by <a href="https://x.com/RiverKhan" target="_blank" rel="noopener noreferrer">river</a></div>
+  </footer>
+
+  <script>
+    // ---- animated starfield ----
+    (function () {
+      const canvas = document.getElementById("stars");
+      const ctx = canvas.getContext("2d");
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const COUNT = 150;
+      let w, h, stars, t = 0, raf;
+
+      function seed() {
+        stars = Array.from({ length: COUNT }, function () {
+          return {
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: (Math.random() * 1.1 + 0.25) * dpr,
+            a: Math.random() * 0.6 + 0.4,
+            tw: Math.random() * 0.018 + 0.004,
+            dy: (Math.random() * 0.05 + 0.015) * dpr,
+            phase: Math.random() * Math.PI * 2
+          };
+        });
+      }
+
+      function resize() {
+        w = canvas.width = Math.floor(window.innerWidth * dpr);
+        h = canvas.height = Math.floor(window.innerHeight * dpr);
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
+        seed();
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, w, h);
+        for (const s of stars) {
+          const tw = (Math.sin(t * s.tw + s.phase) + 1) / 2;
+          ctx.globalAlpha = 0.2 + tw * 0.8 * s.a;
+          ctx.fillStyle = "#cdd6ff";
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+          s.y += s.dy;
+          if (s.y > h) { s.y = 0; s.x = Math.random() * w; }
+        }
+        ctx.globalAlpha = 1;
+        t += 1;
+        raf = requestAnimationFrame(frame);
+      }
+
+      function paintStatic() {
+        ctx.clearRect(0, 0, w, h);
+        for (const s of stars) {
+          ctx.globalAlpha = 0.2 + s.a * 0.6;
+          ctx.fillStyle = "#cdd6ff";
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      resize();
+      window.addEventListener("resize", function () {
+        cancelAnimationFrame(raf);
+        resize();
+        reduce ? paintStatic() : frame();
+      });
+      reduce ? paintStatic() : frame();
+    })();
+
+    // ---- copy button ----
+    (function () {
+      const btn = document.getElementById("copy");
+      const cmds = Array.from(document.querySelectorAll("#term .cmd"))
+        .map(function (el) { return el.parentElement.textContent.replace(/^\$\s*/, "").trim(); })
+        .join("\n");
+      btn.addEventListener("click", function () {
+        navigator.clipboard.writeText(cmds).then(function () {
+          btn.textContent = "Copied";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1600);
+        }).catch(function () {});
+      });
+    })();
+  </script>
+</body>
+</html>
