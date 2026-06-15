@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — Infinite Growth OS</title>
+  <meta name="description" content="Terms of Service for Infinite Growth OS by Ultima AI, Inc." />
+  <meta name="theme-color" content="#0d1117" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Terms of Service — Infinite Growth OS" />
+  <meta property="og:description" content="The terms governing use of Infinite Growth OS and optional hosted services." />
+  <meta name="twitter:card" content="summary" />
+
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --page-max: 860px;
+      --theme-color: #0d1117;
+      --page-bg: radial-gradient(circle at top left, rgba(56, 139, 253, 0.16), transparent 26%), radial-gradient(circle at bottom right, rgba(125, 133, 144, 0.12), transparent 30%), linear-gradient(180deg, #0d1117 0%, #090c10 100%);
+      --grid-overlay:
+        linear-gradient(rgba(48, 54, 61, 0.55) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(48, 54, 61, 0.55) 1px, transparent 1px);
+      --grid-size: 24px 24px;
+      --text: #f0f6fc;
+      --muted: #9fb0c1;
+      --dim: #768390;
+      --line: rgba(240, 246, 252, 0.1);
+      --line-strong: rgba(240, 246, 252, 0.18);
+      --card: rgba(13, 17, 23, 0.88);
+      --card-top: rgba(33, 38, 45, 0.78);
+      --accent: #58a6ff;
+      --accent-2: #7ee787;
+      --display: "IBM Plex Sans", system-ui, sans-serif;
+      --body: "IBM Plex Sans", system-ui, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { min-height: 100%; }
+
+    body {
+      min-height: 100vh;
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: var(--body);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      z-index: 0;
+      background-image: var(--grid-overlay);
+      background-size: var(--grid-size);
+      background-position: center;
+      opacity: 0.72;
+    }
+
+    body::after {
+      z-index: 0;
+      background: radial-gradient(ellipse at center, transparent 54%, rgba(1, 4, 9, 0.7) 100%);
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(92vw, var(--page-max));
+      margin: 0 auto;
+      padding: 42px 0 30px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 36px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      border: 1px solid rgba(240, 246, 252, 0.12);
+    }
+
+    .topbar nav {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--dim);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-decoration-color: rgba(88, 166, 255, 0.35);
+      text-underline-offset: 3px;
+    }
+
+    a:hover {
+      color: var(--text);
+      text-decoration-color: rgba(240, 246, 252, 0.7);
+    }
+
+    .topbar a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .legal {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 36px 90px -40px rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+
+    .legal__bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--card-top);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--dim);
+    }
+
+    .legal__dots { display: flex; gap: 7px; }
+    .legal__dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+    .legal__dots i:nth-child(1) { background: #ff5f57; }
+    .legal__dots i:nth-child(2) { background: #f5bf4f; }
+    .legal__dots i:nth-child(3) { background: #2fd17c; }
+
+    article {
+      padding: clamp(24px, 5vw, 44px);
+    }
+
+    h1 {
+      font-size: clamp(40px, 8vw, 72px);
+      line-height: 0.96;
+      letter-spacing: -0.03em;
+      margin-bottom: 22px;
+    }
+
+    h2 {
+      margin-top: 34px;
+      font-size: clamp(20px, 4vw, 28px);
+      line-height: 1.18;
+      letter-spacing: -0.01em;
+    }
+
+    p, li, blockquote {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    p { margin-top: 16px; }
+    ul { margin: 16px 0 0 22px; }
+    li + li { margin-top: 10px; }
+    strong { color: var(--text); font-weight: 600; }
+
+    blockquote {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-left: 3px solid var(--accent);
+      background: rgba(88, 166, 255, 0.08);
+      border-radius: 0 8px 8px 0;
+    }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 26px 0 30px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: var(--dim);
+      text-align: center;
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    footer .sep { margin: 0 10px; opacity: 0.5; }
+
+    @media (max-width: 600px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .topbar nav {
+        flex-wrap: wrap;
+      }
+
+      article {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="Infinite home">
+        <img src="../logo.png" alt="" width="34" height="34" />
+        <span>Infinite</span>
+      </a>
+      <nav aria-label="Legal navigation">
+        <a href="../privacy/">Privacy</a>
+        <a href="../">Home</a>
+      </nav>
+    </header>
+
+    <main class="legal">
+      <div class="legal__bar">
+        <span class="legal__dots"><i></i><i></i><i></i></span>
+        <span>terms-of-service.md</span>
+      </div>
+      <article>
+        <h1>Terms of Service</h1>
+
+        <p>These Terms of Service ("Terms") govern your use of <strong>Infinite Growth OS</strong> ("Infinite," the "Software," the "Service"), provided by <strong>Ultima AI, Inc.</strong>, a Delaware corporation ("Ultima," "we," "us"). By installing, accessing, or using the Software, you agree to these Terms. If you do not agree, do not use the Software.</p>
+
+        <blockquote>This is a plain-language template intended as a starting point. It is not legal advice; have counsel review before publishing.</blockquote>
+
+        <h2>1. The Software</h2>
+
+        <p>Infinite is a self-hosted, local-first growth-analytics runtime. It connects your business data sources, stores synced data in a database <strong>on your own machine</strong>, and helps you understand and act on your growth data. You are responsible for the environment you run it in and for the third-party accounts you connect.</p>
+
+        <h2>2. License</h2>
+
+        <ul>
+          <li><strong>Free local plane.</strong> The open-source components of Infinite are provided under the license stated in the project's LICENSE file (MIT, unless otherwise noted there). Your use of those components is governed by that license.</li>
+          <li><strong>Hosted/paid features.</strong> Any optional hosted services (for example, paid AI actions or hosted reports) are licensed to you, not sold, for your internal business use, subject to these Terms and any plan-specific terms. We may modify, suspend, or discontinue hosted features.</li>
+        </ul>
+
+        <h2>3. Your accounts and connected data</h2>
+
+        <ul>
+          <li>You must provide accurate information and keep any credentials and API keys secure.</li>
+          <li>You are responsible for all activity under your account and for ensuring you have the right to connect and process the data sources you link (including Google Analytics, PostHog, Stripe, Shopify, Meta, X, and others).</li>
+          <li>Your use of connected third-party services remains subject to those services' own terms. For Google services, you also agree to Google's applicable terms; Infinite's handling of Google user data is described in our <a href="../privacy/">Privacy Policy</a> and complies with the Google API Services User Data Policy.</li>
+        </ul>
+
+        <h2>4. Acceptable use</h2>
+
+        <p>You agree not to: (a) use the Service unlawfully or to process data you lack rights to; (b) reverse engineer, resell, or sublicense hosted features except as permitted by the applicable license; (c) attempt to gain unauthorized access to our systems or other users' data; (d) abuse, overload, or interfere with the Service or any connected provider's API or quota; or (e) use the Service to build a competing hosted service from our proprietary components.</p>
+
+        <h2>5. Fees</h2>
+
+        <p>If you purchase hosted features, you agree to the prices and billing terms presented at purchase. Fees are non-refundable except as required by law or expressly stated. We may change pricing prospectively with notice.</p>
+
+        <h2>6. Intellectual property</h2>
+
+        <p>Ultima and its licensors own the Service, including the hosted components, prompts, models, and workflows, and all related IP, except for the open-source components governed by their own licenses. These Terms grant you no rights in our trademarks.</p>
+
+        <h2>7. Third-party services and AI output</h2>
+
+        <p>The Service integrates third-party providers (data sources and AI model providers). We are not responsible for third-party services. AI-generated outputs may be inaccurate or incomplete; you are responsible for reviewing them before relying on or acting on them. The Service does not provide legal, financial, or professional advice.</p>
+
+        <h2>8. Disclaimers</h2>
+
+        <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. We do not warrant that the Service will be uninterrupted, error-free, or secure.</p>
+
+        <h2>9. Limitation of liability</h2>
+
+        <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, ULTIMA WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES, OR FOR LOST PROFITS OR DATA. OUR TOTAL LIABILITY FOR ANY CLAIM ARISING FROM THE SERVICE WILL NOT EXCEED THE GREATER OF (A) THE AMOUNTS YOU PAID US FOR THE SERVICE IN THE 12 MONTHS BEFORE THE CLAIM, OR (B) US $100.</p>
+
+        <h2>10. Indemnification</h2>
+
+        <p>You will indemnify and hold Ultima harmless from claims arising out of your use of the Service, your data, or your violation of these Terms or applicable law.</p>
+
+        <h2>11. Termination</h2>
+
+        <p>You may stop using the Software at any time. We may suspend or terminate access to hosted features for breach of these Terms. Provisions that by their nature should survive (IP, disclaimers, liability limits, governing law) survive termination.</p>
+
+        <h2>12. Governing law and disputes</h2>
+
+        <p>These Terms are governed by the laws of the <strong>State of Delaware, United States</strong>, without regard to conflict-of-laws rules. The state and federal courts located in Delaware will have exclusive jurisdiction over disputes, and you consent to their jurisdiction and venue, except where prohibited by law.</p>
+
+        <h2>13. Changes to these Terms</h2>
+
+        <p>We may update these Terms; we will post the updated Terms and, for material changes, provide reasonable notice. Continued use after changes take effect constitutes acceptance.</p>
+
+        <h2>14. Contact</h2>
+
+        <p>Ultima AI, Inc., a Delaware corporation (United States).<br /><strong>support@ultima.inc</strong></p>
+      </article>
+    </main>
+  </div>
+
+  <footer>
+    <a href="../">Home</a>
+    <span class="sep">·</span>
+    <a href="../privacy/">Privacy</a>
+    <span class="sep">·</span>
+    <a href="https://github.com/Infinite-Labs-OS" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+</body>
+</html>

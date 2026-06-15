@@ -40,7 +40,7 @@ jobs:
 
           rm -rf dist
           mkdir -p dist
-          cp -R index.html favicon-16.png favicon-32.png apple-touch-icon.png logo.png LICENSE dist/
+          cp -R index.html privacy terms favicon-16.png favicon-32.png apple-touch-icon.png logo.png LICENSE dist/
 
           node .github/scripts/inject-analytics.cjs
 
