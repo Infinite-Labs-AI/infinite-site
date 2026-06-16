@@ -235,7 +235,6 @@
     }
 
     .term {
-      position: relative;
       margin-top: 40px;
       text-align: left;
       background: var(--card);
@@ -270,18 +269,28 @@
     }
 
     .copy {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      font-family: var(--mono);
-      font-size: 12px;
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
       color: var(--muted);
       background: var(--button-bg);
       border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 12px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       transition: color 0.15s, background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+
+    .copy svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .copy:hover {
@@ -298,12 +307,10 @@
     }
 
     .term__body {
-      position: relative;
-      padding: 54px 20px 22px;
+      padding: 20px 20px 22px;
       font-family: var(--mono);
       font-size: clamp(12.5px, 3vw, 14px);
       line-height: 1.85;
-      overflow-x: auto;
     }
 
     .term__body .comment { color: var(--term-comment); }
@@ -312,6 +319,20 @@
     .term__body .cmd { color: var(--text); }
     .term__body .arg { color: var(--accent-2); }
     .term__body .spacer { height: 12px; }
+    .term__body .command-line {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .term__body .command-text {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: auto;
+      white-space: pre;
+      scrollbar-width: none;
+    }
+    .term__body .command-text::-webkit-scrollbar { display: none; }
 
     .connectors {
       margin-top: 26px;
@@ -406,12 +427,27 @@
         <span class="term__label">bash</span>
       </div>
       <div class="term__body">
-        <button class="copy" id="copy" aria-label="Copy commands">Copy</button>
         <div class="line comment"># install</div>
-        <div class="line"><span class="prompt">$ </span><span class="cmd">curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash</span></div>
+        <div class="line command-line">
+          <div class="command-text"><span class="prompt">$ </span><span class="cmd">curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash</span></div>
+          <button class="copy" aria-label="Copy install command" data-copy="curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+              <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
         <div class="spacer"></div>
         <div class="line comment"># configure</div>
-        <div class="line"><span class="prompt">$ </span><span class="cmd">infinite</span> <span class="arg">setup</span></div>
+        <div class="line command-line">
+          <div class="command-text"><span class="prompt">$ </span><span class="cmd">infinite</span> <span class="arg">setup</span></div>
+          <button class="copy" aria-label="Copy configure command" data-copy="infinite setup">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+              <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -510,20 +546,20 @@
     })();
 
     (function () {
-      const btn = document.getElementById("copy");
-      const cmds = Array.from(document.querySelectorAll("#term .cmd"))
-        .map(function (el) { return el.parentElement.textContent.replace(/^\$\s*/, "").trim(); })
-        .join("\n");
+      const copyButtons = Array.from(document.querySelectorAll("#term .copy"));
 
-      btn.addEventListener("click", function () {
-        navigator.clipboard.writeText(cmds).then(function () {
-          btn.textContent = "Copied";
-          btn.classList.add("ok");
-          setTimeout(function () {
-            btn.textContent = "Copy";
-            btn.classList.remove("ok");
-          }, 1600);
-        }).catch(function () {});
+      copyButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const text = btn.getAttribute("data-copy");
+          if (!text) return;
+
+          navigator.clipboard.writeText(text).then(function () {
+            btn.classList.add("ok");
+            setTimeout(function () {
+              btn.classList.remove("ok");
+            }, 1600);
+          }).catch(function () {});
+        });
       });
     })();
   </script>
