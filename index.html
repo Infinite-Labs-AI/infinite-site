@@ -235,6 +235,7 @@
     }
 
     .term {
+      position: relative;
       margin-top: 40px;
       text-align: left;
       background: var(--card);
@@ -269,7 +270,9 @@
     }
 
     .copy {
-      margin-left: auto;
+      position: absolute;
+      top: 16px;
+      right: 16px;
       font-family: var(--mono);
       font-size: 12px;
       color: var(--muted);
@@ -295,7 +298,8 @@
     }
 
     .term__body {
-      padding: 20px 20px 22px;
+      position: relative;
+      padding: 54px 20px 22px;
       font-family: var(--mono);
       font-size: clamp(12.5px, 3vw, 14px);
       line-height: 1.85;
@@ -400,9 +404,9 @@
       <div class="term__bar">
         <span class="term__dots"><i></i><i></i><i></i></span>
         <span class="term__label">bash</span>
-        <button class="copy" id="copy" aria-label="Copy commands">Copy</button>
       </div>
       <div class="term__body">
+        <button class="copy" id="copy" aria-label="Copy commands">Copy</button>
         <div class="line comment"># install</div>
         <div class="line"><span class="prompt">$ </span><span class="cmd">curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash</span></div>
         <div class="spacer"></div>
