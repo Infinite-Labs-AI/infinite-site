@@ -4,9 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Infinite - The operating system for growth engineers</title>
-  <meta name="description" content="Unify your marketing analytics data and find more customers." />
+  <meta name="description" content="Infinite is the operating system for growth engineers. Unify your marketing analytics data and find more customers." />
   <meta name="theme-color" content="#000000" />
-  <link rel="icon" type="image/png" href="assets/obsidian/favicon.png" />
+  <link rel="canonical" href="https://www.infinite.fast/" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Infinite" />
+  <meta property="og:title" content="Infinite - The operating system for growth engineers" />
+  <meta property="og:description" content="Unify your marketing analytics data and find more customers." />
+  <meta property="og:url" content="https://www.infinite.fast/" />
+  <meta property="og:image" content="https://www.infinite.fast/og-image.png" />
+  <meta property="og:image:secure_url" content="https://www.infinite.fast/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Infinite operating system for growth engineers preview" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Infinite - The operating system for growth engineers" />
+  <meta name="twitter:description" content="Unify your marketing analytics data and find more customers." />
+  <meta name="twitter:image" content="https://www.infinite.fast/twitter-card-v3.png" />
+  <meta name="twitter:image:src" content="https://www.infinite.fast/twitter-card-v3.png" />
+  <meta name="twitter:image:alt" content="Infinite operating system for growth engineers preview" />
   <style>
     @font-face {
       font-family: "IBM Plex Sans";
@@ -93,7 +113,7 @@
       min-height: 100vh;
       overflow-x: hidden;
       background-color: #000;
-      background-image: radial-gradient(ellipse 185% 115% at top left, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.06) 34%, rgba(16, 185, 129, 0.028) 68%, rgba(16, 185, 129, 0) 100%);
+      background-image: radial-gradient(ellipse 120% 80% at top, rgba(255, 255, 255, 0.08) 0%, rgba(16, 185, 129, 0.04) 38%, rgba(0, 0, 0, 0) 76%);
       background-repeat: no-repeat;
       background-size: 100% 100%;
       color: var(--foreground);
@@ -137,6 +157,9 @@
 
     .nav-shell {
       padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(3, 7, 10, 0.18);
+      backdrop-filter: blur(18px);
     }
 
     .nav {
@@ -388,28 +411,68 @@
       flex-direction: column;
       overflow: clip;
       padding-top: 64px;
+      background: #000;
     }
 
     .hero::before {
       position: absolute;
       z-index: 0;
-      inset: 0 0 -164px;
+      inset: 0;
       content: "";
-      background: transparent;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.1), transparent 24%),
+        radial-gradient(circle at 50% 44%, rgba(0, 0, 0, 0.24), transparent 38%);
     }
 
     .hero::after {
       position: absolute;
       z-index: 4;
-      top: 0;
-      right: -218px;
-      bottom: -42px;
-      left: -218px;
+      inset: 0;
       pointer-events: none;
       content: "";
       background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 68%, rgba(0, 4, 2, 0.78) 100%),
-        radial-gradient(ellipse at center, transparent 54%, rgba(1, 8, 5, 0.7) 100%);
+        linear-gradient(180deg, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.22) 28%, rgba(0, 0, 0, 0.02) 58%, rgba(0, 0, 0, 0.74) 100%),
+        radial-gradient(ellipse at 50% 37%, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.2) 34%, rgba(0, 0, 0, 0.38) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.56), rgba(0, 0, 0, 0) 24%, rgba(0, 0, 0, 0) 76%, rgba(0, 0, 0, 0.56));
+    }
+
+    .hero-bg {
+      position: absolute;
+      z-index: 0;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0;
+      filter: brightness(1.32) contrast(1.08);
+      transform: scale(1.12) translateY(26%);
+      transform-origin: center center;
+      transition: opacity 420ms ease, transform 900ms ease;
+    }
+
+    .hero[data-space-variant="cruiser"] .hero-bg[data-hero-variant="cruiser"] {
+      opacity: 1;
+      transform: scale(1.2) translateY(26%);
+    }
+
+    .hero[data-space-variant="freighter"] .hero-bg[data-hero-variant="freighter"] {
+      opacity: 1;
+      transform: scale(1.18) translateY(28%);
+    }
+
+    .hero[data-space-variant="interceptor"] .hero-bg[data-hero-variant="interceptor"] {
+      opacity: 1;
+      transform: scale(1.24) translateY(34%);
+    }
+
+    .hero[data-space-variant="freighter"] .hero-bg[data-hero-variant="freighter"] {
+      object-position: center 52%;
+    }
+
+    .hero[data-space-variant="interceptor"] .hero-bg[data-hero-variant="interceptor"] {
+      object-position: center 48%;
     }
 
     .hero-inner {
@@ -420,10 +483,10 @@
       flex: 1;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-end;
-      gap: 76px;
+      justify-content: center;
+      gap: 28px;
       margin: 0 auto;
-      padding: 96px 40px 0;
+      padding: 80px 40px 174px;
     }
 
     .hero-copy {
@@ -434,15 +497,27 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
+      text-shadow: 0 2px 22px rgba(0, 0, 0, 0.68);
+    }
+
+    .hero-copy::before {
+      position: absolute;
+      z-index: -1;
+      inset: -26px 50%;
+      width: min(760px, 86vw);
+      border-radius: 999px;
+      background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0.24) 42%, transparent 72%);
+      content: "";
+      transform: translateX(-50%);
     }
 
     h1 {
-      max-width: 1100px;
+      max-width: 1040px;
       color: var(--foreground);
       font-family: var(--heading);
-      font-size: clamp(58px, 6.7vw, 92px);
+      font-size: clamp(54px, 6.2vw, 90px);
       font-weight: 400;
-      letter-spacing: -0.045em;
+      letter-spacing: 0;
       line-height: 0.95;
       text-wrap: balance;
     }
@@ -459,9 +534,9 @@
     }
 
     .hero-subtitle {
-      max-width: 424px;
+      max-width: 480px;
       margin-top: 16px;
-      color: var(--foreground);
+      color: rgba(245, 245, 244, 0.9);
       font-size: 14px;
       font-weight: 400;
       line-height: 1.43;
@@ -477,6 +552,7 @@
       padding: 0 20px;
       background: #fafaf9;
       color: #1c1917;
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.34);
     }
 
     .hero-cta:hover {
@@ -485,14 +561,76 @@
     }
 
     .hero-product {
-      position: relative;
-      z-index: 3;
-      width: 80%;
+      position: absolute;
+      z-index: 8;
+      display: none;
+      right: 50%;
+      bottom: 42px;
+      width: min(1010px, 62vw);
+      opacity: 0.82;
+      pointer-events: none;
+      transform: translateX(50%) perspective(860px) rotateX(58deg) translateY(48%);
+      transform-origin: center bottom;
+      filter: drop-shadow(0 42px 58px rgba(0, 0, 0, 0.55));
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.76) 48%, transparent 100%);
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.76) 48%, transparent 100%);
     }
 
     .hero-product img {
       width: 100%;
       height: auto;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.36);
+    }
+
+    .hero-variant-switcher {
+      position: absolute;
+      z-index: 12;
+      bottom: 72px;
+      left: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      background: rgba(3, 7, 10, 0.5);
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-variant {
+      display: inline-flex;
+      min-width: 88px;
+      height: 34px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      color: rgba(231, 229, 228, 0.72);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+      white-space: nowrap;
+    }
+
+    .hero-variant:hover {
+      color: #fff;
+    }
+
+    .hero-variant[aria-pressed="true"] {
+      background: rgba(250, 250, 249, 0.94);
+      color: #111827;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    .hero-variant:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--ring);
     }
 
     .hero-footer {
@@ -641,8 +779,9 @@
       }
 
       .hero {
-        height: auto;
-        min-height: 0;
+        height: 100vh;
+        height: 100svh;
+        min-height: 100svh;
         overflow: clip;
         padding-top: 56px;
       }
@@ -650,8 +789,28 @@
       .hero-inner {
         flex: 0 0 auto;
         justify-content: flex-start;
-        gap: 36px;
-        padding: 52px 14px 0;
+        gap: 46px;
+        height: 100%;
+        min-height: 0;
+        padding: 76px 14px 184px;
+      }
+
+      .hero[data-space-variant="cruiser"] .hero-bg[data-hero-variant="cruiser"] {
+        transform: scale(1.88) translateY(22%);
+      }
+
+      .hero[data-space-variant="freighter"] .hero-bg[data-hero-variant="freighter"] {
+        transform: scale(1.74) translateY(24%);
+      }
+
+      .hero[data-space-variant="interceptor"] .hero-bg[data-hero-variant="interceptor"] {
+        transform: scale(1.92) translateY(25%);
+      }
+
+      .hero-copy::before {
+        inset: -18px 50% -28px;
+        width: min(390px, 96vw);
+        background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.36) 54%, transparent 78%);
       }
 
       h1 {
@@ -671,15 +830,17 @@
       }
 
       .hero-product {
-        width: 100%;
+        bottom: 102px;
+        width: 132vw;
+        opacity: 0.62;
+        transform: translateX(50%) perspective(760px) rotateX(61deg) translateY(52%);
       }
 
       .hero-footer {
-        position: static;
-        right: auto;
-        bottom: auto;
-        left: auto;
-        margin-top: 32px;
+        right: 16px;
+        bottom: 18px;
+        left: 16px;
+        margin-top: 0;
         padding: 0 24px 28px;
         flex-direction: column;
         gap: 14px;
@@ -689,6 +850,19 @@
 
       .hero-social {
         display: flex;
+      }
+
+      .hero-variant-switcher {
+        right: 50%;
+        bottom: 126px;
+        left: auto;
+        transform: translateX(50%);
+      }
+
+      .hero-variant {
+        min-width: 78px;
+        height: 32px;
+        font-size: 10px;
       }
 
       .space-horizon {
@@ -717,13 +891,16 @@
             <a href="https://discord.gg/xKuHGxNxw8" target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="Infinite on Discord"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.32 4.37A19.79 19.79 0 0 0 15.44 3l-.24.48a18.27 18.27 0 0 1 4.36 1.66 14.6 14.6 0 0 0-4.41-1.35c-.99-.18-1.99-.28-3-.29-1.01.01-2.01.11-3 .29A14.6 14.6 0 0 0 4.74 5.14 18.27 18.27 0 0 1 9.1 3.48L8.86 3A19.79 19.79 0 0 0 3.98 4.37C.91 8.96.08 13.44.5 17.86a19.94 19.94 0 0 0 5.99 3.02l1.28-1.74c-.69-.26-1.35-.59-1.97-.98l.47-.35c3.8 1.78 7.93 1.78 11.68 0l.47.35c-.62.39-1.28.72-1.97.98l1.28 1.74a19.94 19.94 0 0 0 5.99-3.02c.49-5.13-.83-9.57-3.9-13.49ZM9.53 15.11c-1.14 0-2.07-1.04-2.07-2.32 0-1.28.92-2.32 2.07-2.32 1.15 0 2.08 1.05 2.07 2.32 0 1.28-.92 2.32-2.07 2.32Zm4.97 0c-1.14 0-2.07-1.04-2.07-2.32 0-1.28.92-2.32 2.07-2.32 1.15 0 2.08 1.05 2.07 2.32 0 1.28-.92 2.32-2.07 2.32Z"/></svg>Discord</a>
           </div>
         </div>
-        <a class="nav-cta" href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg">Download Now</a>
+        <button class="nav-cta" type="button">Download Now</button>
       </nav>
     </div>
   </header>
 
   <main>
-    <section class="hero" aria-label="Infinite hero">
+    <section class="hero" aria-label="Infinite hero" data-space-variant="cruiser">
+      <img class="hero-bg" data-hero-variant="cruiser" src="assets/infinite/hero-cruiser.png" alt="" width="1792" height="1024" aria-hidden="true" fetchpriority="high" />
+      <img class="hero-bg" data-hero-variant="freighter" src="assets/infinite/hero-freighter.png" alt="" width="1792" height="1024" aria-hidden="true" loading="lazy" />
+      <img class="hero-bg" data-hero-variant="interceptor" src="assets/infinite/hero-interceptor.png" alt="" width="1792" height="1024" aria-hidden="true" loading="lazy" />
       <div class="hero-inner">
         <div class="hero-copy">
           <h1 aria-label="The operating system for growth engineers">
@@ -736,7 +913,7 @@
           </h1>
           <p class="hero-subtitle hero-fade" style="--hero-delay: 0.75s">Unify your marketing analytics data and find more customers.</p>
           <div class="hero-cta-wrap hero-fade" style="--hero-delay: 1.05s">
-            <a class="hero-cta" href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg">Download Now</a>
+            <button class="hero-cta" type="button">Download Now</button>
           </div>
         </div>
 
@@ -744,6 +921,11 @@
           <source media="(max-width: 767px)" srcset="assets/infinite/infinite-command-center-dark.png" />
           <img src="assets/infinite/infinite-command-center-dark-2x.png" alt="Infinite Command Center dashboard" width="3140" height="2004" fetchpriority="high" />
         </picture>
+      </div>
+      <div class="hero-variant-switcher" role="group" aria-label="Hero concept variants">
+        <button class="hero-variant" type="button" data-hero-variant="cruiser" aria-pressed="true">Cruiser</button>
+        <button class="hero-variant" type="button" data-hero-variant="freighter" aria-pressed="false">Freighter</button>
+        <button class="hero-variant" type="button" data-hero-variant="interceptor" aria-pressed="false">Interceptor</button>
       </div>
       <div class="hero-footer" aria-label="Hero footer links">
         <div class="hero-footer-meta">
@@ -762,5 +944,23 @@
       <img class="space-horizon" src="assets/infinite/space-horizon.webp" alt="" width="2880" height="1152" aria-hidden="true" />
     </section>
   </main>
+  <script>
+    const heroVariants = ["cruiser", "freighter", "interceptor"];
+    const hero = document.querySelector(".hero");
+    const variantButtons = document.querySelectorAll(".hero-variant");
+
+    variantButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextVariant = button.dataset.heroVariant;
+
+        if (!heroVariants.includes(nextVariant)) return;
+
+        hero.dataset.spaceVariant = nextVariant;
+        variantButtons.forEach((variantButton) => {
+          variantButton.setAttribute("aria-pressed", String(variantButton === button));
+        });
+      });
+    });
+  </script>
 </body>
 </html>

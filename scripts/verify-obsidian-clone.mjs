@@ -5,8 +5,17 @@ const requiredSnippets = [
   "<header",
   "<nav",
   "The operating system for growth engineers",
+  "Infinite is the operating system for growth engineers. Unify your marketing analytics data and find more customers.",
   "Unify your marketing analytics data and find more customers.",
   "Download Now",
+  "https://www.infinite.fast/",
+  "favicon-32.png",
+  "favicon-16.png",
+  "apple-touch-icon.png",
+  "og-image.png",
+  "twitter-card-v3.png",
+  "Infinite - The operating system for growth engineers",
+  "Infinite operating system for growth engineers preview",
   "logo.png",
   "infinite",
   "GitHub",
@@ -18,6 +27,20 @@ const requiredSnippets = [
   "river",
   "assets/infinite/infinite-command-center-dark",
   "assets/infinite/space-horizon.webp",
+  "assets/infinite/hero-cruiser.png",
+  "assets/infinite/hero-freighter.png",
+  "assets/infinite/hero-interceptor.png",
+  "hero-variant-switcher",
+  "data-hero-variant=\"cruiser\"",
+  "data-hero-variant=\"freighter\"",
+  "data-hero-variant=\"interceptor\"",
+  "Cruiser",
+  "Freighter",
+  "Interceptor",
+  "translateY(26%)",
+  "translateY(28%)",
+  "translateY(34%)",
+  "const heroVariants",
   "fonts/ibm-plex/ibm-plex-sans-400.ttf",
   "fonts/ibm-plex/ibm-plex-sans-700.ttf",
   "fonts/ibm-plex/ibm-plex-mono-400.ttf",
@@ -28,6 +51,8 @@ const forbiddenSnippets = [
   "MIT License",
   "Get Started For Free",
   ">download</a>",
+  "infinite-desktop-releases/releases/latest/download",
+  "assets/obsidian/favicon.png",
   "linear-gradient(rgba(42, 88, 67",
   "linear-gradient(90deg, rgba(42, 88, 67",
   "top: 656px",
@@ -59,11 +84,19 @@ const requiredFiles = [
   "../assets/infinite/infinite-command-center-dark.png",
   "../assets/infinite/infinite-command-center-dark-2x.png",
   "../assets/infinite/space-horizon.webp",
+  "../assets/infinite/hero-cruiser.png",
+  "../assets/infinite/hero-freighter.png",
+  "../assets/infinite/hero-interceptor.png",
   "../assets/obsidian/nav-ai-practice-management.webp",
   "../assets/obsidian/nav-custody-execution.webp",
   "../assets/obsidian/nav-independent-firms.webp",
   "../assets/obsidian/nav-consolidators.webp",
   "../logo.png",
+  "../favicon-16.png",
+  "../favicon-32.png",
+  "../apple-touch-icon.png",
+  "../og-image.png",
+  "../twitter-card-v3.png",
   "../fonts/ibm-plex/ibm-plex-sans-400.ttf",
   "../fonts/ibm-plex/ibm-plex-sans-500.ttf",
   "../fonts/ibm-plex/ibm-plex-sans-600.ttf",
@@ -103,10 +136,21 @@ for (const label of ["GitHub", "@infiniteOS_", "Discord"]) {
   if (!navBlock.includes(label)) failures.push(`Expected nav to include old footer item: ${label}`);
 }
 
-if (!navBlock.includes(">Download Now</a>")) failures.push("Expected nav to include a Download Now CTA");
+if (!navBlock.includes('<button class="nav-cta" type="button">Download Now</button>')) {
+  failures.push("Expected nav to include a non-link Download Now CTA button");
+}
 
-const downloadCount = (html.match(/>Download Now<\/a>/g) || []).length;
-if (downloadCount < 2) failures.push(`Expected at least two Download Now CTAs, found ${downloadCount}`);
+const downloadButtonCount = (html.match(/>Download Now<\/button>/g) || []).length;
+if (downloadButtonCount < 2) failures.push(`Expected at least two Download Now CTA buttons, found ${downloadButtonCount}`);
+
+const downloadLinkCount = (html.match(/<a\b[^>]*>\s*Download Now\s*<\/a>/g) || []).length;
+if (downloadLinkCount !== 0) failures.push(`Expected no Download Now links, found ${downloadLinkCount}`);
+
+const variantButtonCount = (html.match(/class="hero-variant"/g) || []).length;
+if (variantButtonCount !== 3) failures.push(`Expected exactly 3 hero variant buttons, found ${variantButtonCount}`);
+
+const heroBackgroundCount = (html.match(/class="hero-bg"/g) || []).length;
+if (heroBackgroundCount !== 3) failures.push(`Expected exactly 3 hero background images, found ${heroBackgroundCount}`);
 
 for (const label of ["Privacy", "Terms", "river", "Made with 🤖 by"]) {
   if (navBlock.includes(label)) failures.push(`Expected ${label} to move out of nav`);
