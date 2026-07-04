@@ -4,19 +4,28 @@ const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const requiredSnippets = [
   "<header",
   "<nav",
-  "The operating system for growth engineers",
-  "Infinite is the operating system for growth engineers. Unify your marketing analytics data and find more customers.",
-  "Unify your marketing analytics data and find more customers.",
-  "Download Now",
+  "The growth agent for founders",
   "https://www.infinite.fast/",
-  "favicon-32.png",
-  "favicon-16.png",
-  "apple-touch-icon.png",
-  "og-image.png",
-  "twitter-card-v3.png",
-  "Infinite - The operating system for growth engineers",
-  "Infinite operating system for growth engineers preview",
-  "logo.png",
+  "<title>Infinite - The growth agent for founders</title>",
+  "property=\"og:title\" content=\"Infinite - The growth agent for founders\"",
+  "property=\"og:description\"",
+  "property=\"og:type\" content=\"website\"",
+  "property=\"og:url\" content=\"https://www.infinite.fast/\"",
+  "property=\"og:image\" content=\"https://www.infinite.fast/assets/infinite/black-hole-social-preview.png\"",
+  "property=\"og:image:width\" content=\"1200\"",
+  "property=\"og:image:height\" content=\"630\"",
+  "property=\"og:image:alt\" content=\"The growth agent for founders. Get Now.\"",
+  "name=\"twitter:card\" content=\"summary_large_image\"",
+  "name=\"twitter:title\" content=\"Infinite - The growth agent for founders\"",
+  "name=\"twitter:image\" content=\"https://www.infinite.fast/assets/infinite/black-hole-social-preview.png\"",
+  "Book a demo call",
+  "demo-modal",
+  "calendar-frame",
+  "https://calendar.app.google/QtpCpF9hVrKUnZDF6",
+  "Open calendar",
+  "data-open-demo",
+  "assets/infinite/black-hole-favicon-32.png",
+  "assets/infinite/black-hole-favicon-16.png",
   "infinite",
   "GitHub",
   "@infiniteOS_",
@@ -25,22 +34,14 @@ const requiredSnippets = [
   "Terms",
   "Made with 🤖 by",
   "river",
-  "assets/infinite/infinite-command-center-dark",
-  "assets/infinite/space-horizon.webp",
-  "assets/infinite/hero-cruiser.png",
-  "assets/infinite/hero-freighter.png",
-  "assets/infinite/hero-interceptor.png",
-  "hero-variant-switcher",
-  "data-hero-variant=\"cruiser\"",
-  "data-hero-variant=\"freighter\"",
-  "data-hero-variant=\"interceptor\"",
-  "Cruiser",
-  "Freighter",
-  "Interceptor",
-  "translateY(26%)",
-  "translateY(28%)",
-  "translateY(34%)",
-  "const heroVariants",
+  "assets/infinite/black-hole-command-hero.png",
+  "hero-background",
+  "hero-built-ins",
+  "AUTOMATE",
+  "META ADS",
+  "FINDING LEADS",
+  "ANALYTICS",
+  "GEO &amp; SEO",
   "fonts/ibm-plex/ibm-plex-sans-400.ttf",
   "fonts/ibm-plex/ibm-plex-sans-700.ttf",
   "fonts/ibm-plex/ibm-plex-mono-400.ttf",
@@ -51,8 +52,6 @@ const forbiddenSnippets = [
   "MIT License",
   "Get Started For Free",
   ">download</a>",
-  "infinite-desktop-releases/releases/latest/download",
-  "assets/obsidian/favicon.png",
   "linear-gradient(rgba(42, 88, 67",
   "linear-gradient(90deg, rgba(42, 88, 67",
   "top: 656px",
@@ -62,6 +61,10 @@ const forbiddenSnippets = [
   "assets/obsidian/stone-left",
   "assets/obsidian/stone-right",
   "The OS for growth engineers",
+  "The operating system for growth engineers",
+  "Infinite - The operating system for growth engineers",
+  "Grow 10x faster with Infinite",
+  "Unify your marketing analytics data and find more customers.",
   "The platform for growth engineers",
   "The all-in-one platform for financial advisers",
   "AI-powered practice management available now",
@@ -78,25 +81,56 @@ const forbiddenSnippets = [
   "https://fonts.googleapis.com",
   "https://fonts.gstatic.com",
   "obsidianos.com/_astro",
+  "MATRIX",
+  "Matrix",
+  "Create your company",
+  "Download Matrix",
+  "Agent Company",
+  "Neo Intelligence",
+  "Claude Code",
+  "Codex",
+  "BUILT-IN",
+  "Growth analytics",
+  "Command center",
+  "Customer discovery",
+  "Open source",
+  "assets/infinite/infinite-command-center-dark",
+  "assets/obsidian/favicon.png",
+  "src=\"logo.png\"",
+  "logo-mark",
+  "assets/infinite/black-hole-logo-96.webp",
+  "hero-rise",
+  "hero-delay",
+  "animation-delay",
+  "opacity: 0;",
+  "Download Now",
+  "og-image.png",
+  "twitter-card-v3.png",
+  "black-hole-social-preview.jpg",
+  "DM RTK for Access",
+  "Get Access",
+  "access-modal",
+  "access-form",
+  "Get access to Infinite",
+  "name=\"name\"",
+  "name=\"email\"",
+  "Request Access",
+  "data-open-access",
+  "Secure request endpoint not connected yet.",
+  "hero-subtitle",
+  "We’ll email you when your invite is ready.",
+  "access-description",
 ];
 
 const requiredFiles = [
-  "../assets/infinite/infinite-command-center-dark.png",
-  "../assets/infinite/infinite-command-center-dark-2x.png",
-  "../assets/infinite/space-horizon.webp",
-  "../assets/infinite/hero-cruiser.png",
-  "../assets/infinite/hero-freighter.png",
-  "../assets/infinite/hero-interceptor.png",
+  "../assets/infinite/black-hole-command-hero.png",
+  "../assets/infinite/black-hole-social-preview.png",
+  "../assets/infinite/black-hole-favicon-32.png",
+  "../assets/infinite/black-hole-favicon-16.png",
   "../assets/obsidian/nav-ai-practice-management.webp",
   "../assets/obsidian/nav-custody-execution.webp",
   "../assets/obsidian/nav-independent-firms.webp",
   "../assets/obsidian/nav-consolidators.webp",
-  "../logo.png",
-  "../favicon-16.png",
-  "../favicon-32.png",
-  "../apple-touch-icon.png",
-  "../og-image.png",
-  "../twitter-card-v3.png",
   "../fonts/ibm-plex/ibm-plex-sans-400.ttf",
   "../fonts/ibm-plex/ibm-plex-sans-500.ttf",
   "../fonts/ibm-plex/ibm-plex-sans-600.ttf",
@@ -126,6 +160,24 @@ if (!/font-weight:\s*400;/.test(h1Rule)) {
   failures.push("Expected h1 headline font-weight to be reduced to 400");
 }
 
+if (!/font-family:\s*var\(--heading\);/.test(h1Rule)) {
+  failures.push("Expected h1 headline to use the live site IBM Plex Sans heading stack");
+}
+
+const builtInTitleRule = html.match(/\.built-in-title\s*\{[\s\S]*?\n\s*\}/)?.[0] ?? "";
+if (!/font-size:\s*11px;/.test(builtInTitleRule)) {
+  failures.push("Expected AUTOMATE label font-size to be reduced to 11px");
+}
+
+const builtInItemRule = html.match(/\.built-in-item\s*\{[\s\S]*?\n\s*\}/)?.[0] ?? "";
+if (!/font-size:\s*13px;/.test(builtInItemRule)) {
+  failures.push("Expected automate item labels font-size to be reduced to 13px");
+}
+
+if (!/font-weight:\s*500;/.test(builtInItemRule)) {
+  failures.push("Expected automate item labels font-weight to be reduced to 500");
+}
+
 const logoRule = html.match(/\.logo\s*\{[\s\S]*?\n\s*\}/)?.[0] ?? "";
 if (!/font-weight:\s*400;/.test(logoRule)) {
   failures.push("Expected Infinite wordmark logo font-weight to be reduced to 400");
@@ -136,21 +188,10 @@ for (const label of ["GitHub", "@infiniteOS_", "Discord"]) {
   if (!navBlock.includes(label)) failures.push(`Expected nav to include old footer item: ${label}`);
 }
 
-if (!navBlock.includes('<button class="nav-cta" type="button">Download Now</button>')) {
-  failures.push("Expected nav to include a non-link Download Now CTA button");
-}
+if (!navBlock.includes(">Book a demo call</button>")) failures.push("Expected nav to include a Book a demo call CTA button");
 
-const downloadButtonCount = (html.match(/>Download Now<\/button>/g) || []).length;
-if (downloadButtonCount < 2) failures.push(`Expected at least two Download Now CTA buttons, found ${downloadButtonCount}`);
-
-const downloadLinkCount = (html.match(/<a\b[^>]*>\s*Download Now\s*<\/a>/g) || []).length;
-if (downloadLinkCount !== 0) failures.push(`Expected no Download Now links, found ${downloadLinkCount}`);
-
-const variantButtonCount = (html.match(/class="hero-variant"/g) || []).length;
-if (variantButtonCount !== 3) failures.push(`Expected exactly 3 hero variant buttons, found ${variantButtonCount}`);
-
-const heroBackgroundCount = (html.match(/class="hero-bg"/g) || []).length;
-if (heroBackgroundCount !== 3) failures.push(`Expected exactly 3 hero background images, found ${heroBackgroundCount}`);
+const ctaCount = (html.match(/>Book a demo call<\/button>/g) || []).length;
+if (ctaCount < 2) failures.push(`Expected at least two Book a demo call CTA buttons, found ${ctaCount}`);
 
 for (const label of ["Privacy", "Terms", "river", "Made with 🤖 by"]) {
   if (navBlock.includes(label)) failures.push(`Expected ${label} to move out of nav`);
