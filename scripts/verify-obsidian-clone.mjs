@@ -1,4 +1,4 @@
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, stat } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const requiredSnippets = [
@@ -34,7 +34,8 @@ const requiredSnippets = [
   "Terms",
   "Made with 🤖 by",
   "river",
-  "assets/infinite/black-hole-command-hero.png",
+  "assets/infinite/black-hole-command-hero-desktop.webp",
+  "assets/infinite/black-hole-command-hero-mobile.webp",
   "hero-background",
   "hero-built-ins",
   "AUTOMATE",
@@ -107,6 +108,7 @@ const forbiddenSnippets = [
   "og-image.png",
   "twitter-card-v3.png",
   "black-hole-social-preview.jpg",
+  "class=\"hero-background\" src=\"assets/infinite/black-hole-command-hero.png\"",
   "DM RTK for Access",
   "Get Access",
   "access-modal",
@@ -123,7 +125,8 @@ const forbiddenSnippets = [
 ];
 
 const requiredFiles = [
-  "../assets/infinite/black-hole-command-hero.png",
+  "../assets/infinite/black-hole-command-hero-desktop.webp",
+  "../assets/infinite/black-hole-command-hero-mobile.webp",
   "../assets/infinite/black-hole-social-preview.png",
   "../assets/infinite/black-hole-favicon-32.png",
   "../assets/infinite/black-hole-favicon-16.png",
@@ -138,6 +141,10 @@ const requiredFiles = [
   "../fonts/ibm-plex/ibm-plex-mono-400.ttf",
   "../fonts/ibm-plex/ibm-plex-mono-500.ttf",
   "../fonts/ibm-plex/ibm-plex-mono-600.ttf",
+];
+
+const forbiddenFiles = [
+  "../assets/infinite/black-hole-command-hero.png",
 ];
 
 const failures = [];
@@ -207,6 +214,31 @@ for (const file of requiredFiles) {
     await access(new URL(file, import.meta.url));
   } catch {
     failures.push(`Missing downloaded asset: ${file}`);
+  }
+}
+
+for (const file of forbiddenFiles) {
+  try {
+    await access(new URL(file, import.meta.url));
+    failures.push(`Unexpected heavyweight asset still present: ${file}`);
+  } catch {
+    // Expected: optimized hero variants replaced the original PNG.
+  }
+}
+
+const sizeLimits = [
+  ["../assets/infinite/black-hole-command-hero-desktop.webp", 420 * 1024],
+  ["../assets/infinite/black-hole-command-hero-mobile.webp", 220 * 1024],
+];
+
+for (const [file, limit] of sizeLimits) {
+  try {
+    const { size } = await stat(new URL(file, import.meta.url));
+    if (size > limit) {
+      failures.push(`Optimized hero asset too large: ${file} is ${size} bytes, limit is ${limit}`);
+    }
+  } catch {
+    failures.push(`Missing optimized hero asset for size check: ${file}`);
   }
 }
 
