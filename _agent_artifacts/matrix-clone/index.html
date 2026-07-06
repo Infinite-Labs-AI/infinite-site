@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matrix - Launch a 0-Person Company that actually earns</title>
+  <meta name="description" content="Matrix is an agent company runtime for long-horizon execution: set an objective, coordinate agents, ship artifacts, and verify proof." />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="canonical" href="https://matrix.build/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="preload" as="image" href="assets/matrix/hero/matrix-hero-rooftop.jpg" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Matrix - Launch a 0-Person Company that actually earns" />
+  <meta property="og:description" content="Set an objective. Matrix coordinates agent departments, ships artifacts, and closes work with proof." />
+  <meta property="og:image" content="assets/matrix/hero/matrix-hero-rooftop.jpg" />
+  <style>
+    :root {
+      --ink: #111418;
+      --ink-soft: rgba(17, 20, 24, 0.66);
+      --ink-muted: rgba(17, 20, 24, 0.45);
+      --line: rgba(17, 20, 24, 0.13);
+      --line-strong: rgba(17, 20, 24, 0.26);
+      --paper: #fff;
+      --mist: #f6f7f8;
+      --blue: #73b7e7;
+      --deep: #071020;
+      --green: #0e9f49;
+      --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+      --mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: "ABC Oracle", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --max: 1300px;
+      --section: clamp(84px, 10vw, 136px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--paper);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img,
+    svg,
+    video {
+      display: block;
+      max-width: 100%;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .matrix-nav {
+      position: fixed;
+      z-index: 50;
+      top: 0;
+      right: 0;
+      left: 0;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 24px;
+      height: 64px;
+      padding: 0 clamp(18px, 3vw, 28px);
+      color: #fff;
+      transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    body.is-light-nav .matrix-nav {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.76);
+      border-bottom: 1px solid rgba(17, 20, 24, 0.06);
+      backdrop-filter: blur(18px);
+    }
+
+    .matrix-brand {
+      justify-self: start;
+      display: inline-flex;
+      align-items: center;
+      width: 76px;
+      height: 30px;
+      filter: brightness(0) invert(1);
+      transition: filter 180ms ease;
+    }
+
+    body.is-light-nav .matrix-brand {
+      filter: none;
+    }
+
+    .matrix-nav-actions {
+      grid-column: 3;
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .language {
+      position: relative;
+    }
+
+    .language button {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .language-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      display: grid;
+      gap: 3px;
+      min-width: 86px;
+      padding: 8px;
+      border: 1px solid rgba(17, 20, 24, 0.12);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+      box-shadow: 0 20px 60px rgba(17, 20, 24, 0.16);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-5px);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .language.is-open .language-menu {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .language-menu button {
+      width: 100%;
+      padding: 7px 8px;
+      border-radius: 7px;
+      color: var(--ink-soft);
+      text-align: left;
+    }
+
+    .language-menu button:hover {
+      background: var(--mist);
+      color: var(--ink);
+    }
+
+    .nav-pill,
+    .download-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      white-space: nowrap;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .nav-pill {
+      min-height: 38px;
+      padding: 0 22px;
+      background: rgba(255, 255, 255, 0.96);
+      color: var(--ink);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
+    }
+
+    body.is-light-nav .nav-pill {
+      background: var(--ink);
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .nav-pill:hover,
+    .download-pill:hover {
+      transform: translateY(-1px);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      overflow: clip;
+      display: grid;
+      align-items: center;
+      justify-items: center;
+      padding: 104px 24px 42px;
+      color: #fff;
+      text-align: center;
+      background: var(--deep);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      animation: hero-drift 18s ease-in-out infinite alternate;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(8, 16, 32, 0.05), rgba(8, 16, 32, 0.1) 48%, rgba(3, 9, 20, 0.86) 100%),
+        radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.16), transparent 27%);
+      pointer-events: none;
+    }
+
+    @keyframes hero-drift {
+      from { transform: scale(1.01) translateY(0); }
+      to { transform: scale(1.045) translateY(-10px); }
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 760px);
+      margin-top: 20px;
+    }
+
+    .hero h1,
+    .section-title,
+    .card-title,
+    .deploy-title,
+    .vptd-title {
+      font-family: var(--serif);
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
+    .hero h1 {
+      font-size: clamp(48px, 6vw, 78px);
+      line-height: 0.96;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.32);
+    }
+
+    em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .hero-lede {
+      max-width: 610px;
+      margin: 26px auto 0;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.58;
+      text-shadow: 0 1px 16px rgba(0, 0, 0, 0.45);
+    }
+
+    .download-pill {
+      gap: 12px;
+      min-height: 60px;
+      margin-top: 34px;
+      padding: 0 34px;
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      background: rgba(255, 255, 255, 0.96);
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 700;
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.22);
+    }
+
+    .apple-mark {
+      width: 18px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .hero-note {
+      margin-top: 14px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.35;
+      text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .model-strip {
+      position: absolute;
+      z-index: 2;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      overflow: hidden;
+      padding: 12px 0 22px;
+      background: linear-gradient(180deg, transparent, rgba(3, 9, 20, 0.72));
+      mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    }
+
+    .model-kicker {
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.62);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .model-track {
+      display: flex;
+      width: max-content;
+      gap: 34px;
+      animation: marquee 34s linear infinite;
+    }
+
+    .model {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .model img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+
+    @keyframes marquee {
+      to { transform: translateX(-50%); }
+    }
+
+    .section {
+      position: relative;
+      padding: var(--section) clamp(20px, 5vw, 60px);
+      background: var(--paper);
+    }
+
+    .blue-section {
+      overflow: clip;
+      color: #f8fbff;
+      background: linear-gradient(180deg, #071020 0%, #18366c 54%, #81c6f0 100%);
+    }
+
+    .blue-section .section-title,
+    .blue-section .section-lede,
+    .blue-section .eyebrow,
+    .blue-section .runtime-points {
+      position: relative;
+      z-index: 2;
+    }
+
+    .container {
+      width: min(100%, var(--max));
+      margin: 0 auto;
+    }
+
+    .section-head {
+      width: min(100%, 880px);
+      margin: 0 auto clamp(48px, 7vw, 76px);
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: block;
+      margin-bottom: 22px;
+      color: var(--ink-muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    .blue-section .eyebrow {
+      color: rgba(255, 255, 255, 0.58);
+    }
+
+    .section-title {
+      font-size: clamp(38px, 5vw, 58px);
+      line-height: 1.02;
+    }
+
+    .section-lede {
+      width: min(100%, 720px);
+      margin: 24px auto 0;
+      color: var(--ink-soft);
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.7;
+    }
+
+    .blue-section .section-lede {
+      color: rgba(255, 255, 255, 0.76);
+    }
+
+    .scroll-dot {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 28px;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      opacity: 0.78;
+    }
+
+    .scroll-dot::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .runtime-showcase {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 1120px);
+      margin: 0 auto 46px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.17);
+      border-radius: 18px;
+      box-shadow: 0 44px 110px rgba(4, 12, 28, 0.38);
+    }
+
+    .runtime-showcase img {
+      width: 100%;
+      opacity: 0.78;
+    }
+
+    .runtime-points {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(28px, 4vw, 54px);
+      color: var(--ink);
+    }
+
+    .runtime-point h3 {
+      margin-bottom: 18px;
+      font-family: var(--serif);
+      font-size: clamp(25px, 2.4vw, 32px);
+      font-weight: 400;
+      line-height: 1.08;
+    }
+
+    .runtime-point p {
+      color: rgba(17, 20, 24, 0.68);
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.62;
+    }
+
+    .flow-toolbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 34px;
+      color: var(--ink-muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .flow-steps {
+      justify-self: end;
+      display: flex;
+      gap: 8px;
+    }
+
+    .flow-steps span {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink-muted);
+      background: #fff;
+    }
+
+    .flow-steps span:first-child {
+      color: #fff;
+      border-color: var(--ink);
+      background: var(--ink);
+    }
+
+    .flow-board {
+      position: relative;
+      overflow: hidden;
+      min-height: 660px;
+      padding: clamp(28px, 5vw, 66px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px),
+        #fff;
+      background-size: 100% 154px, 184px 100%;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1.25fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .flow-node,
+    .dept-card,
+    .proof-node {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 1px 2px rgba(17, 20, 24, 0.04);
+    }
+
+    .flow-node {
+      min-height: 118px;
+      padding: 24px;
+    }
+
+    .flow-node.dark {
+      min-height: 160px;
+      background: #555;
+      color: #fff;
+    }
+
+    .node-label,
+    .metric-label,
+    .proof-meta,
+    .mini-label {
+      color: var(--ink-muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .flow-node.dark .node-label {
+      color: rgba(255, 255, 255, 0.52);
+    }
+
+    .flow-node strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .flow-node p,
+    .proof-node p {
+      margin-top: 8px;
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .flow-node.dark p {
+      color: rgba(255, 255, 255, 0.62);
+    }
+
+    .connector-pill {
+      min-width: 110px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .departments {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(18px, 4vw, 64px);
+      margin: 62px 0;
+    }
+
+    .dept-card {
+      min-height: 160px;
+      padding: 22px;
+      transform: perspective(900px) rotateY(-18deg) skewY(8deg);
+      transform-origin: left center;
+      background: linear-gradient(160deg, #eaf6ff, #fff 70%);
+      box-shadow: 13px 12px 0 rgba(17, 20, 24, 0.15), 26px 22px 0 rgba(17, 20, 24, 0.08);
+    }
+
+    .dept-card strong {
+      display: block;
+      margin-top: 40px;
+      font-family: var(--serif);
+      font-size: 28px;
+      font-weight: 400;
+    }
+
+    .proof-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      width: min(100%, 470px);
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .proof-node {
+      padding: 28px;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .proof-node + .proof-node {
+      border-left: 1px solid var(--line);
+    }
+
+    .benchmark-card {
+      position: relative;
+      overflow: hidden;
+      width: min(100%, 1160px);
+      margin: 0 auto;
+      padding: clamp(32px, 6vw, 70px);
+      border-radius: 18px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.78)),
+        url("assets/matrix/hero/matrix-hero-rooftop.jpg") center / cover;
+    }
+
+    .benchmark-card h3 {
+      margin: 14px 0 16px;
+      font-family: var(--serif);
+      font-size: clamp(38px, 4.5vw, 58px);
+      font-weight: 400;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .benchmark-copy {
+      width: min(100%, 620px);
+      margin: 0 auto 46px;
+      color: var(--ink-soft);
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .bars {
+      width: min(100%, 1010px);
+      margin: 0 auto;
+      padding: 26px 36px 32px;
+      border: 1px solid rgba(17, 20, 24, 0.08);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(18px);
+    }
+
+    .bar {
+      display: grid;
+      grid-template-columns: 190px 1fr 70px;
+      align-items: center;
+      gap: 18px;
+      min-height: 58px;
+    }
+
+    .bar-name {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 700;
+    }
+
+    .bar-name img {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      object-fit: contain;
+    }
+
+    .bar-track {
+      height: 36px;
+      background: linear-gradient(90deg, rgba(17, 20, 24, 0.08), rgba(17, 20, 24, 0.02));
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: #8f8f8f;
+    }
+
+    .bar:first-child .bar-fill {
+      background: var(--ink);
+    }
+
+    .bar-score {
+      color: var(--ink-muted);
+      font-family: var(--mono);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .case-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 64px;
+    }
+
+    .case-tab {
+      min-height: 50px;
+      padding: 0 28px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink-muted);
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .case-tab.active {
+      border-color: transparent;
+      background: linear-gradient(180deg, #54a9e4, #9bd4f4);
+      color: #fff;
+    }
+
+    .case-panel {
+      display: none;
+    }
+
+    .case-panel.active {
+      display: block;
+    }
+
+    .metrics-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line-strong);
+      color: var(--ink-muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      white-space: nowrap;
+    }
+
+    .live-dot::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(14, 159, 73, 0.12);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      margin: 28px 0 82px;
+    }
+
+    .metric {
+      padding: 0 24px;
+      border-left: 1px solid var(--line);
+    }
+
+    .metric:first-child {
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 10px;
+      font-family: var(--serif);
+      font-size: clamp(36px, 4vw, 52px);
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: minmax(210px, 280px) 1fr;
+      gap: clamp(36px, 6vw, 82px);
+      align-items: start;
+    }
+
+    .timeline-rail {
+      position: sticky;
+      top: 94px;
+      display: grid;
+      gap: 0;
+      padding-left: 24px;
+      border-top: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .rail-item {
+      position: relative;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .rail-item:last-child {
+      border-bottom: 0;
+    }
+
+    .rail-item.active {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .rail-item.active::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: -27px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ink);
+      transform: translateY(-50%);
+    }
+
+    .timeline-entry {
+      display: grid;
+      grid-template-columns: 58px minmax(220px, 0.9fr) minmax(320px, 1.1fr);
+      gap: 28px;
+      padding: 56px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .timeline-entry:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .node-dot {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .node-dot::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ink);
+    }
+
+    .timeline-copy h3 {
+      margin: 12px 0 18px;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .timeline-copy p {
+      color: var(--ink-soft);
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.62;
+    }
+
+    .proof-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 12px 34px rgba(17, 20, 24, 0.08);
+    }
+
+    .proof-card img,
+    .proof-card video {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .proof-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 14px;
+    }
+
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .cap-card {
+      min-height: 420px;
+      overflow: hidden;
+      border-radius: 16px;
+      background: var(--mist);
+    }
+
+    .cap-visual {
+      min-height: 250px;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #111418;
+      color: #fff;
+    }
+
+    .cap-visual img {
+      max-height: 150px;
+      object-fit: contain;
+    }
+
+    .cap-body {
+      padding: 22px;
+    }
+
+    .cap-body h3 {
+      margin-bottom: 8px;
+      font-size: 20px;
+      line-height: 1.15;
+    }
+
+    .cap-body p {
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+
+    .memory-stack {
+      display: grid;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .memory-stack span {
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .agent-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .agent-row img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+    }
+
+    .mini-feed {
+      display: grid;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .mini-feed div {
+      padding: 14px;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .primitive-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 18px;
+      min-height: 760px;
+    }
+
+    .integration-card,
+    .primitive-card {
+      overflow: hidden;
+      border-radius: 16px;
+      background: var(--mist);
+    }
+
+    .integration-card {
+      position: relative;
+      padding: 30px;
+    }
+
+    .integration-card h3,
+    .primitive-card h3 {
+      margin-bottom: 8px;
+      font-size: 22px;
+    }
+
+    .integration-card p,
+    .primitive-card p {
+      color: var(--ink-soft);
+    }
+
+    .integration-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 44px;
+    }
+
+    .integration-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .integration-pill img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+    }
+
+    .primitive-side {
+      display: grid;
+      gap: 18px;
+    }
+
+    .primitive-card {
+      padding: 28px;
+    }
+
+    .launch-console {
+      display: grid;
+      gap: 10px;
+      margin: 26px 0 22px;
+      padding: 20px;
+      border-radius: 14px;
+      background: var(--ink);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .vptd {
+      text-align: center;
+    }
+
+    .vptd-title {
+      font-size: clamp(38px, 5vw, 64px);
+      line-height: 1;
+    }
+
+    .formula {
+      display: grid;
+      grid-template-columns: auto auto auto;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(20px, 4vw, 48px);
+      margin: 50px 0 34px;
+      font-family: var(--serif);
+      font-size: clamp(54px, 9vw, 112px);
+      line-height: 0.9;
+    }
+
+    .fraction {
+      display: grid;
+      gap: 14px;
+      min-width: 160px;
+      font-size: 0.72em;
+    }
+
+    .fraction span:first-child {
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .vptd p {
+      width: min(100%, 650px);
+      margin: 0 auto;
+      color: var(--ink-soft);
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .deploy {
+      min-height: 76svh;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      text-align: center;
+      background:
+        linear-gradient(180deg, rgba(6, 13, 28, 0.58), rgba(5, 9, 18, 0.82)),
+        url("assets/matrix/hero/matrix-hero-rooftop.jpg") center / cover;
+    }
+
+    .deploy-title {
+      font-size: clamp(48px, 7vw, 86px);
+      line-height: 0.95;
+    }
+
+    .deploy .eyebrow {
+      color: rgba(255, 255, 255, 0.62);
+    }
+
+    .deploy .hero-note {
+      text-shadow: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    @media (max-width: 1040px) {
+      .runtime-points,
+      .cap-grid,
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .primitive-grid,
+      .timeline,
+      .flow-row {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline-rail {
+        position: relative;
+        top: auto;
+        grid-template-columns: repeat(4, minmax(160px, 1fr));
+        overflow-x: auto;
+        padding-left: 0;
+      }
+
+      .rail-item {
+        padding: 14px 16px;
+        border-right: 1px solid var(--line);
+      }
+
+      .rail-item.active::before {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        border-radius: 0;
+        transform: none;
+      }
+
+      .departments {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .matrix-nav {
+        grid-template-columns: auto 1fr;
+        height: 58px;
+        gap: 12px;
+        padding: 0 18px;
+      }
+
+      .matrix-brand {
+        width: 72px;
+      }
+
+      .matrix-nav-actions {
+        grid-column: 2;
+        gap: 14px;
+        font-size: 13px;
+      }
+
+      .guide-link {
+        display: none;
+      }
+
+      .nav-pill {
+        min-height: 38px;
+        padding: 0 17px;
+      }
+
+      .hero {
+        align-items: start;
+        min-height: 100svh;
+        padding: 174px 20px 146px;
+      }
+
+      .hero-bg {
+        object-position: center top;
+      }
+
+      .hero h1 {
+        font-size: clamp(47px, 13vw, 58px);
+      }
+
+      .hero-lede {
+        font-size: 16px;
+      }
+
+      .download-pill {
+        width: min(100%, 304px);
+        min-height: 56px;
+        padding: 0 20px;
+        font-size: 15px;
+      }
+
+      .section {
+        padding: 86px 20px;
+      }
+
+      .section-title {
+        font-size: clamp(36px, 11vw, 48px);
+      }
+
+      .section-lede {
+        font-size: 16px;
+      }
+
+      .runtime-points,
+      .cap-grid,
+      .metrics-grid,
+      .departments {
+        grid-template-columns: 1fr;
+      }
+
+      .runtime-point h3 {
+        color: #fff;
+      }
+
+      .runtime-point p {
+        color: rgba(255, 255, 255, 0.76);
+      }
+
+      .flow-board {
+        min-height: 0;
+        padding: 18px;
+        overflow-x: auto;
+      }
+
+      .flow-row,
+      .departments,
+      .proof-row {
+        min-width: 720px;
+      }
+
+      .bar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .bars {
+        padding: 22px;
+      }
+
+      .case-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .case-tab {
+        min-height: 52px;
+        padding: 0 8px;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        white-space: normal;
+      }
+
+      .metrics-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .metric {
+        padding: 18px 0;
+        border-top: 1px solid var(--line);
+        border-left: 0;
+      }
+
+      .metric:first-child {
+        border-top: 0;
+      }
+
+      .timeline {
+        gap: 34px;
+      }
+
+      .timeline-rail {
+        display: none;
+      }
+
+      .timeline-entry {
+        grid-template-columns: 34px 1fr;
+        gap: 14px;
+        padding: 36px 0;
+      }
+
+      .timeline-media {
+        grid-column: 2;
+      }
+
+      .node-dot {
+        width: 30px;
+        height: 30px;
+      }
+
+      .primitive-grid {
+        min-height: 0;
+      }
+
+      .formula {
+        gap: 16px;
+      }
+
+      .model-track {
+        gap: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="matrix-nav" aria-label="Matrix site navigation">
+    <a class="matrix-brand" href="#top" aria-label="Matrix home">
+      <img src="assets/matrix/matrix-lockup-white.svg" alt="Matrix" />
+    </a>
+    <div class="matrix-nav-actions">
+      <div class="language">
+        <button type="button" aria-expanded="false" aria-haspopup="true">EN <span aria-hidden="true">⌄</span></button>
+        <div class="language-menu" role="menu">
+          <button type="button">EN</button>
+          <button type="button">中</button>
+          <button type="button">日</button>
+          <button type="button">ES</button>
+          <button type="button">FR</button>
+        </div>
+      </div>
+      <a class="guide-link" href="#coordination">Guide</a>
+      <a class="nav-pill" href="#deploy">Create your company</a>
+    </div>
+  </nav>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <img class="hero-bg" src="assets/matrix/hero/matrix-hero-rooftop.jpg" alt="" />
+      <div class="hero-copy">
+        <h1 id="hero-title">Bring your first<br /><em>Agent Company</em> to life.</h1>
+        <p class="hero-lede">Watch a company build itself around an objective, with agents that browse, ship code, run ads, and collect revenue.</p>
+        <a class="download-pill" href="https://download.matrix.build/">
+          <svg class="apple-mark" viewBox="0 0 24 28" aria-hidden="true"><path d="M19.2 14.8c0-3.1 2.6-4.6 2.8-4.8-1.5-2.2-3.7-2.5-4.5-2.6-1.9-.2-3.7 1.1-4.7 1.1s-2.5-1.1-4.1-1.1c-2.1 0-4.1 1.2-5.2 3.2-2.2 3.8-.6 9.5 1.6 12.6 1.1 1.5 2.3 3.2 4 3.1 1.6-.1 2.2-1 4.1-1s2.5 1 4.1 1c1.7 0 2.8-1.5 3.9-3.1 1.2-1.8 1.7-3.5 1.7-3.6-.1-.1-3.7-1.5-3.7-4.8ZM16.2 5.4c.9-1.1 1.5-2.6 1.3-4.1-1.3.1-2.9.9-3.8 1.9-.8 1-1.5 2.5-1.3 4 1.4.1 2.9-.7 3.8-1.8Z" /></svg>
+          Download Matrix for macOS
+        </a>
+        <p class="hero-note">Matrix runs on Mac today.<br />Web app coming soon.</p>
+      </div>
+      <div class="model-strip" aria-label="Built-in models">
+        <div class="model-kicker">Built-in</div>
+        <div class="model-track">
+          <span class="model"><img src="assets/matrix/models/neo.svg" alt="" />Neo Intelligence</span>
+          <span class="model"><img src="assets/matrix/models/claude.svg" alt="" />Claude Code</span>
+          <span class="model"><img src="assets/matrix/models/codex.svg" alt="" />Codex</span>
+          <span class="model"><img src="assets/matrix/models/openai.svg" alt="" />ChatGPT</span>
+          <span class="model"><img src="assets/matrix/models/gemini.svg" alt="" />Gemini</span>
+          <span class="model"><img src="assets/matrix/models/glm.svg" alt="" />GLM</span>
+          <span class="model"><img src="assets/matrix/models/deepseek.svg" alt="" />DeepSeek</span>
+          <span class="model"><img src="assets/matrix/models/kimi.svg" alt="" />Kimi</span>
+          <span class="model"><img src="assets/matrix/models/qwen.svg" alt="" />Qwen</span>
+          <span class="model"><img src="assets/matrix/models/neo.svg" alt="" />Neo Intelligence</span>
+          <span class="model"><img src="assets/matrix/models/claude.svg" alt="" />Claude Code</span>
+          <span class="model"><img src="assets/matrix/models/codex.svg" alt="" />Codex</span>
+          <span class="model"><img src="assets/matrix/models/openai.svg" alt="" />ChatGPT</span>
+          <span class="model"><img src="assets/matrix/models/gemini.svg" alt="" />Gemini</span>
+          <span class="model"><img src="assets/matrix/models/glm.svg" alt="" />GLM</span>
+          <span class="model"><img src="assets/matrix/models/deepseek.svg" alt="" />DeepSeek</span>
+          <span class="model"><img src="assets/matrix/models/kimi.svg" alt="" />Kimi</span>
+          <span class="model"><img src="assets/matrix/models/qwen.svg" alt="" />Qwen</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="runtime" class="section blue-section">
+      <div class="container">
+        <header class="section-head">
+          <span class="eyebrow">01 / The Runtime</span>
+          <h2 class="section-title">Matrix is a proactive, multi-layer <em>agentic runtime,</em><br />built for <em>ultra-long operation.</em></h2>
+          <p class="section-lede">Every agent runs its own browser, tools, files, and memory, while departments coordinate the swarm from direction to proof. Together, they help you launch a 0-person company that actually earns.</p>
+        </header>
+        <div class="scroll-dot" aria-hidden="true"></div>
+        <figure class="runtime-showcase">
+          <img src="assets/matrix/showcase/matrix-dashboard.png" alt="Matrix dashboard - workspace pulse, departments, and platform analytics" />
+        </figure>
+        <div class="runtime-points">
+          <article class="runtime-point">
+            <h3>Command an infinite agent workforce</h3>
+            <p>Let Matrix fully autonomously orchestrate a limitless fleet of Neo, Claude Code, and Codex agents, deploying them in tiered, continuous loops to execute complex workloads on your behalf.</p>
+          </article>
+          <article class="runtime-point">
+            <h3>Trigger proactive, long-term execution</h3>
+            <p>Define just a single clear Objective and watch your entire Agent company take over. Operating proactively over long cycles, they collaborate seamlessly across departments through a unified file system.</p>
+          </article>
+          <article class="runtime-point">
+            <h3>Bypass traditional business setup</h3>
+            <p>Matrix comes pre-loaded with every foundational asset you need. Skip the hassle of registering entities, bank cards, domains, or emails - our agents automate the connections, empowering you to start generating revenue on day one.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="coordination" class="section">
+      <div class="container">
+        <header class="section-head">
+          <span class="eyebrow">02 / Coordination</span>
+          <h2 class="section-title">One objective becomes<br /><em>a company loop.</em></h2>
+          <p class="section-lede">Matrix routes your intent through a CEO Office, OKR memory, departments, proof, and review so work keeps moving after the first prompt.</p>
+        </header>
+        <div class="flow-toolbar">
+          <span>01&nbsp; Intent + assets</span>
+          <span>The user gives direction and attaches the working material.</span>
+          <div class="flow-steps" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+        </div>
+        <div class="flow-board">
+          <div class="flow-row">
+            <div class="flow-node">
+              <span class="node-label">Intent source</span>
+              <strong>User</strong>
+              <p>Intent, constraints, files.</p>
+            </div>
+            <span class="connector-pill">Intent + Assets</span>
+            <div class="flow-node dark">
+              <span class="node-label">Workspace leader</span>
+              <strong>CEO Office</strong>
+              <p>Sets objective, policy, cadence.</p>
+            </div>
+            <span class="connector-pill">Priority Signal</span>
+            <div class="flow-node">
+              <span class="node-label">Priority memory</span>
+              <strong>OKR System</strong>
+              <p>Objective, key result, tasks.</p>
+            </div>
+          </div>
+          <div class="departments">
+            <div class="dept-card"><span class="node-label">Lead Agent / Worker Agent / Memory.md</span><strong>Product</strong></div>
+            <div class="dept-card"><span class="node-label">Lead Agent / Worker Agent / Memory.md</span><strong>Research</strong></div>
+            <div class="dept-card"><span class="node-label">Lead Agent / Worker Agent / Memory.md</span><strong>Growth</strong></div>
+            <div class="dept-card"><span class="node-label">Lead Agent / Worker Agent / Memory.md</span><strong>Engineering</strong></div>
+          </div>
+          <div class="proof-row">
+            <div class="proof-node"><strong>Proof + Artifacts</strong><p>Proof of work</p></div>
+            <div class="proof-node"><strong>Skills + Memory</strong><p>Reuse next time</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="benchmark" class="section">
+      <div class="container">
+        <header class="section-head">
+          <span class="eyebrow">03 / Benchmark</span>
+          <h2 class="section-title">Matrix turns frontier models into<br /><em>SOTA work performance.</em></h2>
+          <p class="section-lede">Give every model the harness, tools, and operating context to reach 95.45% on GDPval-Bench - well past every base model running on its own.</p>
+        </header>
+        <div class="benchmark-card">
+          <span class="eyebrow" style="text-align:center;">Live GDPval ledger</span>
+          <h3>GDPval-Bench Performance</h3>
+          <p class="benchmark-copy">Matrix's frontier harness reaches 95.45%, turning models into SOTA work performance.</p>
+          <div class="bars" role="img" aria-label="GDPval-Bench scores led by Matrix at 95.45 percent">
+            <div class="bar"><span class="bar-name"><img src="assets/matrix/logo.svg" alt="" />Matrix</span><span class="bar-track"><span class="bar-fill" style="width:95.45%"></span></span><span class="bar-score">95.45%</span></div>
+            <div class="bar"><span class="bar-name"><img src="assets/matrix/benchmark/codex.png" alt="" />Codex CLI</span><span class="bar-track"><span class="bar-fill" style="width:84.9%"></span></span><span class="bar-score">84.9%</span></div>
+            <div class="bar"><span class="bar-name"><img src="assets/matrix/benchmark/claude.png" alt="" />Claude</span><span class="bar-track"><span class="bar-fill" style="width:80.3%"></span></span><span class="bar-score">80.3%</span></div>
+            <div class="bar"><span class="bar-name"><img src="assets/matrix/benchmark/gemini.png" alt="" />Gemini</span><span class="bar-track"><span class="bar-fill" style="width:67.3%"></span></span><span class="bar-score">67.3%</span></div>
+            <div class="bar"><span class="bar-name"><img src="assets/matrix/benchmark/codex.png" alt="" />Codex CLI</span><span class="bar-track"><span class="bar-fill" style="width:38.8%"></span></span><span class="bar-score">38.8%</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="case" class="section">
+      <div class="container">
+        <header class="section-head">
+          <span class="eyebrow">04 / Flagship Run</span>
+          <h2 class="section-title">Matrix turns one objective into<br /><em>a running company.</em></h2>
+          <p class="section-lede">Give Matrix a business goal and it operates the full loop: build, ship, distribute, and earn. Three live companies are running now.</p>
+        </header>
+        <div class="case-tabs" role="tablist" aria-label="Live companies">
+          <button class="case-tab active" type="button" data-case-tab="video">Video Commerce Studio</button>
+          <button class="case-tab" type="button" data-case-tab="seo">SEO Growth Lab</button>
+          <button class="case-tab" type="button" data-case-tab="lead">Lead Gen Agency</button>
+        </div>
+        <div class="case-panel active" data-case-panel="video">
+          <div class="metrics-top"><span>From live site to viral distribution, a monetizable media business.</span><span class="live-dot">Still running</span></div>
+          <div class="metrics-grid">
+            <div class="metric"><strong>100+</strong><span class="metric-label">Videos produced</span></div>
+            <div class="metric"><strong>10h+</strong><span class="metric-label">Video runtime</span></div>
+            <div class="metric"><strong>1.2M+</strong><span class="metric-label">Total impressions</span></div>
+            <div class="metric"><strong>$3,000+</strong><span class="metric-label">Revenue generated</span></div>
+          </div>
+          <div class="timeline">
+            <aside class="timeline-rail" aria-label="Operating log">
+              <span class="rail-item active">Deployment<br />Live business site shipped.</span>
+              <span class="rail-item">Checkout<br />Monetization infra connected.</span>
+              <span class="rail-item">Production<br />100+ custom videos delivered.</span>
+              <span class="rail-item">Distribution<br />YouTube channel automated.</span>
+            </aside>
+            <div>
+              <article class="timeline-entry">
+                <div><span class="node-dot"></span></div>
+                <div class="timeline-copy"><span class="mini-label">Deployment</span><h3>Live business site shipped.</h3><p>A full AI video studio became real: positioning, offer pages, demo gallery, creator flow, and a live website open to the public.</p></div>
+                <a class="timeline-media proof-card" href="https://aivideopro.io/"><img src="assets/matrix/cases/aivideopro-hero.png" alt="aivideopro.io" /><span class="proof-meta"><span>AIVIDEOPRO.IO</span><span>OPEN PROOF ↗</span></span></a>
+              </article>
+              <article class="timeline-entry">
+                <div><span class="node-dot"></span></div>
+                <div class="timeline-copy"><span class="mini-label">Checkout</span><h3>Monetization infra connected.</h3><p>Stripe checkout, paid packages, customer brief intake, and delivery handoff connected into one order-ready flow.</p></div>
+                <div class="timeline-media proof-card"><video src="assets/matrix/cases/day1-stripe-v2.mp4" autoplay muted loop playsinline></video><span class="proof-meta"><span>Prompt -> Stripe paywall</span></span></div>
+              </article>
+              <article class="timeline-entry">
+                <div><span class="node-dot"></span></div>
+                <div class="timeline-copy"><span class="mini-label">Production</span><h3>100+ custom videos delivered.</h3><p>Automated video pipelines deliver UGC ads, branded short dramas, MV clips, and TVC-style product films at scale.</p></div>
+                <div class="timeline-media proof-card"><video src="assets/matrix/cases/day2-products.mp4" autoplay muted loop playsinline></video><span class="proof-meta"><span>Final ad showcase</span></span></div>
+              </article>
+              <article class="timeline-entry">
+                <div><span class="node-dot"></span></div>
+                <div class="timeline-copy"><span class="mini-label">Distribution</span><h3>YouTube channel automated.</h3><p>Short dramas auto-published to YouTube, driving 700k+ real views and multiple breakout clips.</p></div>
+                <a class="timeline-media proof-card" href="https://youtube.com/shorts/G5hI7kFLia0?si=8r7AAFKVEv3afLXw"><img src="assets/matrix/cases/youtube-shorts.png" alt="YouTube Shorts" /><span class="proof-meta"><span>Top short - viral fight scene</span><span>OPEN PROOF ↗</span></span></a>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div class="case-panel" data-case-panel="seo">
+          <div class="metrics-top"><span>From empty domain to compounding organic acquisition.</span><span class="live-dot">Still running</span></div>
+          <div class="metrics-grid">
+            <div class="metric"><strong>420+</strong><span class="metric-label">Pages shipped</span></div>
+            <div class="metric"><strong>38k+</strong><span class="metric-label">Search visits</span></div>
+            <div class="metric"><strong>260+</strong><span class="metric-label">Qualified leads</span></div>
+            <div class="metric"><strong>$9k+</strong><span class="metric-label">Pipeline created</span></div>
+          </div>
+        </div>
+        <div class="case-panel" data-case-panel="lead">
+          <div class="metrics-top"><span>From ICP brief to outbound engine with proof.</span><span class="live-dot">Still running</span></div>
+          <div class="metrics-grid">
+            <div class="metric"><strong>8.4k</strong><span class="metric-label">Prospects scored</span></div>
+            <div class="metric"><strong>640</strong><span class="metric-label">Replies triaged</span></div>
+            <div class="metric"><strong>78</strong><span class="metric-label">Meetings booked</span></div>
+            <div class="metric"><strong>$42k</strong><span class="metric-label">Revenue influenced</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="capabilities" class="section">
+      <div class="container">
+        <header class="section-head">
+          <span class="eyebrow">05 / Agent Capabilities</span>
+          <h2 class="section-title">Matrix makes every agent an <em>operator<br />that ships proof.</em></h2>
+          <p class="section-lede">Give every agent native computer use, durable memory, multi-agent coordination, and outcome-driven autonomy to see, remember, coordinate, and return proof.</p>
+        </header>
+        <div class="cap-grid">
+          <article class="cap-card">
+            <div class="cap-visual"><img src="assets/matrix/showcase/cu-desktop.webp" alt="" /></div>
+            <div class="cap-body"><h3>Native Computer & Browser Use</h3><p>Works where your company works. Agents can use browsers, desktop apps, files, and web tools.</p></div>
+          </article>
+          <article class="cap-card">
+            <div class="cap-visual"><div class="memory-stack"><span>Memory.md</span><span>Memory.md</span><span>Memory.md</span><span>Memory.md</span><span>Memory.md</span></div></div>
+            <div class="cap-body"><h3>Durable Work Memory</h3><p>The work remembers itself.</p></div>
+          </article>
+          <article class="cap-card">
+            <div class="cap-visual">
+              <div>
+                <div class="agent-row"><img src="assets/matrix/agents/avatar-claude.png" alt="" /><span>Claude / Reasoning</span></div>
+                <div class="agent-row"><img src="assets/matrix/agents/avatar-neo.png" alt="" /><span>Neo / Agent</span></div>
+                <div class="agent-row"><img src="assets/matrix/agents/avatar-codex.png" alt="" /><span>Codex / Engineering</span></div>
+              </div>
+            </div>
+            <div class="cap-body"><h3>Multi-Agent Departments</h3><p>Departments move in parallel.</p></div>
+          </article>
+          <article class="cap-card">
+            <div class="cap-visual"><div class="mini-feed"><div><strong>Featured</strong><br />Discover amazing content</div><div><strong>Popular</strong><br />Trending this week</div><div><strong>New</strong><br />Latest updates and features</div></div></div>
+            <div class="cap-body"><h3>Result Driven Autonomy</h3><p>Nothing is done until there is proof.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="primitives" class="section">
+      <div class="container">
+        <header class="section-head">
+          <span class="eyebrow">06 / Company Primitives</span>
+          <h2 class="section-title">Matrix wires your Agent Company<br /><em>the real world.</em></h2>
+          <p class="section-lede">Give every agent the built-in financial, communication, and software primitives to publish, charge, message, and connect with tools your company already runs on.</p>
+        </header>
+        <div class="primitive-grid">
+          <article class="integration-card">
+            <h3>Integrations</h3>
+            <p>Plug any tool into your company in minutes.</p>
+            <div class="integration-cloud">
+              <span class="integration-pill"><img src="assets/matrix/integrations/github.svg" alt="" />GitHub</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/slack.svg" alt="" />Slack</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/notion.svg" alt="" />Notion</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/stripe.svg" alt="" />Stripe</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/figma.svg" alt="" />Figma</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/supabase.svg" alt="" />Supabase</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/gmail.svg" alt="" />Gmail</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/linear.svg" alt="" />Linear</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/discord.svg" alt="" />Discord</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/shopify.svg" alt="" />Shopify</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/vercel.svg" alt="" />Vercel</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/youtube.svg" alt="" />YouTube</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/zapier.svg" alt="" />Zapier</span>
+              <span class="integration-pill"><img src="assets/matrix/integrations/tiktok.svg" alt="" />TikTok</span>
+            </div>
+          </article>
+          <div class="primitive-side">
+            <article class="primitive-card">
+              <h3>Agent Website</h3>
+              <div class="launch-console"><span>LAUNCH.MATRIX.SITE</span><span>$ MATRIX DEPLOY</span><span>LIVE</span></div>
+              <p>Deploy the product site to your own domain, or publish it free on a matrix.site subdomain.</p>
+            </article>
+            <article class="primitive-card"><h3>Agent Revenue</h3><p>Skip company registration and bank setup - Matrix gives your agents a simple, secure way to get paid and start earning from day one.</p></article>
+            <article class="primitive-card"><h3>Agent Wallet</h3><p>Give agents budgets, approvals, and payment rails so they can buy tools, run campaigns, and handle operational expenses.</p></article>
+            <article class="primitive-card"><h3>Agent Email</h3><p>Let agents send updates, follow up with leads, route replies, and keep external conversations attached to the work.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="economics" class="section vptd">
+      <div class="container">
+        <span class="eyebrow">07 / The Economics</span>
+        <h2 class="vptd-title">Matrix raises your Agent Company's <em>VPTD.</em></h2>
+        <div class="formula" aria-label="VPTD equals value divided by token cost">
+          <span>VPTD</span>
+          <span>=</span>
+          <span class="fraction"><span>V</span><span>Ct</span></span>
+        </div>
+        <p>V is the value an agent ships; Ct is the token dollars it spends to get there.</p>
+        <p style="margin-top:20px;">Matrix turns token spend into shipped value. VPTD is the Agent Company scorecard.</p>
+      </div>
+    </section>
+
+    <section id="deploy" class="section deploy">
+      <div class="container">
+        <span class="eyebrow">08 / Deploy</span>
+        <h2 class="deploy-title">Welcome to the age of<br /><em>agent companies.</em></h2>
+        <a class="download-pill" href="https://download.matrix.build/">
+          <svg class="apple-mark" viewBox="0 0 24 28" aria-hidden="true"><path d="M19.2 14.8c0-3.1 2.6-4.6 2.8-4.8-1.5-2.2-3.7-2.5-4.5-2.6-1.9-.2-3.7 1.1-4.7 1.1s-2.5-1.1-4.1-1.1c-2.1 0-4.1 1.2-5.2 3.2-2.2 3.8-.6 9.5 1.6 12.6 1.1 1.5 2.3 3.2 4 3.1 1.6-.1 2.2-1 4.1-1s2.5 1 4.1 1c1.7 0 2.8-1.5 3.9-3.1 1.2-1.8 1.7-3.5 1.7-3.6-.1-.1-3.7-1.5-3.7-4.8ZM16.2 5.4c.9-1.1 1.5-2.6 1.3-4.1-1.3.1-2.9.9-3.8 1.9-.8 1-1.5 2.5-1.3 4 1.4.1 2.9-.7 3.8-1.8Z" /></svg>
+          Download Matrix for macOS
+        </a>
+        <p class="hero-note">Matrix runs on Mac today.<br />Web app coming soon.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const language = document.querySelector(".language");
+    const languageButton = language.querySelector("button");
+    languageButton.addEventListener("click", () => {
+      const open = language.classList.toggle("is-open");
+      languageButton.setAttribute("aria-expanded", String(open));
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!language.contains(event.target)) {
+        language.classList.remove("is-open");
+        languageButton.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    const setNavTone = () => {
+      document.body.classList.toggle("is-light-nav", window.scrollY > window.innerHeight * 0.82);
+    };
+    setNavTone();
+    window.addEventListener("scroll", setNavTone, { passive: true });
+
+    const tabs = [...document.querySelectorAll("[data-case-tab]")];
+    const panels = [...document.querySelectorAll("[data-case-panel]")];
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const id = tab.dataset.caseTab;
+        tabs.forEach((item) => item.classList.toggle("active", item === tab));
+        panels.forEach((panel) => panel.classList.toggle("active", panel.dataset.casePanel === id));
+      });
+    });
+  </script>
+</body>
+</html>
