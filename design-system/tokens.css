@@ -1,0 +1,26 @@
+:root {
+  --color-primary: rgb(233, 233, 234);
+  --color-secondary: rgba(0, 0, 0, 0);
+  --font-heading: louize;
+  --font-body: louize;
+  --space-1: 2.5px;
+  --space-2: 4px;
+  --space-3: 4.02031px;
+  --space-4: 5.066px;
+  --space-5: 5.99027px;
+  --space-6: 6px;
+  --space-7: 7.616px;
+  --space-8: 8px;
+  --space-9: 8.1px;
+  --space-10: 9.0055px;
+  --space-11: 10px;
+  --space-12: 12px;
+  --space-13: 16px;
+  --space-14: 17.195px;
+  --space-15: 20px;
+  --space-16: 24px;
+  --space-17: 96px;
+  --space-18: 120px;
+  --space-19: 144px;
+  --space-20: 176px;
+}

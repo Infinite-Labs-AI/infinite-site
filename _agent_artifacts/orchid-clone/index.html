@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orchid, your personal assistant</title>
+  <meta name="description" content="Orchid is a personal assistant that lives in your messages. It connects your tools, automates your workflows, and handles the busywork so you can focus on what matters." />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#f7f7f7" />
+  <link rel="canonical" href="https://orchid.ai/" />
+  <link rel="preload" as="image" href="../../assets/orchid/branded/orchid-icon-3d.png" />
+  <link rel="preload" as="image" href="../../assets/orchid/branded/aruba.webp" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Orchid, your personal assistant" />
+  <meta property="og:description" content="Orchid is a personal assistant that lives in your messages. It connects your tools, automates your workflows, and handles the busywork so you can focus on what matters." />
+  <meta property="og:image" content="../../assets/orchid/branded/cta-twilight.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <style>
+    :root {
+      --paper: #f7f7f7;
+      --paper-soft: #fbfbfb;
+      --ink: #07132a;
+      --ink-soft: rgba(7, 19, 42, 0.72);
+      --ink-muted: rgba(7, 19, 42, 0.48);
+      --line: rgba(7, 19, 42, 0.13);
+      --blue: #1697ff;
+      --green: #2ed044;
+      --bubble: #e9e9ea;
+      --shadow: 0 22px 70px rgba(7, 19, 42, 0.12);
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --max: 1200px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--paper);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .site-header {
+      position: absolute;
+      z-index: 50;
+      inset: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px clamp(20px, 7.8vw, 120px);
+      background: linear-gradient(180deg, rgba(247, 247, 247, 0.92), rgba(247, 247, 247, 0));
+      pointer-events: none;
+    }
+
+    .brand,
+    .nav,
+    .header-actions,
+    .menu-button {
+      pointer-events: auto;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 25px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(24px, 3.2vw, 56px);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav a {
+      border-radius: 11px;
+      padding: 9px 14px;
+      color: var(--ink-soft);
+      font-size: 14px;
+      line-height: 1;
+      transition: background 160ms ease, color 160ms ease;
+    }
+
+    .nav a:hover {
+      background: rgba(7, 19, 42, 0.055);
+      color: var(--ink);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      border: 1px solid rgba(7, 19, 42, 0.11);
+      border-radius: 999px;
+      padding: 0 14px;
+      background: rgba(255, 255, 255, 0.64);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.72) inset;
+      backdrop-filter: blur(18px);
+      transition: transform 160ms ease, background 160ms ease, opacity 160ms ease;
+      white-space: nowrap;
+    }
+
+    .pill:hover {
+      transform: translateY(-1px);
+      background: #fff;
+    }
+
+    .pill-dark {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .pill-dark:hover {
+      background: #0b1830;
+    }
+
+    .message-dot {
+      width: 19px;
+      height: 19px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #56ee65, #13bd25);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .message-dot::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 11px;
+      height: 9px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .menu-button {
+      display: none;
+      width: 38px;
+      height: 38px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(7, 19, 42, 0.11);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+      cursor: pointer;
+      backdrop-filter: blur(16px);
+    }
+
+    .mobile-panel {
+      position: fixed;
+      z-index: 45;
+      top: 68px;
+      right: 16px;
+      left: 16px;
+      display: none;
+      padding: 12px;
+      border: 1px solid rgba(7, 19, 42, 0.1);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .mobile-panel.is-open {
+      display: grid;
+      gap: 6px;
+    }
+
+    .mobile-panel a {
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--ink-soft);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .mobile-panel a:hover {
+      background: rgba(7, 19, 42, 0.055);
+      color: var(--ink);
+    }
+
+    main {
+      overflow: clip;
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      min-height: 1280px;
+      padding: 142px 24px 170px;
+      text-align: center;
+    }
+
+    .new-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 34px;
+      margin-bottom: 34px;
+      border: 1px solid rgba(7, 19, 42, 0.11);
+      border-radius: 999px;
+      padding: 0 12px 0 7px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 8px 30px rgba(7, 19, 42, 0.07);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .new-badge strong {
+      display: inline-flex;
+      align-items: center;
+      height: 21px;
+      border-radius: 999px;
+      padding: 0 8px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+    }
+
+    .hero h1,
+    .section-copy h2,
+    .quote,
+    .cta-panel h2,
+    .footer-heading {
+      font-family: var(--serif);
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .hero h1 {
+      width: min(100%, 820px);
+      color: var(--ink);
+      font-size: clamp(52px, 5.3vw, 76px);
+      line-height: 0.98;
+    }
+
+    .hero h1 em {
+      display: block;
+      font-style: italic;
+      font-weight: 600;
+    }
+
+    .hero-subtitle {
+      width: min(100%, 550px);
+      margin: 32px auto 0;
+      color: var(--ink-soft);
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .hero-cta {
+      margin-top: 30px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 12px 32px rgba(7, 19, 42, 0.08);
+    }
+
+    .phone-wrap {
+      position: relative;
+      width: min(100%, 450px);
+      margin-top: 86px;
+    }
+
+    .petals {
+      position: absolute;
+      top: -48px;
+      right: -86px;
+      left: -86px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .petal-cluster {
+      display: flex;
+      gap: 14px;
+    }
+
+    .petal {
+      display: block;
+      width: 24px;
+      height: 42px;
+      border-radius: 50% 50% 50% 8px;
+      background: #d8d4d5;
+      opacity: 0.9;
+      transform: rotate(-52deg);
+    }
+
+    .petal:nth-child(2) {
+      transform: translateY(30px) rotate(-70deg);
+    }
+
+    .petal-cluster.right .petal {
+      transform: rotate(52deg) scaleX(-1);
+    }
+
+    .petal-cluster.right .petal:nth-child(2) {
+      transform: translateY(30px) rotate(70deg) scaleX(-1);
+    }
+
+    .phone {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 0.49;
+      border: 10px solid #111;
+      border-radius: 64px;
+      background: #fdfdfd;
+      box-shadow:
+        0 0 0 3px #6b6b6b,
+        0 0 0 6px #d7d7d7,
+        0 32px 72px rgba(7, 19, 42, 0.22);
+      overflow: hidden;
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      z-index: 3;
+      top: 20px;
+      left: 50%;
+      width: 116px;
+      height: 34px;
+      border-radius: 999px;
+      background: #050505;
+      transform: translateX(-50%);
+    }
+
+    .phone::after {
+      content: "";
+      position: absolute;
+      z-index: 4;
+      top: 30px;
+      left: calc(50% + 36px);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 60% 42%, #1b4ea5, #07101e 64%);
+    }
+
+    .side-button {
+      position: absolute;
+      z-index: 2;
+      width: 4px;
+      border-radius: 999px;
+      background: #7f7f7f;
+      box-shadow: inset 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .side-button.left-one {
+      top: 190px;
+      left: -14px;
+      height: 44px;
+    }
+
+    .side-button.left-two {
+      top: 260px;
+      left: -14px;
+      height: 72px;
+    }
+
+    .side-button.left-three {
+      top: 350px;
+      left: -14px;
+      height: 72px;
+    }
+
+    .side-button.right-one {
+      top: 290px;
+      right: -14px;
+      height: 90px;
+    }
+
+    .phone-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 28px 24px 20px;
+      color: #080808;
+    }
+
+    .status {
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      font-size: 21px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #111;
+    }
+
+    .signal {
+      display: grid;
+      grid-template-columns: repeat(4, 3px);
+      align-items: end;
+      gap: 2px;
+      height: 14px;
+    }
+
+    .signal i {
+      display: block;
+      width: 3px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .signal i:nth-child(1) { height: 5px; }
+    .signal i:nth-child(2) { height: 8px; }
+    .signal i:nth-child(3) { height: 11px; }
+    .signal i:nth-child(4) { height: 14px; }
+
+    .battery {
+      width: 25px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-radius: 3px;
+      position: relative;
+    }
+
+    .battery::before {
+      content: "";
+      position: absolute;
+      inset: 2px 5px 2px 2px;
+      border-radius: 1px;
+      background: currentColor;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      right: -5px;
+      width: 3px;
+      height: 4px;
+      border-radius: 0 2px 2px 0;
+      background: currentColor;
+    }
+
+    .chat-head {
+      display: grid;
+      grid-template-columns: 56px 1fr 56px;
+      align-items: center;
+      gap: 10px;
+      margin-top: 40px;
+    }
+
+    .chat-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      background: rgba(248, 248, 248, 0.92);
+      box-shadow: 0 8px 18px rgba(7, 19, 42, 0.05);
+      color: #111;
+      font-weight: 900;
+    }
+
+    .chat-control.badge::after {
+      content: "2";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: #050505;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .assistant-id {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .assistant-icon {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #2b0809;
+      overflow: hidden;
+      box-shadow: 0 10px 26px rgba(7, 19, 42, 0.13);
+    }
+
+    .assistant-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .assistant-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .assistant-name::after {
+      content: ">";
+      color: rgba(0, 0, 0, 0.45);
+      font-weight: 800;
+    }
+
+    .chat-date {
+      margin: 38px 0 12px;
+      color: rgba(0, 0, 0, 0.34);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .messages {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .bubble {
+      width: fit-content;
+      max-width: 75%;
+      border-radius: 20px;
+      padding: 11px 14px;
+      font-size: 17px;
+      line-height: 1.18;
+      text-align: left;
+    }
+
+    .bubble.user {
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .bubble.assistant {
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+      background: var(--bubble);
+      color: #111;
+    }
+
+    .travel-stack {
+      position: relative;
+      align-self: flex-start;
+      width: 275px;
+      height: 192px;
+      margin-top: 4px;
+    }
+
+    .travel-stack img {
+      position: absolute;
+      width: 190px;
+      height: 176px;
+      border-radius: 20px;
+      object-fit: cover;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .travel-stack img:nth-child(1) {
+      z-index: 3;
+      left: 0;
+      top: 0;
+      width: 230px;
+    }
+
+    .travel-stack img:nth-child(2) {
+      z-index: 2;
+      right: 12px;
+      top: 10px;
+      transform: rotate(4deg);
+    }
+
+    .travel-stack img:nth-child(3) {
+      z-index: 1;
+      right: 0;
+      top: 18px;
+      transform: rotate(8deg);
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .plus {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #f4f4f4;
+      color: #222;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .input-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 38px;
+      border-radius: 999px;
+      padding: 0 8px 0 17px;
+      background: #f4f4f4;
+      color: rgba(0, 0, 0, 0.18);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .input-pill span:last-child {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #dedede;
+      color: #6f6f6f;
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .testimonial {
+      display: grid;
+      justify-items: center;
+      min-height: 980px;
+      padding: 90px 24px 190px;
+      text-align: center;
+    }
+
+    .testimonial img {
+      width: 78px;
+      height: 78px;
+      border-radius: 24px;
+      object-fit: cover;
+      box-shadow: 0 26px 80px rgba(7, 19, 42, 0.24);
+    }
+
+    .quote {
+      width: min(100%, 870px);
+      margin-top: 55px;
+      color: var(--ink);
+      font-size: clamp(33px, 4vw, 58px);
+      line-height: 1.34;
+    }
+
+    .quote-name {
+      margin-top: 42px;
+      color: var(--ink-muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .features {
+      width: min(calc(100% - 48px), var(--max));
+      margin: 0 auto;
+      display: grid;
+      gap: 150px;
+      padding-bottom: 150px;
+    }
+
+    .feature-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+      align-items: center;
+      gap: clamp(48px, 7vw, 105px);
+    }
+
+    .feature-row.reverse {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    }
+
+    .section-copy h2 {
+      color: var(--ink);
+      font-size: clamp(30px, 3.1vw, 45px);
+      line-height: 1.05;
+    }
+
+    .section-copy p {
+      width: min(100%, 540px);
+      margin-top: 20px;
+      color: var(--ink-soft);
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .benefits {
+      display: grid;
+      margin-top: 46px;
+      border-top: 1px solid var(--line);
+    }
+
+    .benefit {
+      display: grid;
+      grid-template-columns: 25px 1fr;
+      align-items: center;
+      gap: 16px;
+      min-height: 54px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .benefit svg {
+      width: 20px;
+      height: 20px;
+      color: rgba(7, 19, 42, 0.62);
+    }
+
+    .section-copy .pill {
+      margin-top: 40px;
+    }
+
+    .media-card {
+      position: relative;
+      min-height: 430px;
+      overflow: hidden;
+      border-radius: 24px;
+      background: #172b48;
+      box-shadow: none;
+      isolation: isolate;
+    }
+
+    .media-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: center / cover no-repeat var(--bg);
+      filter: saturate(1.04);
+      transform: scale(1.01);
+    }
+
+    .media-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at 70% 40%, rgba(13, 67, 123, 0.12), rgba(3, 11, 23, 0.26));
+    }
+
+    .floating-logos {
+      position: absolute;
+      inset: 0;
+    }
+
+    .logo-tile,
+    .app-tile {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      border-radius: 17px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+    }
+
+    .logo-tile {
+      width: 56px;
+      height: 56px;
+    }
+
+    .logo-tile.orchid {
+      width: 68px;
+      height: 68px;
+      border-radius: 20px;
+      background: #2b0809;
+    }
+
+    .logo-tile img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
+    .logo-tile.orchid img {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+    }
+
+    .logo-tile:nth-child(1) { top: 10%; left: 15%; }
+    .logo-tile:nth-child(2) { top: 2%; left: 43%; }
+    .logo-tile:nth-child(3) { top: 11%; right: 16%; }
+    .logo-tile:nth-child(4) { top: 34%; left: 9%; }
+    .logo-tile:nth-child(5) { top: 35%; left: 44%; }
+    .logo-tile:nth-child(6) { top: 35%; right: 9%; }
+    .logo-tile:nth-child(7) { bottom: 24%; left: 33%; }
+    .logo-tile:nth-child(8) { bottom: 26%; right: 25%; }
+
+    .prompt-bubble {
+      position: absolute;
+      top: 43%;
+      left: 17%;
+      max-width: 240px;
+      border-radius: 20px 20px 6px 20px;
+      padding: 15px 18px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 18px;
+      line-height: 1.35;
+      text-align: left;
+      box-shadow: 0 20px 44px rgba(0, 83, 180, 0.23);
+    }
+
+    .app-cluster {
+      position: absolute;
+      inset: 0;
+    }
+
+    .app-tile {
+      width: 68px;
+      height: 68px;
+      border-radius: 18px;
+      transform: rotate(var(--r, 0deg));
+    }
+
+    .app-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: inherit;
+    }
+
+    .app-tile:nth-child(1) { top: 37%; left: 27%; --r: -9deg; }
+    .app-tile:nth-child(2) { top: 24%; left: 51%; --r: -8deg; }
+    .app-tile:nth-child(3) { top: 46%; right: 22%; --r: 11deg; }
+    .app-tile:nth-child(4) { top: 55%; left: 39%; --r: 6deg; }
+
+    .notify {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      min-width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      padding: 0 8px;
+      background: #ff3747;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 10px 22px rgba(255, 55, 71, 0.22);
+    }
+
+    .notify.one { top: 34%; right: 15%; }
+    .notify.two { top: 27%; left: 40%; }
+    .notify.three { top: 60%; left: 52%; }
+    .notify.four { top: 20%; right: 34%; }
+
+    .push-notice {
+      position: absolute;
+      top: 43%;
+      left: 8%;
+      right: 8%;
+      display: grid;
+      grid-template-columns: 58px 1fr auto;
+      align-items: center;
+      gap: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 28px;
+      padding: 18px 22px;
+      background: rgba(23, 42, 67, 0.82);
+      color: #fff;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(18px);
+    }
+
+    .push-notice img {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+    }
+
+    .push-title {
+      display: block;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .push-text {
+      display: block;
+      margin-top: 5px;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .push-time {
+      align-self: start;
+      color: rgba(255, 255, 255, 0.54);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .memory-card .memory-text {
+      position: absolute;
+      right: 9%;
+      top: 16%;
+      max-width: 260px;
+      border-radius: 20px 20px 6px 20px;
+      padding: 13px 16px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .memory-card .restaurant {
+      position: absolute;
+      top: 43%;
+      left: 18%;
+      width: 150px;
+      height: 150px;
+      border-radius: 20px;
+      object-fit: cover;
+      box-shadow: 0 20px 44px rgba(0, 0, 0, 0.24);
+    }
+
+    .memory-card .answer {
+      position: absolute;
+      left: 18%;
+      bottom: 14%;
+      max-width: 310px;
+      border-radius: 20px 20px 20px 6px;
+      padding: 14px 17px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #111;
+      font-size: 17px;
+      line-height: 1.25;
+      text-align: left;
+    }
+
+    .separator {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 34px;
+      margin: -48px 0 48px;
+    }
+
+    .separator::before,
+    .separator::after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+    }
+
+    .mini-flower {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .mini-flower span {
+      width: 12px;
+      height: 18px;
+      border-radius: 999px 999px 999px 3px;
+      background: #89919d;
+      transform: rotate(-30deg);
+    }
+
+    .mini-flower span:nth-child(2) { transform: rotate(-12deg); }
+    .mini-flower span:nth-child(3) { transform: rotate(0deg); }
+    .mini-flower span:nth-child(4) { transform: rotate(12deg); }
+    .mini-flower span:nth-child(5) { transform: rotate(30deg); }
+
+    .cta {
+      width: min(calc(100% - 48px), var(--max));
+      margin: 0 auto 108px;
+    }
+
+    .cta-panel {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 470px;
+      overflow: hidden;
+      border-radius: 26px;
+      padding: 60px 24px;
+      background: #172b48;
+      color: #fff;
+      text-align: center;
+      isolation: isolate;
+    }
+
+    .cta-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: url("../../assets/orchid/branded/cta-twilight.webp") center / cover no-repeat;
+      filter: saturate(0.92);
+    }
+
+    .cta-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: rgba(5, 15, 31, 0.36);
+    }
+
+    .cta-panel h2 {
+      font-size: clamp(52px, 7vw, 94px);
+      line-height: 1;
+      color: #fff;
+    }
+
+    .cta-panel .pill {
+      margin-top: 42px;
+      border-color: transparent;
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--ink);
+    }
+
+    .site-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 60px;
+      width: min(calc(100% - 48px), var(--max));
+      margin: 0 auto;
+      padding: 0 0 92px;
+    }
+
+    .footer-nav {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(115px, 1fr));
+      gap: clamp(48px, 7vw, 92px);
+    }
+
+    .footer-group {
+      display: grid;
+      gap: 15px;
+      align-content: start;
+    }
+
+    .footer-heading {
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .footer-group a {
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1;
+      transition: color 160ms ease;
+    }
+
+    .footer-group a:hover {
+      color: var(--ink);
+    }
+
+    @media (max-width: 920px) {
+      .site-header {
+        padding: 16px 20px;
+      }
+
+      .nav,
+      .header-actions {
+        display: none;
+      }
+
+      .menu-button {
+        display: inline-flex;
+      }
+
+      .hero {
+        min-height: 1090px;
+        padding-top: 120px;
+        padding-bottom: 120px;
+      }
+
+      .phone-wrap {
+        width: min(100%, 390px);
+        margin-top: 70px;
+      }
+
+      .testimonial {
+        min-height: 720px;
+        padding-bottom: 120px;
+      }
+
+      .features {
+        gap: 105px;
+        padding-bottom: 110px;
+      }
+
+      .feature-row,
+      .feature-row.reverse {
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+
+      .feature-row.reverse .media-card {
+        order: -1;
+      }
+
+      .media-card {
+        min-height: 390px;
+      }
+
+      .site-footer {
+        display: grid;
+        gap: 50px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .brand {
+        font-size: 22px;
+      }
+
+      .brand-mark {
+        width: 25px;
+        height: 25px;
+      }
+
+      .hero {
+        min-height: 980px;
+        padding-right: 18px;
+        padding-left: 18px;
+      }
+
+      .new-badge {
+        margin-bottom: 24px;
+      }
+
+      .hero h1 {
+        font-size: 46px;
+      }
+
+      .hero-subtitle {
+        margin-top: 24px;
+        font-size: 16px;
+      }
+
+      .phone-wrap {
+        width: min(100%, 316px);
+      }
+
+      .petals {
+        right: -34px;
+        left: -34px;
+      }
+
+      .phone {
+        border-width: 8px;
+        border-radius: 48px;
+      }
+
+      .phone::before {
+        top: 16px;
+        width: 86px;
+        height: 27px;
+      }
+
+      .phone::after {
+        top: 24px;
+        left: calc(50% + 27px);
+        width: 9px;
+        height: 9px;
+      }
+
+      .phone-screen {
+        padding: 24px 17px 16px;
+      }
+
+      .status {
+        font-size: 16px;
+      }
+
+      .chat-head {
+        grid-template-columns: 44px 1fr 44px;
+        margin-top: 32px;
+      }
+
+      .chat-control {
+        width: 38px;
+        height: 38px;
+      }
+
+      .assistant-icon {
+        width: 48px;
+        height: 48px;
+      }
+
+      .assistant-id {
+        font-size: 16px;
+      }
+
+      .chat-date {
+        margin-top: 28px;
+      }
+
+      .bubble {
+        max-width: 82%;
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
+      .travel-stack {
+        width: 215px;
+        height: 154px;
+      }
+
+      .travel-stack img,
+      .travel-stack img:nth-child(1) {
+        width: 175px;
+        height: 140px;
+      }
+
+      .testimonial {
+        min-height: 620px;
+        padding-top: 50px;
+      }
+
+      .quote {
+        margin-top: 40px;
+        font-size: 32px;
+      }
+
+      .features,
+      .cta,
+      .site-footer {
+        width: min(calc(100% - 32px), var(--max));
+      }
+
+      .media-card {
+        min-height: 320px;
+        border-radius: 20px;
+      }
+
+      .logo-tile {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+      }
+
+      .logo-tile.orchid {
+        width: 60px;
+        height: 60px;
+      }
+
+      .prompt-bubble {
+        left: 12%;
+        max-width: 210px;
+        font-size: 16px;
+      }
+
+      .push-notice {
+        left: 6%;
+        right: 6%;
+        grid-template-columns: 45px 1fr;
+        gap: 12px;
+        padding: 15px;
+      }
+
+      .push-time {
+        display: none;
+      }
+
+      .push-title {
+        font-size: 17px;
+      }
+
+      .push-text {
+        font-size: 13px;
+      }
+
+      .memory-card .restaurant {
+        width: 112px;
+        height: 112px;
+      }
+
+      .memory-card .memory-text,
+      .memory-card .answer {
+        font-size: 14px;
+      }
+
+      .separator {
+        gap: 18px;
+        margin: -28px 0 34px;
+      }
+
+      .cta-panel {
+        min-height: 370px;
+      }
+
+      .cta-panel h2 {
+        font-size: 48px;
+      }
+
+      .footer-nav {
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" aria-label="Site header">
+    <div class="header-left">
+      <a class="brand" href="/" aria-label="Orchid home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M11.2 5.1c0 4.4 3.2 7.3 4.1 8 .4.3.9.3 1.3 0 .9-.7 4.2-3.6 4.2-8C20.8 1.9 19.2.4 16 .4s-4.8 1.5-4.8 4.7Z" fill="currentColor"/>
+          <path d="M24.6 8.6c-4.2 1.4-6 5.5-6.4 6.7-.1.4 0 .8.4 1 1 .7 4.8 2.9 9 1.5 3-1 3.9-2.9 2.9-5.8-.9-3-2.9-4.4-5.9-3.4Z" fill="currentColor"/>
+          <path d="M25.9 22.4c-2.6-3.6-7-4.1-8.2-4.1-.4 0-.8.3-.9.7-.3 1.2-1.2 5.6 1.4 9.2 1.8 2.5 3.9 2.8 6.4 1 2.5-1.9 3.1-4.2 1.3-6.8Z" fill="currentColor"/>
+          <path d="M14.2 28.2c2.6-3.6 1.7-8 1.4-9.2-.1-.4-.5-.7-.9-.7-1.2.1-5.6.5-8.2 4.1-1.8 2.6-1.2 4.9 1.3 6.8 2.5 1.8 4.6 1.5 6.4-1Z" fill="currentColor"/>
+          <path d="M4.4 17.8c4.2 1.4 8-.8 9-1.5.4-.2.5-.6.4-1-.4-1.2-2.2-5.3-6.4-6.7-3-1-5 .4-5.9 3.4-1 2.9-.1 4.8 2.9 5.8Z" fill="currentColor"/>
+        </svg>
+        <span>Orchid</span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#enterprise">Enterprise</a>
+        <a href="#blog">Blog</a>
+        <a href="#case-studies">Case Studies</a>
+        <a href="#contact">Contact Us</a>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <a class="pill" href="#login">Login</a>
+      <a class="pill pill-dark" href="#start">Get Started</a>
+    </div>
+    <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <nav class="mobile-panel" id="mobile-menu" aria-label="Mobile navigation">
+    <a href="#enterprise">Enterprise</a>
+    <a href="#blog">Blog</a>
+    <a href="#case-studies">Case Studies</a>
+    <a href="#contact">Contact Us</a>
+    <a href="#login">Login</a>
+    <a href="#start">Get Started</a>
+  </nav>
+
+  <main>
+    <section class="hero" id="start" aria-labelledby="hero-title">
+      <div>
+        <div class="new-badge"><strong>NEW</strong><span>Orchid x World Cup</span></div>
+        <h1 id="hero-title">Meet Orchid, your <em>personal assistant.</em></h1>
+        <p class="hero-subtitle">Orchid is a personal assistant that helps you stay organized, find information, and get things done. All through messages.</p>
+        <a class="pill hero-cta" href="sms:+14152999916"><span class="message-dot" aria-hidden="true"></span>Get Started</a>
+      </div>
+
+      <div class="phone-wrap" aria-label="Orchid iMessage conversation preview">
+        <div class="petals" aria-hidden="true">
+          <span class="petal-cluster"><i class="petal"></i><i class="petal"></i></span>
+          <span class="petal-cluster right"><i class="petal"></i><i class="petal"></i></span>
+        </div>
+        <div class="phone">
+          <i class="side-button left-one"></i>
+          <i class="side-button left-two"></i>
+          <i class="side-button left-three"></i>
+          <i class="side-button right-one"></i>
+          <div class="phone-screen">
+            <div class="status">
+              <span>9:41</span>
+              <span class="status-icons" aria-hidden="true">
+                <span class="signal"><i></i><i></i><i></i><i></i></span>
+                <span class="battery"></span>
+              </span>
+            </div>
+            <div class="chat-head">
+              <span class="chat-control badge" aria-hidden="true"></span>
+              <span class="assistant-id"><span class="assistant-icon"><img src="../../assets/orchid/branded/orchid-icon-3d.png" alt="" /></span><span class="assistant-name">Orchid</span></span>
+              <span class="chat-control" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path d="M5 8.5A2.5 2.5 0 0 1 7.5 6h6A2.5 2.5 0 0 1 16 8.5v7a2.5 2.5 0 0 1-2.5 2.5h-6A2.5 2.5 0 0 1 5 15.5v-7Zm11 2.3 4-2.4v7.2l-4-2.4v-2.4Z" fill="currentColor"/>
+                </svg>
+              </span>
+            </div>
+            <div class="chat-date">Today 8:05 AM</div>
+            <div class="messages">
+              <p class="bubble user">ok i need aruba. like soon</p>
+              <p class="bubble assistant">say less. found a villa in palm beach. private pool, 3 min from the sand.</p>
+              <div class="travel-stack" aria-hidden="true">
+                <img src="../../assets/orchid/branded/aruba.webp" alt="" />
+                <img src="../../assets/orchid/branded/aruba_party.webp" alt="" />
+                <img src="../../assets/orchid/branded/beach.jpeg" alt="" />
+              </div>
+              <p class="bubble assistant">$240/night, free cancellation. flights are $380 round trip, thursday to tuesday.</p>
+              <p class="bubble assistant">done. it's on your calendar. made you an itinerary too.</p>
+            </div>
+            <div class="composer" aria-hidden="true">
+              <span class="plus">+</span>
+              <span class="input-pill"><span>iMessage</span><span>^</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="testimonial" aria-label="Customer quote">
+      <img src="../../assets/orchid/testimonials/maha.webp" alt="Maha" loading="lazy" />
+      <p class="quote">"Orchid checks in on me every morning and hypes me up before big days. Vitamins, workouts, my mom's birthday. It never drops the ball, so I don't either."</p>
+      <p class="quote-name">- Maha</p>
+    </section>
+
+    <section class="features" aria-label="Orchid features">
+      <div class="feature-row" id="enterprise">
+        <div class="section-copy">
+          <h2>Connect with your stack.</h2>
+          <p>Orchid learns the way you work, with your tools. Not the other way around.</p>
+          <div class="benefits">
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1.2 1.2M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1.2-1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>Connect once, it just works</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+              <span>Pulls from all your apps</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10M7 17h10M12 7v10M7 12h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>A hundred tools, one assistant</span>
+            </div>
+          </div>
+          <a class="pill pill-dark" href="#start">Get Started</a>
+        </div>
+        <div class="media-card" style="--bg: url('../../assets/orchid/branded/coffee-and-phones.webp')" aria-label="Connected tools illustration">
+          <div class="floating-logos">
+            <span class="logo-tile"><img src="../../assets/orchid/logos/providers/gmail.svg" alt="Gmail" /></span>
+            <span class="logo-tile"><img src="../../assets/orchid/logos/providers/google-calendar.png" alt="Google Calendar" /></span>
+            <span class="logo-tile"><img src="../../assets/orchid/logos/providers/slack.png" alt="Slack" /></span>
+            <span class="logo-tile"><img src="../../assets/orchid/logos/providers/hubspot.png" alt="HubSpot" /></span>
+            <span class="logo-tile orchid"><img src="../../assets/orchid/branded/orchid-icon-3d.png" alt="Orchid" /></span>
+            <span class="logo-tile"><img src="../../assets/orchid/logos/providers/notion.png" alt="Notion" /></span>
+            <span class="logo-tile"><img src="../../assets/orchid/logos/providers/dropbox.png" alt="Dropbox" /></span>
+            <span class="logo-tile"><img src="../../assets/orchid/logos/providers/figma.svg" alt="Figma" /></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="separator" aria-hidden="true">
+        <span class="mini-flower"><span></span><span></span><span></span><span></span><span></span></span>
+      </div>
+
+      <div class="feature-row reverse" id="case-studies">
+        <div class="media-card" style="--bg: url('../../assets/orchid/branded/desk-orchid-night.webp')" aria-label="Habits automation illustration">
+          <p class="prompt-bubble">be my calorie tracker, i'll send you pics</p>
+        </div>
+        <div class="section-copy">
+          <h2>Automate your life using habits.</h2>
+          <p>Set up any habit just by asking. Anything from a daily news digest to a calorie tracker you text pictures of.</p>
+          <div class="benefits">
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2v5h-5M7 22v-5h5M19 9a7 7 0 0 0-12-3M5 15a7 7 0 0 0 12 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>Set it once, it repeats</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v5M12 16v5M4.2 7.5l4.3 2.5M15.5 14l4.3 2.5M19.8 7.5 15.5 10M8.5 14l-4.3 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>Your routines, on autopilot</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A8 8 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              <span>Runs while you sleep</span>
+            </div>
+          </div>
+          <a class="pill pill-dark" href="#start">Get Started</a>
+        </div>
+      </div>
+
+      <div class="separator" aria-hidden="true">
+        <span class="mini-flower"><span></span><span></span><span></span><span></span><span></span></span>
+      </div>
+
+      <div class="feature-row">
+        <div class="section-copy">
+          <h2>Stay on top of admin.</h2>
+          <p>Bills, bookings, follow ups, forms. The boring stuff still gets done, you just stop being the one doing it.</p>
+          <div class="benefits">
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v11H4V7Zm0 0 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              <span>Inbox triaged, replies drafted</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v4M17 3v4M4 8h16v12H4V8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>Your calendar, always in order</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v5l-4 2v-7L4 5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              <span>The busywork, off your plate</span>
+            </div>
+          </div>
+          <a class="pill pill-dark" href="#start">Get Started</a>
+        </div>
+        <div class="media-card" style="--bg: url('../../assets/orchid/branded/day-not-list-photo-01.webp')" aria-label="Admin app notifications">
+          <div class="app-cluster">
+            <span class="app-tile"><img src="../../assets/orchid/branded/app-icons/mail.webp" alt="Mail" /></span>
+            <span class="app-tile"><img src="../../assets/orchid/branded/app-icons/calendar.webp" alt="Calendar" /></span>
+            <span class="app-tile"><img src="../../assets/orchid/branded/app-icons/phone.webp" alt="Phone" /></span>
+            <span class="app-tile"><img src="../../assets/orchid/branded/app-icons/messages.webp" alt="Messages" /></span>
+            <span class="notify one">1</span>
+            <span class="notify two">21</span>
+            <span class="notify three">28</span>
+            <span class="notify four">4</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="separator" aria-hidden="true">
+        <span class="mini-flower"><span></span><span></span><span></span><span></span><span></span></span>
+      </div>
+
+      <div class="feature-row reverse">
+        <div class="media-card" style="--bg: url('../../assets/orchid/branded/desk-orchid-night.webp')" aria-label="Flight check-in reminder notification">
+          <div class="push-notice">
+            <img src="../../assets/orchid/branded/orchid-icon-3d.png" alt="" />
+            <span>
+              <span class="push-title">Orchid</span>
+              <span class="push-text">heads up, your flight check-in opens in an hour. want me to grab your usual aisle seat?</span>
+            </span>
+            <span class="push-time">now</span>
+          </div>
+        </div>
+        <div class="section-copy">
+          <h2>Never let anything slip through the cracks.</h2>
+          <p>The starred email, the deadline, your mom's birthday. Orchid catches it before you even remember to worry.</p>
+          <div class="benefits">
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8ZM10 20h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>A nudge right when it matters</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v4M17 3v4M4 8h16v12H4V8Zm5 6 2 2 4-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>Nothing slips through the cracks</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12v8H4v-8M2 7h20v5H2V7Zm10 13V7M12 7H8a2 2 0 1 1 2-2c0 2-2 2-2 2M12 7h4a2 2 0 1 0-2-2c0 2 2 2 2 2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+              <span>The thoughtful thing, on time</span>
+            </div>
+          </div>
+          <a class="pill pill-dark" href="#start">Get Started</a>
+        </div>
+      </div>
+
+      <div class="separator" aria-hidden="true">
+        <span class="mini-flower"><span></span><span></span><span></span><span></span><span></span></span>
+      </div>
+
+      <div class="feature-row">
+        <div class="section-copy" id="blog">
+          <h2>Your second brain.</h2>
+          <p>The wine you loved, your kid's allergy, where you parked. Tell Orchid once and it never forgets.</p>
+          <div class="benefits">
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a8 8 0 0 0-4 14.9V21h8v-3.1A8 8 0 0 0 12 3Zm-3 8h6M10 15h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Never forgets a detail</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h4l2-7 4 14 2-7h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Recalls it the second you need it</span>
+            </div>
+            <div class="benefit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+              <span>Remembers what matters to you</span>
+            </div>
+          </div>
+          <a class="pill pill-dark" href="#start">Get Started</a>
+        </div>
+        <div class="media-card memory-card" style="--bg: url('../../assets/orchid/branded/day-not-list-photo-02.webp')" aria-label="Orchid memory recall conversation">
+          <p class="memory-text">what was that restaurant we loved for our anniversary?</p>
+          <img class="restaurant" src="../../assets/orchid/branded/tartine.jpeg" alt="Tartine restaurant" />
+          <p class="answer">Tartine, last march. you had the morning bun.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta" aria-labelledby="cta-title">
+      <div class="cta-panel">
+        <div>
+          <h2 id="cta-title">Meet your new assistant.</h2>
+          <a class="pill" href="#start"><span class="message-dot" aria-hidden="true"></span>Get Started</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="contact">
+    <a class="brand" href="/" aria-label="Orchid home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M11.2 5.1c0 4.4 3.2 7.3 4.1 8 .4.3.9.3 1.3 0 .9-.7 4.2-3.6 4.2-8C20.8 1.9 19.2.4 16 .4s-4.8 1.5-4.8 4.7Z" fill="currentColor"/>
+        <path d="M24.6 8.6c-4.2 1.4-6 5.5-6.4 6.7-.1.4 0 .8.4 1 1 .7 4.8 2.9 9 1.5 3-1 3.9-2.9 2.9-5.8-.9-3-2.9-4.4-5.9-3.4Z" fill="currentColor"/>
+        <path d="M25.9 22.4c-2.6-3.6-7-4.1-8.2-4.1-.4 0-.8.3-.9.7-.3 1.2-1.2 5.6 1.4 9.2 1.8 2.5 3.9 2.8 6.4 1 2.5-1.9 3.1-4.2 1.3-6.8Z" fill="currentColor"/>
+        <path d="M14.2 28.2c2.6-3.6 1.7-8 1.4-9.2-.1-.4-.5-.7-.9-.7-1.2.1-5.6.5-8.2 4.1-1.8 2.6-1.2 4.9 1.3 6.8 2.5 1.8 4.6 1.5 6.4-1Z" fill="currentColor"/>
+        <path d="M4.4 17.8c4.2 1.4 8-.8 9-1.5.4-.2.5-.6.4-1-.4-1.2-2.2-5.3-6.4-6.7-3-1-5 .4-5.9 3.4-1 2.9-.1 4.8 2.9 5.8Z" fill="currentColor"/>
+      </svg>
+      <span>Orchid</span>
+    </a>
+    <div class="footer-nav">
+      <div class="footer-group">
+        <h3 class="footer-heading">Social</h3>
+        <a href="https://x.com/orchid_hq">X (formerly Twitter)</a>
+        <a href="https://www.linkedin.com/company/mail0/">LinkedIn</a>
+        <a href="https://discord.gg/orchid">Discord</a>
+      </div>
+      <div class="footer-group">
+        <h3 class="footer-heading">Company</h3>
+        <a href="#blog">Blog</a>
+        <a href="#brand">Brand</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact Us</a>
+        <a href="#terms">Terms of Service</a>
+        <a href="#privacy">Privacy Policy</a>
+      </div>
+      <div class="footer-group">
+        <h3 class="footer-heading">Tools</h3>
+        <a href="https://mail.google.com">Gmail</a>
+        <a href="https://calendar.google.com">Google Calendar</a>
+        <a href="https://drive.google.com">Google Drive</a>
+        <a href="https://granola.ai">Granola</a>
+        <a href="https://sentry.io">Sentry</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const menuButton = document.querySelector(".menu-button");
+    const mobilePanel = document.querySelector("#mobile-menu");
+
+    menuButton?.addEventListener("click", () => {
+      const isOpen = mobilePanel.classList.toggle("is-open");
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    mobilePanel?.addEventListener("click", (event) => {
+      if (event.target.matches("a")) {
+        mobilePanel.classList.remove("is-open");
+        menuButton?.setAttribute("aria-expanded", "false");
+      }
+    });
+  </script>
+</body>
+</html>
