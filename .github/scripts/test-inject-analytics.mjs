@@ -34,6 +34,7 @@ try {
 
   assert.match(html, /posthog\.init\("phc_test_project_token"/);
   assert.match(html, /api_host: "https:\/\/eu\.i\.posthog\.com"/);
+  assert.match(html, /posthog\.register\(\{ platform: "website" \}\)/);
 
   assert.match(html, /https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-TEST1234/);
   assert.match(html, /gtag\("config", "G-TEST1234"\)/);

@@ -75,6 +75,7 @@ function posthogSnippet({ apiHost, projectToken }) {
       api_host: ${JSON.stringify(apiHost)},
       defaults: "2026-01-30",
     });
+    posthog.register({ platform: "website" });
   </script>`;
 }
 
