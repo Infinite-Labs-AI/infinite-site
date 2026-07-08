@@ -30,7 +30,7 @@ jobs:
 
       - name: Prepare site
         env:
-          GOOGLE_ANALYTICS_TAG_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_TAG_ID }}
+          GOOGLE_ANALYTICS_TAG_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_TAG_ID || 'G-JE3BZS61FZ' }}
           META_PIXEL_ID: ${{ vars.VITE_META_PIXEL_ID }}
           POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           POSTHOG_PROJECT_TOKEN: ${{ vars.VITE_POSTHOG_PROJECT_TOKEN }}
