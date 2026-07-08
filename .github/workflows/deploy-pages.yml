@@ -38,11 +38,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          rm -rf dist
-          mkdir -p dist
-          cp -R index.html privacy terms assets fonts favicon-16.png favicon-32.png apple-touch-icon.png logo.png LICENSE dist/
-
-          node .github/scripts/inject-analytics.cjs
+          node scripts/prepare-static-deploy.cjs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
