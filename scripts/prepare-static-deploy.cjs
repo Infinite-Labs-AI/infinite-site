@@ -5,7 +5,7 @@ const repoRoot = process.cwd();
 const distDir = path.join(repoRoot, "dist");
 
 process.env.GOOGLE_ANALYTICS_TAG_ID ||= "G-JE3BZS61FZ";
-process.env.POSTHOG_API_HOST ||= "https://us.i.posthog.com";
+process.env.POSTHOG_API_HOST ||= "https://eu.i.posthog.com";
 process.env.POSTHOG_PROJECT_TOKEN ||=
   "phc_wUuv4hpsa4jfi6fNSzWU9t3JSKneFHusRunsYenhjndJ";
 
