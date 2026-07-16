@@ -61,10 +61,26 @@ import process from "node:process";
 // !! because the guardrail must survive a full site replacement: the build   !!
 // !! mechanism and file layout are expected to change, but the set of public !!
 // !! pages we care about is a human decision. When you add or remove a real  !!
-// !! public page, UPDATE THIS LIST. Today it mirrors `deployEntries` in      !!
-// !! scripts/prepare-static-deploy.cjs (index.html, privacy, terms).         !!
+// !! public page, UPDATE THIS LIST.                                          !!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-const PAGES = ["/", "/privacy/", "/terms/"];
+const PAGES = [
+  "/",
+  "/privacy/",
+  "/terms/",
+  "/tools/",
+  "/tools/high-intent-lead-finder-template/",
+  "/tools/seo-geo-brief-generator/",
+  "/tools/landing-page-ab-test-ideas-generator/",
+  "/tools/founder-content-ideas-generator/",
+  "/compare/",
+  "/compare/infinite-vs-okara/",
+  "/compare/infinite-vs-ploy/",
+  "/compare/infinite-vs-blaze/",
+  "/blog/",
+  "/blog/how-founders-get-first-customers/",
+  "/blog/seo-geo-for-ai-cmos/",
+  "/blog/landing-page-tests-for-indie-apps/",
+];
 
 // ---------------------------------------------------------------------------
 // Expected values (env wins; empty/whitespace env falls back to the default).
