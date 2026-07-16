@@ -603,6 +603,20 @@ html[data-scheme="wrangle"] .wrangle-product {
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
+html[data-scheme="wrangle"] .wrangle-product-shot {
+  width: min(1060px, 100%);
+  border-radius: 18px;
+  background: #10131d;
+}
+
+html[data-scheme="wrangle"] .wrangle-product-shot img {
+  display: block;
+  width: 100%;
+  height: clamp(430px, 45vw, 620px);
+  object-fit: cover;
+  object-position: top left;
+}
+
 html[data-scheme="wrangle"] .wrangle-toolbar {
   display: grid;
   grid-template-columns: 180px 1fr auto;
