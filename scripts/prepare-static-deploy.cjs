@@ -26,6 +26,7 @@ const deployEntries = [
   "favicon-16.png",
   "favicon-32.png",
   "apple-touch-icon.png",
+  "CNAME",
   "logo.png",
   "robots.txt",
   "sitemap.xml",
