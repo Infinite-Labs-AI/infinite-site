@@ -1,7 +1,7 @@
 const fs = require("node:fs");
+const path = require("node:path");
 
-const indexPath = "dist/index.html";
-const html = fs.readFileSync(indexPath, "utf8");
+const distDir = "dist";
 
 const snippets = [
   posthogSnippet({
@@ -17,11 +17,39 @@ if (snippets.length === 0) {
   process.exit(0);
 }
 
-if (!html.includes("</head>")) {
-  throw new Error("Could not find </head> in dist/index.html");
+const headBlock = `${snippets.join("\n")}\n</head>`;
+const pages = findHtmlFiles(distDir);
+
+if (pages.length === 0) {
+  throw new Error(`No HTML pages found under ${distDir}/`);
 }
 
-fs.writeFileSync(indexPath, html.replace("</head>", `${snippets.join("\n")}\n</head>`));
+for (const page of pages) {
+  const html = fs.readFileSync(page, "utf8");
+
+  if (!html.includes("</head>")) {
+    throw new Error(`Could not find </head> in ${page}`);
+  }
+
+  // Function replacer avoids `$`-pattern interpretation in the snippet block.
+  fs.writeFileSync(page, html.replace("</head>", () => headBlock));
+}
+
+function findHtmlFiles(dir) {
+  const files = [];
+
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...findHtmlFiles(fullPath));
+    } else if (entry.isFile() && entry.name.endsWith(".html")) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
 
 function posthogSnippet({ apiHost, projectToken }) {
   if (!apiHost || !projectToken) {
