@@ -30,19 +30,12 @@ jobs:
 
       - name: Prepare site
         env:
-          GOOGLE_ANALYTICS_TAG_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_TAG_ID }}
+          GOOGLE_ANALYTICS_TAG_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_TAG_ID || 'G-JE3BZS61FZ' }}
           META_PIXEL_ID: ${{ vars.VITE_META_PIXEL_ID }}
           POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           POSTHOG_PROJECT_TOKEN: ${{ vars.VITE_POSTHOG_PROJECT_TOKEN }}
           X_PIXEL_ID: ${{ vars.VITE_X_PIXEL_ID }}
-        run: |
-          set -euo pipefail
-
-          rm -rf dist
-          mkdir -p dist
-          cp -R index.html privacy terms assets fonts favicon-16.png favicon-32.png apple-touch-icon.png logo.png LICENSE dist/
-
-          node .github/scripts/inject-analytics.cjs
+        run: node scripts/prepare-static-deploy.cjs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

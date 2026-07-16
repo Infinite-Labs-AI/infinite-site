@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.infinite.fast/sitemap.xml
+Sitemap: https://infinite.site/sitemap.xml
