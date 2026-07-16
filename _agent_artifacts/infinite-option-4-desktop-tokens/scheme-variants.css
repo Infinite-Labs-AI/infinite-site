@@ -605,7 +605,7 @@ html[data-scheme="wrangle"] .wrangle-product {
 
 html[data-scheme="wrangle"] .wrangle-product-shot {
   width: min(1060px, 100%);
-  border-radius: 18px;
+  border-radius: 18px 18px 0 0;
   background: #10131d;
 }
 
