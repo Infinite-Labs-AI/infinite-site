@@ -2,35 +2,31 @@
 #  Verify Live Analytics — the "never-again" guardrail
 # =============================================================================
 #
-#  WHY: analytics on infinite.site died silently for ~a month (stale deploy
+#  WHY: analytics on www.infinite.fast died silently for ~a month (stale deploy
 #  + injector gaps + a PostHog region flip). This workflow checks the LIVE,
 #  PUBLIC production pages — independent of how the site is built — and goes RED
 #  the moment a page stops carrying the PostHog + GA tags.
 #
 #  It runs in three situations:
-#    1. workflow_run  — right after the "Deploy GitHub Pages" workflow finishes
-#                       (a deploy just happened; verify the result). We sleep
-#                       ~3 min first so Vercel's independent build has time to
-#                       go live before we read the bytes.
+#    1. push          — right after main changes. Vercel deploys independently,
+#                       so we sleep ~3 min before reading the live bytes.
 #    2. schedule      — once a day, to catch silent drift that no deploy caused
 #                       (cache expiry, provider changes, a deploy from elsewhere).
 #    3. workflow_dispatch — run it by hand from the Actions tab anytime.
 #
 #  See docs/ANALYTICS-GUARDRAIL.md for what to do when it fires.
 #
-#  NOTE: workflow_run and schedule triggers only fire when THIS file lives on
-#  the repository's default branch (main). On a feature branch it will only be
+#  NOTE: push and schedule triggers only fire when THIS file lives on the
+#  repository's default branch (main). On a feature branch it will only be
 #  runnable via workflow_dispatch until merged.
 # =============================================================================
 
 name: Verify Live Analytics
 
 on:
-  workflow_run:
-    # Must match the `name:` of the deploy workflow exactly.
-    workflows: ["Deploy GitHub Pages"]
-    types:
-      - completed
+  push:
+    branches:
+      - main
   schedule:
     # Daily at 09:17 UTC. Odd minute to dodge the top-of-hour cron stampede.
     - cron: "17 9 * * *"
@@ -57,12 +53,11 @@ jobs:
         with:
           node-version: "20"
 
-      # Vercel builds independently of GitHub Pages on every push to main. When
-      # we're triggered by a just-finished deploy, give that build time to go
-      # live before we read the live bytes. Skipped for schedule/manual runs,
-      # where the site is already settled.
-      - name: Wait for the live deploy to settle (post-deploy only)
-        if: ${{ github.event_name == 'workflow_run' }}
+      # Vercel builds independently on every push to main. Give that build time
+      # to go live before we read the live bytes. Skipped for schedule/manual
+      # runs, where the site is already settled.
+      - name: Wait for the live deploy to settle (push only)
+        if: ${{ github.event_name == 'push' }}
         run: sleep 180
 
       - name: Verify live analytics tags

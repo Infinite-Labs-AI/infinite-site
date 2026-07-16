@@ -1,6 +1,6 @@
 # Live Analytics Guardrail
 
-A tripwire that fails loudly the moment `infinite.site` stops carrying its
+A tripwire that fails loudly the moment `www.infinite.fast` stops carrying its
 analytics tags.
 
 ## Why this exists
@@ -41,8 +41,8 @@ Two files:
   It reads the *live bytes the CDN serves to real users* — it does **not** look
   at the repo, the build output, or any CI artifact.
 - **`.github/workflows/verify-live-analytics.yml`** — runs the script:
-  1. **after the "Deploy GitHub Pages" workflow finishes** (waits ~3 min first
-     so Vercel's independent build has time to go live),
+  1. **after pushes to `main`** (waits ~3 min first so Vercel's independent
+     build has time to go live),
   2. **daily on a schedule** (catches silent drift no deploy caused), and
   3. **on manual dispatch** (Actions tab → "Verify Live Analytics" → Run).
 
@@ -73,7 +73,7 @@ Overridable env (all optional): `SITE_BASE_URL`, `EXPECTED_POSTHOG_TOKEN`,
    (Transient network errors auto-retry; a real outage fails every retry.)
 3. **Confirm with your own eyes** — open the page and View Source, or:
    ```bash
-   curl -s https://infinite.site/ | grep -E 'posthog\.init|api_host|gtag/js'
+   curl -s https://www.infinite.fast/ | grep -E 'posthog\.init|api_host|gtag/js'
    ```
 4. **Fix by failure type:**
    - *PostHog snippet MISSING* → the live build stopped injecting the tag. Check

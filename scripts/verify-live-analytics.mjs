@@ -7,7 +7,7 @@
  *
  * WHY THIS EXISTS
  * ---------------
- * Analytics on infinite.site died SILENTLY for ~a month. The live pages
+ * Analytics on www.infinite.fast died SILENTLY for ~a month. The live pages
  * simply stopped carrying the PostHog snippet — caused by a stale deploy, gaps
  * in the build-time injector, and a PostHog region flip (US host vs EU host).
  * Nobody noticed because nothing errored: the pages loaded fine, they just
@@ -38,7 +38,7 @@
  * CONFIG (all overridable via env; sensible, LOUD defaults so it also runs
  * locally with zero setup)
  * ----------------------------------------------------------------------------
- *   SITE_BASE_URL              default https://infinite.site
+ *   SITE_BASE_URL              default https://www.infinite.fast
  *   EXPECTED_POSTHOG_TOKEN     default = the known public prod token (below)
  *   EXPECTED_POSTHOG_API_HOST  default https://eu.i.posthog.com
  *   EXPECTED_GA_TAG_ID         default G-JE3BZS61FZ   (empty env => "any G-* tag")
@@ -85,7 +85,7 @@ const PAGES = [
 // ---------------------------------------------------------------------------
 // Expected values (env wins; empty/whitespace env falls back to the default).
 // ---------------------------------------------------------------------------
-const SITE_BASE_URL = firstNonEmpty(process.env.SITE_BASE_URL, "https://infinite.site").replace(/\/+$/, "");
+const SITE_BASE_URL = firstNonEmpty(process.env.SITE_BASE_URL, "https://www.infinite.fast").replace(/\/+$/, "");
 
 const POSTHOG_TOKEN_PREFIX = "phc_";
 const EXPECTED_POSTHOG_TOKEN = firstNonEmpty(
