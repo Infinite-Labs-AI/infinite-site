@@ -1,0 +1,16 @@
+:root {
+  --light-page: #f1f7ff;
+  --light-page-2: #ffffff;
+  --light-section-a: #f7fbff;
+  --light-section-b: #ffffff;
+  --light-ink: #111827;
+  --light-muted: rgba(17, 24, 39, 0.62);
+  --light-line: rgba(46, 92, 146, 0.15);
+  --light-card: rgba(255, 255, 255, 0.80);
+  --light-card-tint: rgba(52, 120, 246, 0.09);
+  --light-accent: #7c3cff;
+  --light-accent-2: #1287ff;
+  --light-accent-3: #ff6b8b;
+  --light-glow-top: rgba(18, 135, 255, 0.16);
+  --light-glow-core: rgba(124, 60, 255, 0.14);
+}
