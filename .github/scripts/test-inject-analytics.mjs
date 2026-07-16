@@ -1,21 +1,23 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const repoRoot = new URL("../..", import.meta.url).pathname;
 const tempDir = mkdtempSync(join(tmpdir(), "infinite-analytics-"));
 
+const page = (title) =>
+  `<!doctype html><html><head><title>${title}</title></head><body></body></html>`;
+
 try {
   const distDir = join(tempDir, "dist");
   const indexPath = join(distDir, "index.html");
+  const nestedPath = join(distDir, "terms", "index.html");
 
-  execFileSync("mkdir", ["-p", distDir]);
-  writeFileSync(
-    indexPath,
-    "<!doctype html><html><head><title>Test</title></head><body></body></html>",
-  );
+  mkdirSync(join(distDir, "terms"), { recursive: true });
+  writeFileSync(indexPath, page("Test"));
+  writeFileSync(nestedPath, page("Terms"));
 
   execFileSync("node", [join(repoRoot, ".github/scripts/inject-analytics.cjs")], {
     cwd: tempDir,
@@ -34,6 +36,7 @@ try {
 
   assert.match(html, /posthog\.init\("phc_test_project_token"/);
   assert.match(html, /api_host: "https:\/\/eu\.i\.posthog\.com"/);
+  assert.match(html, /posthog\.register\(\{ platform: "website" \}\)/);
 
   assert.match(html, /https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-TEST1234/);
   assert.match(html, /gtag\("config", "G-TEST1234"\)/);
@@ -44,6 +47,14 @@ try {
   assert.match(html, /fbq\("track", "PageView"\)/);
 
   assert.equal((html.match(/<\/head>/g) || []).length, 1);
+
+  // Nested pages (e.g. terms/ and privacy/) must also receive the snippets.
+  const nestedHtml = readFileSync(nestedPath, "utf8");
+
+  assert.match(nestedHtml, /posthog\.init\("phc_test_project_token"/);
+  assert.match(nestedHtml, /api_host: "https:\/\/eu\.i\.posthog\.com"/);
+  assert.match(nestedHtml, /gtag\("config", "G-TEST1234"\)/);
+  assert.equal((nestedHtml.match(/<\/head>/g) || []).length, 1);
 } finally {
   rmSync(tempDir, { recursive: true, force: true });
 }
