@@ -35,10 +35,7 @@ jobs:
           POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           POSTHOG_PROJECT_TOKEN: ${{ vars.VITE_POSTHOG_PROJECT_TOKEN }}
           X_PIXEL_ID: ${{ vars.VITE_X_PIXEL_ID }}
-        run: |
-          set -euo pipefail
-
-          node scripts/prepare-static-deploy.cjs
+        run: node scripts/prepare-static-deploy.cjs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -1,0 +1,287 @@
+:root {
+  --light-page: #f7f6ff;
+  --light-page-2: #ffffff;
+  --light-ink: #151524;
+  --light-muted: rgba(21, 21, 36, 0.64);
+  --light-soft: rgba(21, 21, 36, 0.08);
+  --light-line: rgba(55, 52, 92, 0.14);
+  --light-card: rgba(255, 255, 255, 0.78);
+  --light-card-solid: #ffffff;
+  --light-card-tint: rgba(139, 147, 248, 0.08);
+  --light-accent: #7c3cff;
+  --light-accent-2: #3478f6;
+  --light-accent-3: #ff6fb1;
+  --light-shadow: 0 24px 80px rgba(44, 45, 84, 0.14);
+}
+
+html {
+  background: var(--light-page);
+}
+
+body {
+  background:
+    radial-gradient(62% 34% at 50% 0%, var(--light-glow-top, rgba(124, 60, 255, 0.16)), transparent 72%),
+    linear-gradient(180deg, var(--light-page) 0%, var(--light-page-2) 48%, var(--light-page) 100%);
+  color: var(--light-ink);
+}
+
+.site-header {
+  color: var(--light-ink);
+}
+
+.nav {
+  border-color: var(--light-line);
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 20px 70px rgba(42, 39, 80, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.brand,
+.nav-links,
+.nav-links a,
+.eyebrow,
+.stack-pill,
+.price-label {
+  color: var(--light-muted);
+}
+
+.brand span,
+.nav-links a:hover {
+  color: var(--light-ink);
+}
+
+.nav-cta,
+.hero-cta,
+.glaze10-button,
+.pricing-panel .hero-cta,
+.final .hero-cta {
+  background: linear-gradient(135deg, var(--light-accent), var(--light-accent-2));
+  color: #fff;
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--light-accent) 28%, transparent);
+}
+
+.glaze10-hero,
+.td-showcase,
+.overnight-section,
+.stack-section,
+.activity-section,
+.testimonial-section,
+.buy-section,
+.section,
+.final {
+  background:
+    radial-gradient(42% 30% at 50% 0%, var(--light-glow-top, rgba(124, 60, 255, 0.13)), transparent 70%),
+    linear-gradient(180deg, var(--light-section-a, #fbfaff), var(--light-section-b, #ffffff));
+  color: var(--light-ink);
+}
+
+.glaze10-hero::before,
+.td-showcase::before,
+.overnight-section::before,
+.stack-section::before,
+.testimonial-section::before,
+.final::before {
+  background-image:
+    linear-gradient(rgba(35, 32, 62, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(35, 32, 62, 0.05) 1px, transparent 1px);
+}
+
+.glaze10-hero::after,
+.td-showcase::after,
+.final::after {
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.88));
+}
+
+.glaze10-glow::before {
+  border-color: color-mix(in srgb, var(--light-accent) 24%, transparent);
+  background:
+    radial-gradient(circle, transparent 0 42%, color-mix(in srgb, var(--light-accent) 28%, transparent) 46%, color-mix(in srgb, var(--light-accent-2) 22%, transparent) 53%, transparent 70%);
+}
+
+.glaze10-glow::after {
+  background: radial-gradient(60% 45% at 50% 42%, var(--light-glow-core, rgba(124, 60, 255, 0.18)), transparent 72%);
+}
+
+.glaze10-title,
+.td-heading h2,
+h1,
+h2,
+h3,
+.overnight-head h2,
+.overnight-card h3,
+.activity-card h3,
+.stack-card h3,
+.pricing-panel h2,
+.faq-panel h2,
+.final h2,
+.testimonial-card blockquote {
+  color: var(--light-ink);
+  text-shadow: none;
+}
+
+.glaze10-badge,
+.td-badge,
+.activity-status,
+.stack-pill {
+  border-color: color-mix(in srgb, var(--light-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--light-accent) 11%, #fff);
+  color: color-mix(in srgb, var(--light-accent) 72%, #1b1632);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.td-badge span {
+  background: #fff;
+  color: var(--light-accent);
+}
+
+.td-problem-card,
+.overnight-card,
+.activity-card,
+.stack-card,
+.testimonial-card,
+.pricing-panel,
+.faq-panel,
+.final-copy,
+.glaze10-video-card,
+.glaze10-feature,
+.price-card,
+.faq-item,
+.stack-card-demo,
+.activity-metrics,
+.overnight-panel,
+.calendar-shell {
+  border-color: var(--light-line);
+  background:
+    radial-gradient(120% 90% at 18% 0%, var(--light-card-tint), transparent 52%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), var(--light-card));
+  color: var(--light-ink);
+  box-shadow: var(--light-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.td-problem-card::before {
+  opacity: 0.18;
+}
+
+.td-problem-card h3,
+.td-problem-input,
+.td-problem-feed b,
+.td-problem-test button {
+  color: var(--light-ink);
+}
+
+.td-problem-feed,
+.td-problem-feed div,
+.td-problem-test,
+.source-row,
+.output-item,
+.content-row,
+.variant-card,
+.answer-card,
+.search-bar,
+.visual-row,
+.activity-output span,
+.metric-queue,
+.lift-visual,
+.demo-agent-box,
+.demo-output-stack {
+  border-color: var(--light-line);
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--light-muted);
+}
+
+.td-problem-input {
+  border-color: color-mix(in srgb, var(--light-accent-3) 74%, #fff);
+}
+
+.td-problem-feed i,
+.td-problem-test span,
+.td-problem-test i,
+.lift-track,
+.chart-grid {
+  background: rgba(21, 21, 36, 0.12);
+}
+
+.glaze10-video-media,
+.glaze10-window,
+.stack-map,
+.activity-feed {
+  color: var(--light-ink);
+}
+
+.glaze10-window,
+.td-problem-feed .is-hot,
+.source-row,
+.content-row,
+.faq-item,
+.billing-note,
+.price-points li,
+.testimonial-person,
+.stack-card p,
+.overnight-card p,
+.overnight-card h3,
+.activity-number span,
+.queue-head span,
+.lift-head span,
+.faq-item p {
+  color: var(--light-muted);
+}
+
+.overnight-card h3,
+.activity-card h3,
+.stack-card h3,
+.testimonial-card blockquote,
+.pricing-panel h2,
+.faq-panel h2 {
+  color: var(--light-ink);
+}
+
+.integration-logo,
+.stack-core {
+  border-color: var(--light-line);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 18px 54px rgba(44, 45, 84, 0.12);
+}
+
+.stack-lines path {
+  stroke: color-mix(in srgb, var(--light-accent) 26%, transparent);
+}
+
+.activity-number strong,
+.queue-head strong,
+.lift-head strong,
+.content-row span,
+.source-tag,
+.output-item span,
+.price,
+.pricing-panel .price strong {
+  color: var(--light-accent);
+}
+
+.metric-chart .chart-line,
+.metric-chart .chart-dot,
+.chart-line,
+.chart-dot {
+  stroke: var(--light-accent);
+  fill: var(--light-accent);
+}
+
+.metric-chart .chart-area {
+  fill: color-mix(in srgb, var(--light-accent) 16%, transparent);
+}
+
+.final {
+  background:
+    radial-gradient(58% 70% at 50% 58%, var(--light-glow-core, rgba(124, 60, 255, 0.15)), transparent 70%),
+    linear-gradient(180deg, var(--light-section-a), var(--light-section-b));
+}
+
+.price-points li::before {
+  color: var(--light-accent);
+}
+
+.faq-item summary {
+  color: var(--light-ink);
+}
+
+.demo-modal::backdrop {
+  background: rgba(236, 238, 250, 0.74);
+}

@@ -1,6 +1,6 @@
 # Live Analytics Guardrail
 
-A tripwire that fails loudly the moment `www.infinite.fast` stops carrying its
+A tripwire that fails loudly the moment `infinite.site` stops carrying its
 analytics tags.
 
 ## Why this exists
@@ -18,8 +18,9 @@ is that watcher.
 
 ## What it checks
 
-For every page in the maintained list (currently `/`, `/privacy/`, `/terms/`),
-it fetches the **real production URL** and asserts:
+For every page in the maintained list in
+`scripts/verify-live-analytics.mjs`, it fetches the **real production URL** and
+asserts:
 
 | Check | Why |
 |-------|-----|
@@ -72,7 +73,7 @@ Overridable env (all optional): `SITE_BASE_URL`, `EXPECTED_POSTHOG_TOKEN`,
    (Transient network errors auto-retry; a real outage fails every retry.)
 3. **Confirm with your own eyes** — open the page and View Source, or:
    ```bash
-   curl -s https://www.infinite.fast/ | grep -E 'posthog\.init|api_host|gtag/js'
+   curl -s https://infinite.site/ | grep -E 'posthog\.init|api_host|gtag/js'
    ```
 4. **Fix by failure type:**
    - *PostHog snippet MISSING* → the live build stopped injecting the tag. Check

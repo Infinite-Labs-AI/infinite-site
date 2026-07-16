@@ -2,7 +2,7 @@
 #  Verify Live Analytics — the "never-again" guardrail
 # =============================================================================
 #
-#  WHY: analytics on www.infinite.fast died silently for ~a month (stale deploy
+#  WHY: analytics on infinite.site died silently for ~a month (stale deploy
 #  + injector gaps + a PostHog region flip). This workflow checks the LIVE,
 #  PUBLIC production pages — independent of how the site is built — and goes RED
 #  the moment a page stops carrying the PostHog + GA tags.
