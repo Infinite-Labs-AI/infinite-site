@@ -1,0 +1,76 @@
+# =============================================================================
+#  Verify Live Analytics — the "never-again" guardrail
+# =============================================================================
+#
+#  WHY: analytics on www.infinite.fast died silently for ~a month (stale deploy
+#  + injector gaps + a PostHog region flip). This workflow checks the LIVE,
+#  PUBLIC production pages — independent of how the site is built — and goes RED
+#  the moment a page stops carrying the PostHog + GA tags.
+#
+#  It runs in three situations:
+#    1. workflow_run  — right after the "Deploy GitHub Pages" workflow finishes
+#                       (a deploy just happened; verify the result). We sleep
+#                       ~3 min first so Vercel's independent build has time to
+#                       go live before we read the bytes.
+#    2. schedule      — once a day, to catch silent drift that no deploy caused
+#                       (cache expiry, provider changes, a deploy from elsewhere).
+#    3. workflow_dispatch — run it by hand from the Actions tab anytime.
+#
+#  See docs/ANALYTICS-GUARDRAIL.md for what to do when it fires.
+#
+#  NOTE: workflow_run and schedule triggers only fire when THIS file lives on
+#  the repository's default branch (main). On a feature branch it will only be
+#  runnable via workflow_dispatch until merged.
+# =============================================================================
+
+name: Verify Live Analytics
+
+on:
+  workflow_run:
+    # Must match the `name:` of the deploy workflow exactly.
+    workflows: ["Deploy GitHub Pages"]
+    types:
+      - completed
+  schedule:
+    # Daily at 09:17 UTC. Odd minute to dodge the top-of-hour cron stampede.
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Don't let scheduled + post-deploy runs pile up; let any in-flight run finish.
+  group: verify-live-analytics
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify live analytics tags
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (for the verifier script + page list)
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Vercel builds independently of GitHub Pages on every push to main. When
+      # we're triggered by a just-finished deploy, give that build time to go
+      # live before we read the live bytes. Skipped for schedule/manual runs,
+      # where the site is already settled.
+      - name: Wait for the live deploy to settle (post-deploy only)
+        if: ${{ github.event_name == 'workflow_run' }}
+        run: sleep 180
+
+      - name: Verify live analytics tags
+        env:
+          # Expected values come from repo variables (Settings -> Secrets and
+          # variables -> Actions -> Variables). The script has safe public
+          # defaults, so unset variables still yield a meaningful check.
+          EXPECTED_POSTHOG_TOKEN: ${{ vars.VITE_POSTHOG_PROJECT_TOKEN }}
+          EXPECTED_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
+          EXPECTED_GA_TAG_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_TAG_ID }}
+        run: node scripts/verify-live-analytics.mjs
