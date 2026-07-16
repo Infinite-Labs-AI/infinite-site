@@ -511,7 +511,7 @@ html[data-scheme="wrangle"] .wrangle-product-wrap {
   z-index: 1;
   width: min(calc(100% - 70px), 1260px);
   margin: 0 auto;
-  padding: clamp(34px, 4vw, 52px) clamp(28px, 4.6vw, 58px);
+  padding: clamp(34px, 4vw, 52px) clamp(28px, 4.6vw, 58px) 0;
 }
 
 html[data-scheme="wrangle"] .wrangle-product-wrap::before {
