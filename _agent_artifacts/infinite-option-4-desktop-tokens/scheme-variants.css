@@ -964,6 +964,192 @@ html[data-scheme="wrangle"] .wrangle-proof-icon {
   }
 }
 
+@media (max-width: 640px) {
+  html[data-scheme="wrangle"] .site-header {
+    top: 22px;
+  }
+
+  html[data-scheme="wrangle"] .nav {
+    width: min(calc(100% - 44px), 358px);
+    min-height: 42px;
+    justify-content: flex-start;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  html[data-scheme="wrangle"] .brand {
+    gap: 8px;
+    color: #2f3032 !important;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  html[data-scheme="wrangle"] .brand-mark {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    box-shadow: 0 8px 20px rgba(31, 72, 112, 0.10);
+  }
+
+  html[data-scheme="wrangle"] .nav-cta {
+    display: inline-flex;
+    min-height: 36px;
+    margin-left: auto;
+    padding: 0 12px;
+    border: 1px solid #dfe6ec !important;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.94) !important;
+    color: #303236 !important;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 10px 24px rgba(31, 72, 112, 0.08) !important;
+  }
+
+  html[data-scheme="wrangle"] .nav-cta::after {
+    content: "→";
+    margin-left: 8px;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  html[data-scheme="wrangle"] .nav::after {
+    content: "";
+    width: 18px;
+    height: 14px;
+    margin-left: 14px;
+    background:
+      linear-gradient(#303236, #303236) 0 3px / 18px 1.5px no-repeat,
+      linear-gradient(#303236, #303236) 0 10px / 18px 1.5px no-repeat;
+    opacity: 0.9;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-hero {
+    padding: 102px 0 34px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-hero-copy {
+    width: min(calc(100% - 56px), 326px);
+    margin-bottom: 24px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-news {
+    min-height: 27px;
+    max-width: 100%;
+    margin-bottom: 18px;
+    padding: 0 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-hero h1 {
+    max-width: 320px;
+    font-size: 37px;
+    line-height: 0.99;
+    letter-spacing: -0.025em;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-hero-copy p {
+    max-width: 304px;
+    margin-top: 16px;
+    font-size: 15px;
+    line-height: 1.34;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-hero-cta {
+    min-height: 43px;
+    margin-top: 19px;
+    padding: 0 18px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-product-wrap {
+    width: min(calc(100% - 44px), 358px);
+    padding: 26px 20px 0;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-product-wrap::before,
+  html[data-scheme="wrangle"] .wrangle-product-wrap::after {
+    border-radius: 13px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-product-wrap::before {
+    background:
+      radial-gradient(circle at 13% 12%, rgba(249, 222, 240, 0.92), transparent 30%),
+      radial-gradient(circle at 88% 14%, rgba(177, 239, 255, 0.96), transparent 34%),
+      radial-gradient(circle at 50% 98%, rgba(226, 247, 231, 0.74), transparent 31%),
+      linear-gradient(90deg, #fbf4fb 0%, #f9fbfa 43%, #e8f9fc 100%);
+  }
+
+  html[data-scheme="wrangle"] .wrangle-product-wrap::after {
+    background-size: 32px 32px;
+    mask-image: linear-gradient(to bottom, #000 0%, transparent 84%);
+  }
+
+  html[data-scheme="wrangle"] .wrangle-orbit {
+    top: -8px;
+    width: 230px;
+    height: 66px;
+    opacity: 0.74;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-orbit span {
+    width: 82px;
+    height: 54px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(1) {
+    left: 14px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(2) {
+    left: 74px;
+    height: 66px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(3) {
+    right: 14px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-product {
+    width: 100%;
+    border-radius: 14px 14px 0 0;
+    box-shadow:
+      0 20px 52px rgba(18, 27, 44, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  html[data-scheme="wrangle"] .wrangle-product-shot {
+    border-radius: 14px 14px 0 0;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-product-shot img {
+    height: auto;
+    object-fit: contain;
+    object-position: top center;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-proof-row {
+    width: min(calc(100% - 56px), 326px);
+    margin-top: 17px;
+    gap: 8px 12px;
+    font-size: 12px;
+    line-height: 1.1;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-proof-row li:not(.is-label)::before {
+    width: 4px;
+    height: 4px;
+    margin-right: 7px;
+    margin-bottom: 2px;
+  }
+}
+
 html[data-scheme="wrangle"] .td-showcase {
   background:
     linear-gradient(rgba(82, 117, 154, 0.055) 1px, transparent 1px),
@@ -3259,5 +3445,480 @@ html[data-scheme="wrangle"] .founder-x-card p span {
     bottom: 0;
     width: min(100%, 320px);
     transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 640px) {
+  html[data-scheme="wrangle"] .section-pill {
+    min-height: 24px !important;
+    margin-bottom: 14px !important;
+    padding: 0 10px !important;
+    font-size: 10px !important;
+    letter-spacing: 0.11em !important;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-proof {
+    padding: 16px 0 44px;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-proof .shell {
+    width: min(100% - 28px, 1180px);
+    border-radius: 22px;
+    padding: 18px 16px 16px;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-proof h2,
+  html[data-scheme="wrangle"] .overnight-head h2,
+  html[data-scheme="wrangle"] .stack-head h2,
+  html[data-scheme="wrangle"] .pricing-section-head h2,
+  html[data-scheme="wrangle"] .faq-panel h2,
+  html[data-scheme="wrangle"] .final h2 {
+    font-size: 31px !important;
+    line-height: 1.04 !important;
+    letter-spacing: -0.024em !important;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-proof h2 {
+    max-width: 270px;
+    margin-bottom: 18px;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-strip {
+    gap: 12px;
+    margin-right: -16px;
+    padding-right: 16px;
+    scroll-padding-left: 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-card {
+    flex-basis: min(76vw, 288px);
+    min-height: 154px;
+    border-radius: 16px;
+    padding: 14px;
+    scroll-snap-align: start;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-card:nth-child(n) {
+    min-height: 154px;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-card p {
+    margin-top: 12px;
+    font-size: 12px;
+    line-height: 1.36;
+  }
+
+  html[data-scheme="wrangle"] .overnight-section,
+  html[data-scheme="wrangle"] .stack-section,
+  html[data-scheme="wrangle"] .effect-section,
+  html[data-scheme="wrangle"] .buy-section {
+    padding-top: 52px !important;
+    padding-bottom: 56px !important;
+  }
+
+  html[data-scheme="wrangle"] .overnight-head,
+  html[data-scheme="wrangle"] .stack-head {
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  html[data-scheme="wrangle"] .overnight-head h2,
+  html[data-scheme="wrangle"] .stack-head h2 {
+    max-width: 352px !important;
+    font-size: 29px !important;
+    line-height: 1.06 !important;
+  }
+
+  html[data-scheme="wrangle"] .overnight-grid,
+  html[data-scheme="wrangle"] .stack-card-grid {
+    gap: 16px !important;
+  }
+
+  html[data-scheme="wrangle"] .overnight-card,
+  html[data-scheme="wrangle"] .stack-card {
+    min-height: 0 !important;
+    border-radius: 18px !important;
+    padding: 20px !important;
+    animation: none !important;
+  }
+
+  html[data-scheme="wrangle"] .overnight-card {
+    gap: 13px;
+  }
+
+  html[data-scheme="wrangle"] .overnight-card h3,
+  html[data-scheme="wrangle"] .stack-card h3 {
+    font-size: 22px !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  html[data-scheme="wrangle"] .overnight-card p,
+  html[data-scheme="wrangle"] .stack-card p,
+  html[data-scheme="wrangle"] .pricing-proof p,
+  html[data-scheme="wrangle"] .effect-copy p {
+    font-size: 15px !important;
+    line-height: 1.42 !important;
+  }
+
+  html[data-scheme="wrangle"] .lead-visual,
+  html[data-scheme="wrangle"] .seo-visual,
+  html[data-scheme="wrangle"] .test-visual,
+  html[data-scheme="wrangle"] .content-visual {
+    min-height: 222px !important;
+    margin-bottom: 6px !important;
+  }
+
+  html[data-scheme="wrangle"] .lead-sieve-window,
+  html[data-scheme="wrangle"] .citation-mini-window {
+    border-radius: 15px;
+  }
+
+  html[data-scheme="wrangle"] .lead-sieve-body {
+    gap: 7px;
+    padding: 10px;
+  }
+
+  html[data-scheme="wrangle"] .lead-sieve-row {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    min-height: 50px;
+    gap: 8px;
+    padding: 0 8px;
+  }
+
+  html[data-scheme="wrangle"] .lead-sieve-row em {
+    width: 26px;
+    height: 26px;
+  }
+
+  html[data-scheme="wrangle"] .lead-sieve-result {
+    right: 4px;
+    bottom: -2px;
+    width: 168px;
+    border-radius: 14px;
+    padding: 12px;
+  }
+
+  html[data-scheme="wrangle"] .lead-sieve-result strong {
+    font-size: 13px;
+  }
+
+  html[data-scheme="wrangle"] .trend-ideas-board {
+    min-height: 324px;
+  }
+
+  html[data-scheme="wrangle"] .trend-post-card {
+    width: 142px;
+    border-radius: 16px;
+    padding: 10px;
+  }
+
+  html[data-scheme="wrangle"] .trend-post-card strong {
+    font-size: 12px;
+  }
+
+  html[data-scheme="wrangle"] .trend-post-card:nth-child(2) {
+    left: 76px;
+  }
+
+  html[data-scheme="wrangle"] .trend-ideas-output {
+    width: min(100%, 286px);
+    padding: 12px;
+  }
+
+  html[data-scheme="wrangle"] .stack-map {
+    min-height: auto;
+    margin-bottom: 28px;
+  }
+
+  html[data-scheme="wrangle"] .integration-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 12px 10px !important;
+    width: min(100%, 330px);
+  }
+
+  html[data-scheme="wrangle"] .logo-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  html[data-scheme="wrangle"] .logo-mark img {
+    width: 28px;
+    height: 28px;
+  }
+
+  html[data-scheme="wrangle"] .stack-core {
+    width: 72px;
+    height: 72px;
+    margin-top: 22px;
+  }
+
+  html[data-scheme="wrangle"] .stack-core-mark {
+    width: 44px;
+    height: 44px;
+  }
+
+  html[data-scheme="wrangle"] .stack-card-demo {
+    margin-top: 16px;
+  }
+
+  html[data-scheme="wrangle"] .source-row,
+  html[data-scheme="wrangle"] .output-item {
+    font-size: 12px;
+  }
+
+  html[data-scheme="wrangle"] .effect-layout {
+    gap: 24px;
+  }
+
+  html[data-scheme="wrangle"] .effect-copy {
+    gap: 12px;
+    text-align: center;
+  }
+
+  html[data-scheme="wrangle"] .effect-copy .section-pill {
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  html[data-scheme="wrangle"] .effect-copy h2 {
+    font-size: 38px !important;
+    line-height: 1 !important;
+    letter-spacing: -0.026em !important;
+  }
+
+  html[data-scheme="wrangle"] .effect-copy p {
+    max-width: 340px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  html[data-scheme="wrangle"] .effect-stack {
+    gap: 14px;
+  }
+
+  html[data-scheme="wrangle"] .effect-window,
+  html[data-scheme="wrangle"] .effect-quote-card {
+    border-radius: 18px;
+  }
+
+  html[data-scheme="wrangle"] .effect-window-bar {
+    min-height: 48px;
+    gap: 10px;
+    padding: 0 14px;
+    font-size: 12px;
+  }
+
+  html[data-scheme="wrangle"] .effect-window-body {
+    gap: 16px;
+    padding: 18px;
+  }
+
+  html[data-scheme="wrangle"] .effect-metric strong {
+    font-size: 42px;
+  }
+
+  html[data-scheme="wrangle"] .effect-chart {
+    min-height: 118px;
+  }
+
+  html[data-scheme="wrangle"] .effect-views-list {
+    padding: 14px 18px 16px;
+  }
+
+  html[data-scheme="wrangle"] .effect-view-row {
+    grid-template-columns: 58px minmax(0, 1fr) auto !important;
+    gap: 10px;
+    padding: 11px 0;
+    font-size: 12px;
+  }
+
+  html[data-scheme="wrangle"] .effect-quote-card {
+    padding: 20px;
+  }
+
+  html[data-scheme="wrangle"] .effect-quote-card p {
+    font-size: 23px;
+    line-height: 1.1;
+  }
+
+  html[data-scheme="wrangle"] .pricing-section-head {
+    gap: 18px;
+    text-align: center;
+  }
+
+  html[data-scheme="wrangle"] .pricing-section-head .section-pill {
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  html[data-scheme="wrangle"] .pricing-section-head h2 {
+    max-width: 300px;
+    margin: 10px auto 0;
+    font-size: 36px !important;
+  }
+
+  html[data-scheme="wrangle"] .pricing-proof {
+    justify-items: center;
+    gap: 14px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-proof p {
+    max-width: 335px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-social-proof {
+    justify-content: center;
+  }
+
+  html[data-scheme="wrangle"] .pricing-plan-card {
+    gap: 22px;
+    border-radius: 18px !important;
+    padding: 20px !important;
+  }
+
+  html[data-scheme="wrangle"] .pricing-plan-left {
+    padding-bottom: 24px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-plan-top h3,
+  html[data-scheme="wrangle"] .pricing-included h3 {
+    font-size: 22px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-plan-card .price {
+    margin-top: 20px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-plan-card .price strong {
+    font-size: 58px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-plan-card .price span {
+    font-size: 15px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-cta {
+    min-height: 50px;
+    margin-top: 22px;
+    font-size: 15px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-cancel {
+    margin-top: 18px;
+    font-size: 13px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-included {
+    gap: 18px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-feature-grid {
+    gap: 14px !important;
+  }
+
+  html[data-scheme="wrangle"] .pricing-feature-grid li {
+    padding-left: 28px;
+    font-size: 14px;
+    line-height: 1.36;
+  }
+
+  html[data-scheme="wrangle"] .pricing-feature-grid li::before {
+    width: 17px;
+    height: 17px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-feature-grid li::after {
+    top: 6px;
+    left: 5px;
+  }
+
+  html[data-scheme="wrangle"] .faq-panel {
+    border-radius: 18px !important;
+    padding: 20px !important;
+  }
+
+  html[data-scheme="wrangle"] .faq-panel h2 {
+    margin-bottom: 18px;
+  }
+
+  html[data-scheme="wrangle"] .faq-panel .faq-item summary {
+    padding: 17px 34px 17px 0;
+    font-size: 16px;
+    line-height: 1.22;
+  }
+
+  html[data-scheme="wrangle"] .faq-panel .faq-item summary::after {
+    right: 0;
+    font-size: 18px;
+  }
+
+  html[data-scheme="wrangle"] .faq-panel .faq-item p {
+    padding: 0 28px 18px 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  html[data-scheme="wrangle"] .final {
+    min-height: auto;
+    padding: 54px 0 56px !important;
+  }
+
+  html[data-scheme="wrangle"] .final-copy {
+    width: min(100% - 28px, 800px);
+    gap: 16px;
+    border-radius: 20px;
+    padding: 24px 18px !important;
+  }
+
+  html[data-scheme="wrangle"] .final h2 {
+    max-width: 318px;
+  }
+
+  html[data-scheme="wrangle"] .final .hero-cta {
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 14px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-footer {
+    padding: 44px 0 28px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-footer-grid {
+    gap: 20px 18px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-footer-mark {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 4px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-footer h4 {
+    margin-bottom: 9px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-footer a {
+    margin: 8px 0;
+    font-size: 12px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-footer-bottom {
+    gap: 10px;
+    margin-top: 30px;
+  }
+
+  html[data-scheme="wrangle"] .wrangle-giant-word {
+    right: 14px;
+    bottom: -18px;
+    font-size: 72px;
   }
 }
