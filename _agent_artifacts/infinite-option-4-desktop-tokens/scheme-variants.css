@@ -2612,18 +2612,13 @@ html[data-scheme="wrangle"] .lp-fan-card {
 }
 
 html[data-scheme="wrangle"] .lp-fan-a {
-  transform: translateX(-168px) translateY(20px) rotate(-13deg);
+  transform: translateX(-142px) translateY(24px) rotate(-11deg);
 }
 
 html[data-scheme="wrangle"] .lp-fan-b {
   z-index: 2;
-  transform: translateX(-70px) translateY(0) rotate(0deg);
-}
-
-html[data-scheme="wrangle"] .lp-fan-c {
-  z-index: 3;
   border-color: #bceccd;
-  transform: translateX(28px) translateY(20px) rotate(13deg);
+  transform: translateX(-2px) translateY(12px) rotate(10deg);
 }
 
 html[data-scheme="wrangle"] .lp-page-mini {
@@ -2646,11 +2641,7 @@ html[data-scheme="wrangle"] .lp-page-hero {
 
 html[data-scheme="wrangle"] .lp-fan-b .lp-page-hero {
   background: linear-gradient(135deg, rgba(223, 245, 233, 0.95), rgba(185, 239, 255, 0.78));
-}
-
-html[data-scheme="wrangle"] .lp-fan-c .lp-page-hero {
-  background: linear-gradient(135deg, rgba(248, 221, 235, 0.62), rgba(50, 201, 121, 0.26));
-  outline: 2px solid rgba(50, 201, 121, 0.2);
+  outline: 2px solid rgba(50, 201, 121, 0.18);
 }
 
 html[data-scheme="wrangle"] .lp-page-hero strong {
@@ -2730,12 +2721,12 @@ html[data-scheme="wrangle"] .lp-fan-score b {
   text-transform: none;
 }
 
-html[data-scheme="wrangle"] .lp-fan-c .lp-fan-score {
+html[data-scheme="wrangle"] .lp-fan-b .lp-fan-score {
   background: #dff5e9;
   color: #16874b;
 }
 
-html[data-scheme="wrangle"] .lp-fan-c .lp-fan-score b {
+html[data-scheme="wrangle"] .lp-fan-b .lp-fan-score b {
   color: #16874b;
 }
 
@@ -2837,15 +2828,11 @@ html[data-scheme="wrangle"] .lp-fan-badge strong {
   }
 
   html[data-scheme="wrangle"] .lp-fan-a {
-    transform: translateX(-150px) translateY(20px) rotate(-13deg);
+    transform: translateX(-120px) translateY(20px) rotate(-10deg);
   }
 
   html[data-scheme="wrangle"] .lp-fan-b {
-    transform: translateX(-70px) translateY(0) rotate(0deg);
-  }
-
-  html[data-scheme="wrangle"] .lp-fan-c {
-    transform: translateX(10px) translateY(20px) rotate(13deg);
+    transform: translateX(-10px) translateY(8px) rotate(9deg);
   }
 
   html[data-scheme="wrangle"] .lp-fan-insights {
@@ -2854,8 +2841,7 @@ html[data-scheme="wrangle"] .lp-fan-badge strong {
   }
 
   html[data-scheme="wrangle"] .lp-fan-badge {
-    right: 0;
-    width: 138px;
+    display: none !important;
   }
 }
 
