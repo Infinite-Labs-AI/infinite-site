@@ -76,10 +76,6 @@ const PAGES = [
   "/compare/infinite-vs-okara/",
   "/compare/infinite-vs-ploy/",
   "/compare/infinite-vs-blaze/",
-  "/blog/",
-  "/blog/how-founders-get-first-customers/",
-  "/blog/seo-geo-for-ai-cmos/",
-  "/blog/landing-page-tests-for-indie-apps/",
 ];
 
 // ---------------------------------------------------------------------------

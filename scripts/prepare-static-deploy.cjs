@@ -16,7 +16,6 @@ process.env.POSTHOG_PROJECT_TOKEN ||=
   "phc_wUuv4hpsa4jfi6fNSzWU9t3JSKneFHusRunsYenhjndJ";
 
 const deployEntries = [
-  "blog",
   "compare",
   "privacy",
   "terms",
