@@ -4,6 +4,8 @@
   "rewrites": [
     { "source": "/ingest/static/:path(.*)", "destination": "https://eu-assets.i.posthog.com/static/:path" },
     { "source": "/ingest/array/:path(.*)", "destination": "https://eu-assets.i.posthog.com/array/:path" },
-    { "source": "/ingest/:path(.*)", "destination": "https://eu.i.posthog.com/:path" }
+    { "source": "/ingest/:path(.*)", "destination": "https://eu.i.posthog.com/:path" },
+    { "source": "/gtm/gtag/:path(.*)", "destination": "https://www.googletagmanager.com/gtag/:path" },
+    { "source": "/gtm/:path(.*)", "destination": "https://www.google-analytics.com/:path" }
   ]
 }
