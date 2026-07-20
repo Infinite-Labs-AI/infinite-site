@@ -28,8 +28,11 @@
  *   1. Exactly ONE PostHog snippet  (0 = analytics dead; 2+ = double-count bug)
  *   2. PostHog project token starts with "phc_" AND equals the expected value
  *      (expected value comes from the repo variable, passed in as env)
- *   3. PostHog api_host is the EU ingest host (this is the region-flip tripwire)
+ *   3. PostHog api_host is the first-party "/ingest" reverse-proxy path (snippet intact)
  *   4. A Google Analytics gtag loader is present
+ * PLUS one site-wide check: the proxied PostHog library at /ingest/static/array.js actually
+ * resolves and is really PostHog — the relocated region-flip tripwire, and the thing that catches
+ * a broken rewrite (which would silently kill analytics exactly like the original outage).
  *
  * Any failure -> a clear message naming the page + what's wrong -> exit 1 ->
  * red CI run. All pages/checks run before exiting, so one run reports every
@@ -40,7 +43,7 @@
  * ----------------------------------------------------------------------------
  *   SITE_BASE_URL              default https://www.infinite.fast
  *   EXPECTED_POSTHOG_TOKEN     default = the known public prod token (below)
- *   EXPECTED_POSTHOG_API_HOST  default https://eu.i.posthog.com
+ *   EXPECTED_POSTHOG_API_HOST  default /ingest   (first-party reverse-proxy path → PostHog EU)
  *   EXPECTED_GA_TAG_ID         default G-JE3BZS61FZ   (empty env => "any G-* tag")
  *
  * NOTE ON THE "TOKEN": a PostHog *project* token (phc_...) is a PUBLIC,
@@ -89,9 +92,12 @@ const EXPECTED_POSTHOG_TOKEN = firstNonEmpty(
   // Public prod project token — safe to hardcode (see header note).
   "phc_wUuv4hpsa4jfi6fNSzWU9t3JSKneFHusRunsYenhjndJ",
 );
+// The live snippet's api_host is now the FIRST-PARTY reverse-proxy path (vercel.json "/ingest"
+// rewrites → PostHog EU). The region-flip tripwire moved off this string onto a live check that the
+// proxied library actually resolves (the "proxy liveness" step in main()).
 const EXPECTED_POSTHOG_API_HOST = firstNonEmpty(
   process.env.EXPECTED_POSTHOG_API_HOST,
-  "https://eu.i.posthog.com",
+  "/ingest",
 );
 // If empty, GA is only checked for presence of *some* G-* tag, not a specific id.
 const EXPECTED_GA_TAG_ID = firstNonEmpty(process.env.EXPECTED_GA_TAG_ID, "G-JE3BZS61FZ");
@@ -177,9 +183,11 @@ function checkPage(label, html, failures) {
     }
   }
 
-  // --- 3. PostHog api_host: EU ingest host (region-flip tripwire) ------------
+  // --- 3. PostHog api_host: the first-party "/ingest" proxy path -------------
   // Only the init-config `api_host: "..."` matches; the `s.api_host.replace(...)`
-  // inside the loader IIFE has no `:` so it is not caught here.
+  // inside the loader IIFE has no `:` so it is not caught here. This asserts the
+  // snippet carries the expected proxy path; region correctness is the live
+  // proxy-liveness check in main() (the proxied library must resolve to PostHog).
   const apiHostMatches = [...html.matchAll(/api_host\s*:\s*(['"])([^'"]+)\1/g)];
   if (apiHostMatches.length === 0) {
     if (initCount >= 1) {
@@ -234,6 +242,25 @@ async function main() {
     checkPage(page, result.html, failures);
     const pageFailures = failures.length - before;
     console.log(`  ${pageFailures === 0 ? "PASS" : "FAIL"}  ${page}  (${result.html.length} bytes)`);
+  }
+
+  // --- Proxy liveness (relocated region-flip tripwire) ----------------------
+  // With the first-party reverse proxy, a broken "/ingest" rewrite = analytics DEAD even when the
+  // snippet looks perfect (the exact silent outage this guardrail exists to catch). So when api_host
+  // is a proxy path, verify the proxied PostHog library actually loads AND is really PostHog.
+  if (EXPECTED_POSTHOG_API_HOST.startsWith("/")) {
+    const proxyUrl = `${SITE_BASE_URL}${EXPECTED_POSTHOG_API_HOST}/static/array.js`;
+    const proxy = await fetchPageHtml(proxyUrl);
+    if (!proxy.ok) {
+      const detail = proxy.status ? `HTTP ${proxy.status}` : `network error: ${proxy.error?.message ?? "unknown"}`;
+      failures.push(`[proxy] ${proxyUrl} did not resolve — ${detail} (the /ingest reverse proxy is broken → analytics is dead)`);
+      console.log(`  FAIL  proxy ${EXPECTED_POSTHOG_API_HOST}/static/array.js  (${detail})`);
+    } else if (!/posthog/i.test(proxy.html)) {
+      failures.push(`[proxy] ${proxyUrl} returned ${proxy.html.length} bytes that are not the PostHog library (proxy misrouted / wrong region)`);
+      console.log(`  FAIL  proxy ${EXPECTED_POSTHOG_API_HOST}/static/array.js  (not PostHog)`);
+    } else {
+      console.log(`  PASS  proxy ${EXPECTED_POSTHOG_API_HOST}/static/array.js  (${proxy.html.length} bytes, PostHog lib)`);
+    }
   }
 
   console.log("");
