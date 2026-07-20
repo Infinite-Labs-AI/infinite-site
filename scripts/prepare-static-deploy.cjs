@@ -11,13 +11,7 @@ const artifactDir = path.join(
 const homepageSource = path.join(artifactDir, "index-scheme-wrangle.html");
 
 process.env.GOOGLE_ANALYTICS_TAG_ID ||= "G-JE3BZS61FZ";
-// PostHog is served FIRST-PARTY through the Vercel reverse proxy (see vercel.json "/ingest"
-// rewrites) so ad blockers / tracking-protection can't strip the library. api_host is a RELATIVE
-// path, resolved against whatever origin the page loads on (www or apex → no cross-origin). ui_host
-// stays the real PostHog host so the toolbar / "open in PostHog" links keep working. The EU region
-// now lives in the rewrite destination, not here — verify-live-analytics asserts the proxy resolves.
-process.env.POSTHOG_API_HOST ||= "/ingest";
-process.env.POSTHOG_UI_HOST ||= "https://eu.posthog.com";
+process.env.POSTHOG_API_HOST ||= "https://eu.i.posthog.com";
 process.env.POSTHOG_PROJECT_TOKEN ||=
   "phc_wUuv4hpsa4jfi6fNSzWU9t3JSKneFHusRunsYenhjndJ";
 
