@@ -6,6 +6,7 @@ const distDir = "dist";
 const snippets = [
   posthogSnippet({
     apiHost: process.env.POSTHOG_API_HOST,
+    uiHost: process.env.POSTHOG_UI_HOST,
     projectToken: process.env.POSTHOG_PROJECT_TOKEN,
   }),
   googleAnalyticsSnippet(process.env.GOOGLE_ANALYTICS_TAG_ID),
@@ -51,10 +52,13 @@ function findHtmlFiles(dir) {
   return files;
 }
 
-function posthogSnippet({ apiHost, projectToken }) {
+function posthogSnippet({ apiHost, uiHost, projectToken }) {
   if (!apiHost || !projectToken) {
     return "";
   }
+
+  // The proxy only fronts ingestion, so ui_host stays the real PostHog host (toolbar + app links).
+  const uiHostLine = uiHost ? `\n      ui_host: ${JSON.stringify(uiHost)},` : "";
 
   return `  <script>
     !(function (t, e) {
@@ -100,7 +104,7 @@ function posthogSnippet({ apiHost, projectToken }) {
         (e.__SV = 1));
     })(document, window.posthog || []);
     posthog.init(${JSON.stringify(projectToken)}, {
-      api_host: ${JSON.stringify(apiHost)},
+      api_host: ${JSON.stringify(apiHost)},${uiHostLine}
       defaults: "2026-01-30",
     });
     posthog.register({ platform: "website" });
