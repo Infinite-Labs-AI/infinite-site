@@ -34,6 +34,7 @@ const deployEntries = [
   "logo.png",
   "robots.txt",
   "sitemap.xml",
+  "llms.txt",
   "LICENSE",
 ];
 
