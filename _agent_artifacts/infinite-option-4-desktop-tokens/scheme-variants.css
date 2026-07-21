@@ -3311,9 +3311,26 @@ html[data-scheme="wrangle"] .founder-x-avatar {
   font-weight: 900;
 }
 
+html[data-scheme="wrangle"] .founder-x-avatar-image {
+  overflow: hidden;
+  background: #ffffff;
+}
+
+html[data-scheme="wrangle"] .founder-x-avatar-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 html[data-scheme="wrangle"] .founder-x-top strong,
 html[data-scheme="wrangle"] .founder-x-top em {
   display: block;
+}
+
+html[data-scheme="wrangle"] .founder-x-top a,
+html[data-scheme="wrangle"] .founder-x-card p a {
+  color: inherit;
+  text-decoration: none;
 }
 
 html[data-scheme="wrangle"] .founder-x-top strong {
@@ -3355,6 +3372,11 @@ html[data-scheme="wrangle"] .founder-x-card p {
 }
 
 html[data-scheme="wrangle"] .founder-x-card p span {
+  color: #128345;
+  font-weight: 850;
+}
+
+html[data-scheme="wrangle"] .founder-x-card p a {
   color: #128345;
   font-weight: 850;
 }

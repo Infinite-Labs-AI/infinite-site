@@ -7,5 +7,12 @@
     { "source": "/ingest/:path(.*)", "destination": "https://eu.i.posthog.com/:path" },
     { "source": "/gtm/gtag/:path(.*)", "destination": "https://www.googletagmanager.com/gtag/:path" },
     { "source": "/gtm/:path(.*)", "destination": "https://www.google-analytics.com/:path" }
+  ],
+  "redirects": [
+    {
+      "source": "/download",
+      "destination": "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg",
+      "permanent": false
+    }
   ]
 }
