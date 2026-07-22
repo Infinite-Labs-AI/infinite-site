@@ -12,6 +12,7 @@ const snippets = [
   googleAnalyticsSnippet(process.env.GOOGLE_ANALYTICS_TAG_ID),
   xPixelSnippet(process.env.X_PIXEL_ID),
   metaPixelSnippet(process.env.META_PIXEL_ID),
+  appDownloadTrackingSnippet(),
 ].filter(Boolean);
 
 if (snippets.length === 0) {
@@ -157,5 +158,44 @@ function metaPixelSnippet(pixelId) {
     "https://connect.facebook.net/en_US/fbevents.js");
     fbq("init", ${JSON.stringify(pixelId)});
     fbq("track", "PageView");
+  </script>`;
+}
+
+function appDownloadTrackingSnippet() {
+  return `  <script>
+    document.addEventListener("click", function (event) {
+      var link = event.target.closest && event.target.closest("a[href]");
+      if (!link) return;
+
+      var destination;
+      try {
+        destination = new URL(link.href, window.location.href);
+      } catch (_error) {
+        return;
+      }
+
+      if (destination.origin !== window.location.origin || destination.pathname !== "/download") return;
+
+      var section = link.closest("[data-download-location], [id], nav, footer");
+      var ctaLocation = link.dataset.downloadLocation;
+      if (!ctaLocation && section) {
+        if (section.dataset && section.dataset.downloadLocation) ctaLocation = section.dataset.downloadLocation;
+        else if (section.id) ctaLocation = section.id;
+        else ctaLocation = section.tagName.toLowerCase();
+      }
+
+      var properties = {
+        cta_location: ctaLocation || "page",
+        page_path: window.location.pathname,
+        link_text: (link.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 80),
+      };
+
+      if (window.posthog && typeof window.posthog.capture === "function") {
+        window.posthog.capture("app_download_clicked", properties);
+      }
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "app_download_clicked", properties);
+      }
+    });
   </script>`;
 }

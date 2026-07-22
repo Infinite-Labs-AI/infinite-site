@@ -26,6 +26,7 @@ for (const [route, file] of pages) {
     `${file} must self-canonicalize to ${expectedCanonical}`,
   );
   assert.doesNotMatch(html, /https:\/\/www\.infinite\.fast/i, `${file} contains a www URL`);
+  assert.doesNotMatch(html, /fonts\.(?:googleapis|gstatic)\.com/i, `${file} must use self-hosted fonts`);
 }
 
 const sitemap = readFileSync("sitemap.xml", "utf8");
@@ -60,6 +61,10 @@ for (const event of ["tool_started", "tool_generated", "result_copied", "downloa
   assert.match(toolScript, new RegExp(event), `tool analytics must emit ${event}`);
 }
 
+const analyticsInjector = readFileSync(".github/scripts/inject-analytics.cjs", "utf8");
+assert.match(analyticsInjector, /app_download_clicked/);
+assert.match(analyticsInjector, /cta_location/);
+
 const comparisonFiles = pages.slice(9).map(([, file]) => file);
 for (const file of comparisonFiles) {
   const html = readFileSync(file, "utf8");
@@ -75,7 +80,9 @@ const vercel = JSON.parse(readFileSync("vercel.json", "utf8"));
 const headers = (vercel.headers || []).flatMap((entry) => entry.headers || []);
 const headerNames = new Set(headers.map((header) => header.key.toLowerCase()));
 for (const name of [
-  "content-security-policy-report-only",
+  "content-security-policy",
+  "reporting-endpoints",
+  "report-to",
   "x-content-type-options",
   "referrer-policy",
   "permissions-policy",

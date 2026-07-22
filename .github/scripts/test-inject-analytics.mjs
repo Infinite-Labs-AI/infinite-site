@@ -3,12 +3,13 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { runInNewContext } from "node:vm";
 
 const repoRoot = new URL("../..", import.meta.url).pathname;
 const tempDir = mkdtempSync(join(tmpdir(), "infinite-analytics-"));
 
 const page = (title) =>
-  `<!doctype html><html><head><title>${title}</title></head><body></body></html>`;
+  `<!doctype html><html><head><title>${title}</title></head><body><a href="/download" data-download-location="hero">Download</a></body></html>`;
 
 try {
   const distDir = join(tempDir, "dist");
@@ -40,6 +41,52 @@ try {
 
   assert.match(html, /https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-TEST1234/);
   assert.match(html, /gtag\("config", "G-TEST1234"\)/);
+  assert.match(html, /app_download_clicked/);
+  assert.match(html, /cta_location/);
+  assert.match(html, /posthog\.capture\("app_download_clicked"/);
+  assert.match(html, /gtag\("event", "app_download_clicked"/);
+
+  const trackingScript = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
+    .map((match) => match[1])
+    .find((script) => script.includes("app_download_clicked"));
+  assert.ok(trackingScript, "app download listener should be injected");
+
+  let clickListener;
+  const captured = [];
+  const window = {
+    location: {
+      href: "https://infinite.fast/tools/seo-geo-brief-generator/",
+      origin: "https://infinite.fast",
+      pathname: "/tools/seo-geo-brief-generator/",
+    },
+    posthog: { capture: (...args) => captured.push(["posthog", ...args]) },
+    gtag: (...args) => captured.push(["gtag", ...args]),
+  };
+  runInNewContext(trackingScript, {
+    URL,
+    window,
+    document: { addEventListener: (_name, listener) => { clickListener = listener; } },
+  });
+
+  const link = {
+    href: "https://infinite.fast/download",
+    dataset: { downloadLocation: "hero" },
+    textContent: "Download for Mac",
+    closest: (selector) => selector === "a[href]" || selector.includes("data-download-location") ? link : null,
+  };
+  clickListener({ target: link });
+  const normalizedCaptured = JSON.parse(JSON.stringify(captured));
+  assert.deepEqual(normalizedCaptured[0], [
+    "posthog",
+    "app_download_clicked",
+    { cta_location: "hero", page_path: "/tools/seo-geo-brief-generator/", link_text: "Download for Mac" },
+  ]);
+  assert.deepEqual(normalizedCaptured[1], [
+    "gtag",
+    "event",
+    "app_download_clicked",
+    { cta_location: "hero", page_path: "/tools/seo-geo-brief-generator/", link_text: "Download for Mac" },
+  ]);
   assert.doesNotMatch(html, /\/gtm\/gtag\/js/);
   assert.doesNotMatch(html, /transport_url/);
 
