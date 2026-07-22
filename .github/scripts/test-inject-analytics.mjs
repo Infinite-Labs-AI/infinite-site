@@ -40,6 +40,8 @@ try {
 
   assert.match(html, /https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-TEST1234/);
   assert.match(html, /gtag\("config", "G-TEST1234"\)/);
+  assert.doesNotMatch(html, /\/gtm\/gtag\/js/);
+  assert.doesNotMatch(html, /transport_url/);
 
   assert.match(html, /twq\("config", "x-test-pixel"\)/);
 
@@ -54,6 +56,8 @@ try {
   assert.match(nestedHtml, /posthog\.init\("phc_test_project_token"/);
   assert.match(nestedHtml, /api_host: "https:\/\/eu\.i\.posthog\.com"/);
   assert.match(nestedHtml, /gtag\("config", "G-TEST1234"\)/);
+  assert.doesNotMatch(nestedHtml, /\/gtm\/gtag\/js/);
+  assert.doesNotMatch(nestedHtml, /transport_url/);
   assert.equal((nestedHtml.match(/<\/head>/g) || []).length, 1);
 } finally {
   rmSync(tempDir, { recursive: true, force: true });
