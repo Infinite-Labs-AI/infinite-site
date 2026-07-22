@@ -43,6 +43,10 @@
           "@id": "https://infinite.fast/#organization",
           "name": "Infinite",
           "url": "https://infinite.fast/",
+          "sameAs": [
+            "https://github.com/Infinite-Labs-AI",
+            "https://www.producthunt.com/products/infinite-the-growth-engineering-agent"
+          ],
           "logo": {
             "@type": "ImageObject",
             "url": "https://infinite.fast/logo.png",
@@ -71,6 +75,15 @@
           "applicationCategory": "BusinessApplication",
           "applicationSubCategory": "Marketing automation software",
           "operatingSystem": "macOS",
+          "offers": {
+            "@type": "Offer",
+            "url": "https://infinite.fast/#pricing",
+            "price": "49",
+            "priceCurrency": "USD",
+            "category": "subscription",
+            "description": "7-day free trial, then $49 per month. Cancel anytime.",
+            "availability": "https://schema.org/InStock"
+          },
           "featureList": [
             "Find high-intent leads",
             "Prepare SEO and GEO work",
@@ -3529,7 +3542,7 @@
         <a href="https://blog.infinite.fast/">Blog</a>
         <a href="#faq">FAQ</a>
       </div>
-      <a class="nav-cta" href="/download">Get Infinite</a>
+      <a class="nav-cta" href="/download" data-download-location="navigation">Get Infinite</a>
     </nav>
   </header>
 
@@ -3543,13 +3556,13 @@
         <h1 id="hero-title">Meet Infinite, your AI CMO.</h1>
         <p>Find leads, prepare SEO and GEO work, shape landing-page tests, and surface content ideas while you stay in control.</p>
         <p class="wrangle-review-note">Infinite monitors and prepares growth work automatically. Publishing, outreach, and consequential changes stay review-first.</p>
-        <a class="wrangle-hero-cta" href="/download">
+        <a class="wrangle-hero-cta" href="/download" data-download-location="hero">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path fill="currentColor" d="M16.7 12.7c0-2.2 1.8-3.3 1.9-3.4-1.1-1.5-2.7-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8s-1.8-.8-3-.8c-1.5 0-2.9.9-3.7 2.2-1.6 2.8-.4 6.9 1.1 9.1.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.2-2.4 1.2-2.5 0 0-2.6-1-2.6-3.8ZM14.5 6.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.7-1 2.8 1 0 2.1-.5 2.8-1.3Z"/>
           </svg>
           Download for Mac
         </a>
-        <p class="download-compatibility">macOS 12+ · Apple Silicon only · Developer ID signed and Apple notarized · <a href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/tag/v0.2.15">Release notes</a></p>
+        <p class="download-compatibility">macOS 12+ · Apple Silicon only · Developer ID signed and Apple notarized · <a href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest">Latest release notes</a></p>
       </div>
 
       <div class="wrangle-product-wrap" role="group" aria-label="Infinite growth workspace preview">
@@ -3591,8 +3604,8 @@
             <p>Infinite launched on Product Hunt and the listing links directly to infinite.fast. <a href="https://www.producthunt.com/products/infinite-the-growth-engineering-agent">View the launch</a></p>
           </li>
           <li class="founder-x-card">
-            <div class="founder-x-top"><span class="founder-x-avatar">RL</span><span><strong>Official release</strong><em>v0.2.15 - 2026-07-21</em></span><b><a href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/tag/v0.2.15" aria-label="Release notes">↗</a></b></div>
-            <p>Release notes list the latest public build and only Apple Silicon Mac assets. <a href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/tag/v0.2.15">Release notes</a></p>
+            <div class="founder-x-top"><span class="founder-x-avatar">RL</span><span><strong>Official release</strong><em>Current public build</em></span><b><a href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest" aria-label="Latest release notes">↗</a></b></div>
+            <p>GitHub publishes the current public build and downloadable Mac assets. <a href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest">View latest release notes</a></p>
           </li>
           <li class="founder-x-card">
             <div class="founder-x-top"><span class="founder-x-avatar">RF</span><span><strong>Review-first controls</strong><em>Default product flow</em></span><b>OK</b></div>
@@ -3904,8 +3917,8 @@
             <p>Infinite monitors buyer signal, prepares SEO work, shapes landing-page tests, and surfaces content angles while consequential changes stay review-first.</p>
             <div class="pricing-social-proof" aria-label="Release evidence">
               <div>
-                <strong>v0.2.15</strong>
-                <span>Latest release notes list Apple Silicon Mac assets.</span>
+                <strong>Latest release</strong>
+                <span>Current Mac build details and assets are published on GitHub.</span>
               </div>
             </div>
           </div>
@@ -3919,13 +3932,13 @@
             </div>
             <div class="price"><strong>$0</strong><span>for 7 days</span></div>
             <p class="billing-note">Then $49/mo. Cancel anytime.</p>
-            <a class="hero-cta pricing-cta" href="/download">
+            <a class="hero-cta pricing-cta" href="/download" data-download-location="pricing">
               <svg class="hero-cta-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path fill="currentColor" d="M16.7 12.7c0-2.2 1.8-3.3 1.9-3.4-1.1-1.5-2.7-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8s-1.8-.8-3-.8c-1.5 0-2.9.9-3.7 2.2-1.6 2.8-.4 6.9 1.1 9.1.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.2-2.4 1.2-2.5 0 0-2.6-1-2.6-3.8ZM14.5 6.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.7-1 2.8 1 0 2.1-.5 2.8-1.3Z"/>
               </svg>
               <span>Download for Mac</span>
             </a>
-            <p class="download-compatibility">macOS 12 or later. Apple Silicon only; Intel Macs are not currently supported. Developer ID signed and Apple notarized. <a href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/tag/v0.2.15">Release notes</a></p>
+            <p class="download-compatibility">macOS 12 or later. Apple Silicon only; Intel Macs are not currently supported. Developer ID signed and Apple notarized. <a href="https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest">Latest release notes</a></p>
             <p class="pricing-cancel"><strong>Cancel anytime.</strong> No questions asked.</p>
           </div>
 
@@ -3979,7 +3992,7 @@
       <div class="shell final-copy">
         <p class="eyebrow section-pill">Start the loop</p>
         <h2 id="final-title">You shipped the app. Put Infinite on customers.</h2>
-        <a class="hero-cta" href="/download">Download for Mac</a>
+        <a class="hero-cta" href="/download" data-download-location="final-cta">Download for Mac</a>
       </div>
     </section>
   </main>

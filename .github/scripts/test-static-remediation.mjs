@@ -69,8 +69,13 @@ assert.equal(
 const headers = vercel.headers?.find((entry) => entry.source === "/(.*)")?.headers ?? [];
 const headerValue = (key) => headers.find((header) => header.key.toLowerCase() === key.toLowerCase())?.value;
 
-assert.match(headerValue("Content-Security-Policy-Report-Only") ?? "", /frame-ancestors 'none'/);
-assert.doesNotMatch(headerValue("Content-Security-Policy-Report-Only") ?? "", /upgrade-insecure-requests/);
+assert.equal(headerValue("Content-Security-Policy-Report-Only"), undefined);
+assert.match(headerValue("Content-Security-Policy") ?? "", /frame-ancestors 'none'/);
+assert.match(headerValue("Content-Security-Policy") ?? "", /report-uri \/api\/csp-report/);
+assert.match(headerValue("Content-Security-Policy") ?? "", /report-to csp-endpoint/);
+assert.doesNotMatch(headerValue("Content-Security-Policy") ?? "", /fonts\.(?:googleapis|gstatic)\.com/);
+assert.match(headerValue("Reporting-Endpoints") ?? "", /csp-endpoint="https:\/\/infinite\.fast\/api\/csp-report"/);
+assert.match(headerValue("Report-To") ?? "", /"group":"csp-endpoint"/);
 assert.equal(headerValue("X-Content-Type-Options"), "nosniff");
 assert.equal(headerValue("Referrer-Policy"), "strict-origin-when-cross-origin");
 assert.match(headerValue("Permissions-Policy") ?? "", /camera=\(\)/);
