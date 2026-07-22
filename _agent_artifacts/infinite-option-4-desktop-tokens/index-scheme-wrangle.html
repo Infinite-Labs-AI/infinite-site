@@ -2762,58 +2762,6 @@
       text-align: center;
     }
 
-    .demo-modal {
-      width: min(820px, calc(100vw - 32px));
-      margin: auto;
-      padding: 0;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 8px;
-      background: rgba(5, 5, 5, 0.94);
-      color: var(--paper);
-      backdrop-filter: blur(18px);
-    }
-
-    .demo-modal::backdrop {
-      background: rgba(0, 0, 0, 0.72);
-    }
-
-    .demo-panel {
-      position: relative;
-      display: grid;
-      gap: 14px;
-      padding: 22px;
-    }
-
-    .demo-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: grid;
-      width: 44px;
-      height: 44px;
-      place-items: center;
-      cursor: pointer;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      font-size: 22px;
-      line-height: 1;
-    }
-
-    .calendar-shell {
-      overflow: hidden;
-      height: min(620px, 70vh);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 8px;
-      background: #fff;
-    }
-
-    .calendar-frame {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      background: #fff;
-    }
-
     @media (max-width: 980px) {
       .nav-links {
         display: none;
@@ -3202,8 +3150,7 @@
     .activity-card,
     .testimonial-card,
     .price-card,
-    .faq-item,
-    .demo-modal {
+    .faq-item {
       border-color: rgba(255, 255, 255, 0.16);
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.028)),
@@ -4043,60 +3990,5 @@
     <div class="wrangle-giant-word" aria-hidden="true">Infinite</div>
   </footer>
 
-  <dialog class="demo-modal" id="demo-modal" aria-label="Book a demo call">
-    <div class="demo-panel">
-      <button class="demo-close" type="button" data-close-demo aria-label="Close">x</button>
-      <div>
-        <p class="eyebrow">Calendar</p>
-        <h2>Book a demo call</h2>
-      </div>
-      <div class="calendar-shell">
-        <iframe class="calendar-frame" src="https://calendar.app.google/QtpCpF9hVrKUnZDF6" title="Book a demo call" loading="lazy"></iframe>
-      </div>
-      <a class="secondary-cta" href="https://calendar.app.google/QtpCpF9hVrKUnZDF6" target="_blank" rel="noopener noreferrer">Open calendar</a>
-    </div>
-  </dialog>
-
-  <script>
-    const demoModal = document.querySelector("#demo-modal");
-    const openDemoButtons = document.querySelectorAll("[data-open-demo]");
-    const closeDemoButton = document.querySelector("[data-close-demo]");
-    let lastDemoTrigger = null;
-
-    const restoreDemoFocus = () => {
-      if (lastDemoTrigger instanceof HTMLElement) {
-        lastDemoTrigger.focus();
-        lastDemoTrigger = null;
-      }
-    };
-
-    openDemoButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        lastDemoTrigger = button;
-        if (typeof demoModal.showModal === "function") {
-          demoModal.showModal();
-          closeDemoButton.focus();
-        } else {
-          window.open("https://calendar.app.google/QtpCpF9hVrKUnZDF6", "_blank", "noopener");
-        }
-      });
-    });
-
-    closeDemoButton.addEventListener("click", () => {
-      demoModal.close();
-    });
-
-    demoModal.addEventListener("cancel", () => {
-      restoreDemoFocus();
-    });
-
-    demoModal.addEventListener("close", () => {
-      restoreDemoFocus();
-    });
-
-    demoModal.addEventListener("click", (event) => {
-      if (event.target === demoModal) demoModal.close();
-    });
-  </script>
 </body>
 </html>

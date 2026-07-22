@@ -147,8 +147,7 @@ h3,
 .faq-item,
 .stack-card-demo,
 .activity-metrics,
-.overnight-panel,
-.calendar-shell {
+.overnight-panel {
   border-color: var(--light-line);
   background:
     radial-gradient(120% 90% at 18% 0%, var(--light-card-tint), transparent 52%),
@@ -280,8 +279,4 @@ h3,
 
 .faq-item summary {
   color: var(--light-ink);
-}
-
-.demo-modal::backdrop {
-  background: rgba(236, 238, 250, 0.74);
 }

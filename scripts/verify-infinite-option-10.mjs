@@ -7,6 +7,10 @@ const pagePath = new URL("index.html", artifactRoot);
 const rootIndexPath = new URL("index.html", repoRoot);
 const wrangleArtifactRoot = new URL("_agent_artifacts/infinite-option-4-desktop-tokens/", repoRoot);
 const wranglePagePath = new URL("index-scheme-wrangle.html", wrangleArtifactRoot);
+const wrangleStylePaths = [
+  new URL("homepage-critical.css", wrangleArtifactRoot),
+  new URL("light-common.css", wrangleArtifactRoot),
+];
 
 const failures = [];
 
@@ -26,6 +30,13 @@ try {
   wrangleHtml = await readFile(wranglePagePath, "utf8");
 } catch {
   failures.push("Missing homepage artifact file: _agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html");
+}
+
+let wrangleStyles = "";
+try {
+  wrangleStyles = (await Promise.all(wrangleStylePaths.map((stylePath) => readFile(stylePath, "utf8")))).join("\n");
+} catch {
+  failures.push("Missing homepage style source required for dead-feature checks");
 }
 
 const requiredSnippets = [
@@ -188,9 +199,6 @@ if (wrangleHtml) {
     "Dashboard metrics use demo data.",
     "Demo data",
     'class="footer-label"',
-    "let lastDemoTrigger = null;",
-    'demoModal.addEventListener("cancel"',
-    "lastDemoTrigger.focus();",
   ];
 
   const forbiddenWrangleSnippets = [
@@ -208,6 +216,13 @@ if (wrangleHtml) {
     "@hugo",
     "v0.2.15",
     "/releases/tag/v0.2.15",
+    "calendar.app.google",
+    'id="demo-modal"',
+    ".demo-modal",
+    ".calendar-shell",
+    "calendar-frame",
+    "data-open-demo",
+    "Book a demo call",
     "<h4>",
     "</h4>",
   ];
@@ -216,8 +231,9 @@ if (wrangleHtml) {
     if (!wrangleHtml.includes(snippet)) failures.push(`Missing homepage audit snippet: ${snippet}`);
   }
 
+  const wrangleSource = `${wrangleHtml}\n${wrangleStyles}`;
   for (const snippet of forbiddenWrangleSnippets) {
-    if (wrangleHtml.toLowerCase().includes(snippet.toLowerCase())) {
+    if (wrangleSource.toLowerCase().includes(snippet.toLowerCase())) {
       failures.push(`Rejected homepage copy or metadata present: ${snippet}`);
     }
   }
@@ -225,11 +241,6 @@ if (wrangleHtml) {
   const lcpImgPattern = /<img[^>]+src="assets\/hero\/relay-hq-dashboard\.png"[^>]+alt="Infinite dashboard preview with demo data"[^>]*>/;
   if (!lcpImgPattern.test(wrangleHtml)) {
     failures.push("Missing LCP fallback image with accurate demo-data alt text");
-  }
-
-  const closeButtonPattern = /\.demo-close\s*\{[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px;[\s\S]*?\}/;
-  if (!closeButtonPattern.test(wrangleHtml)) {
-    failures.push("Demo modal close control must be at least 44px by 44px");
   }
 
   const focusStylePattern = /:focus-visible[\s\S]*outline:\s*3px solid #128345;/;
