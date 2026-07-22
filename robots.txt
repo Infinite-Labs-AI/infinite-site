@@ -4,4 +4,4 @@ Allow: /
 User-agent: OAI-SearchBot
 Allow: /
 
-Sitemap: https://www.infinite.fast/sitemap.xml
+Sitemap: https://infinite.fast/sitemap.xml

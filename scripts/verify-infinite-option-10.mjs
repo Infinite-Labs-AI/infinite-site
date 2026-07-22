@@ -5,6 +5,8 @@ const repoRoot = new URL("../", import.meta.url);
 const artifactRoot = new URL("_agent_artifacts/infinite-option-10/", repoRoot);
 const pagePath = new URL("index.html", artifactRoot);
 const rootIndexPath = new URL("index.html", repoRoot);
+const wrangleArtifactRoot = new URL("_agent_artifacts/infinite-option-4-desktop-tokens/", repoRoot);
+const wranglePagePath = new URL("index-scheme-wrangle.html", wrangleArtifactRoot);
 
 const failures = [];
 
@@ -17,6 +19,13 @@ try {
   html = await readFile(pagePath, "utf8");
 } catch {
   failures.push("Missing artifact file: _agent_artifacts/infinite-option-10/index.html");
+}
+
+let wrangleHtml = "";
+try {
+  wrangleHtml = await readFile(wranglePagePath, "utf8");
+} catch {
+  failures.push("Missing homepage artifact file: _agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html");
 }
 
 const requiredSnippets = [
@@ -146,6 +155,83 @@ for (const obsoleteContract of ["lead-card", 'data-scene-action="reddit"']) {
   if (html.includes(obsoleteContract)) failures.push(`Obsolete Reddit interaction contract present: ${obsoleteContract}`);
 }
 
+if (wrangleHtml) {
+  const requiredWrangleSnippets = [
+    '<link rel="canonical" href="https://infinite.fast/">',
+    '<meta property="og:url" content="https://infinite.fast/">',
+    'https://infinite.fast/assets/infinite/ai-cmo-social-preview.png',
+    '"@id": "https://infinite.fast/#organization"',
+    '"@id": "https://infinite.fast/#website"',
+    '"@id": "https://infinite.fast/#software"',
+    '"@id": "https://infinite.fast/#faq"',
+    "Find leads, prepare SEO and GEO work, shape landing-page tests, and surface content ideas while you stay in control.",
+    "Infinite monitors and prepares growth work automatically. Publishing, outreach, and consequential changes stay review-first.",
+    '<link rel="preload" as="image" href="assets/hero/relay-hq-dashboard-928.avif"',
+    'imagesrcset="assets/hero/relay-hq-dashboard-624.avif 624w, assets/hero/relay-hq-dashboard-928.avif 928w, assets/hero/relay-hq-dashboard-1240.avif 1240w"',
+    '<picture class="wrangle-product-picture">',
+    '<source type="image/avif" srcset="assets/hero/relay-hq-dashboard-624.avif 624w, assets/hero/relay-hq-dashboard-928.avif 928w, assets/hero/relay-hq-dashboard-1240.avif 1240w"',
+    '<source type="image/webp" srcset="assets/hero/relay-hq-dashboard-624.webp 624w, assets/hero/relay-hq-dashboard-928.webp 928w, assets/hero/relay-hq-dashboard-1240.webp 1240w"',
+    'width="1238" height="866" fetchpriority="high" loading="eager" decoding="async"',
+    "Public proof and release details",
+    "View original X post",
+    "Release notes",
+    "Apple Silicon Mac",
+    "macOS 12+",
+    "Apple Silicon only",
+    "Developer ID signed and Apple notarized",
+    "Intel Macs are not currently supported",
+    "https://www.producthunt.com/products/infinite-the-growth-engineering-agent",
+    "Dashboard metrics use demo data.",
+    "Demo data",
+    'class="footer-label"',
+    "let lastDemoTrigger = null;",
+    'demoModal.addEventListener("cancel"',
+    "lastDemoTrigger.focus();",
+  ];
+
+  const forbiddenWrangleSnippets = [
+    "https://www.infinite.fast",
+    "Find leads, automates",
+    "Trusted by top founders",
+    "Put growth on <span>auto-pilot</span>",
+    "publishes SEO work",
+    "Drew Lang",
+    "@sanafounder",
+    "Operator Notes",
+    "@operator",
+    "Kai Chen",
+    "Nina Tran",
+    "@hugo",
+    "<h4>",
+    "</h4>",
+  ];
+
+  for (const snippet of requiredWrangleSnippets) {
+    if (!wrangleHtml.includes(snippet)) failures.push(`Missing homepage audit snippet: ${snippet}`);
+  }
+
+  for (const snippet of forbiddenWrangleSnippets) {
+    if (wrangleHtml.toLowerCase().includes(snippet.toLowerCase())) {
+      failures.push(`Rejected homepage copy or metadata present: ${snippet}`);
+    }
+  }
+
+  const lcpImgPattern = /<img[^>]+src="assets\/hero\/relay-hq-dashboard\.png"[^>]+alt="Infinite dashboard preview with demo data"[^>]*>/;
+  if (!lcpImgPattern.test(wrangleHtml)) {
+    failures.push("Missing LCP fallback image with accurate demo-data alt text");
+  }
+
+  const closeButtonPattern = /\.demo-close\s*\{[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px;[\s\S]*?\}/;
+  if (!closeButtonPattern.test(wrangleHtml)) {
+    failures.push("Demo modal close control must be at least 44px by 44px");
+  }
+
+  const focusStylePattern = /:focus-visible[\s\S]*outline:\s*3px solid #128345;/;
+  if (!focusStylePattern.test(wrangleHtml)) {
+    failures.push("Missing visible keyboard focus style with sufficient contrast");
+  }
+}
+
 if (!/id="price-value"[^>]*>\$50</.test(html)) {
   failures.push('Missing pricing default contract: id="price-value" starts at $50');
 }
@@ -209,6 +295,50 @@ for (const reference of localReferences) {
     await access(new URL(reference, artifactRoot), constants.R_OK);
   } catch {
     failures.push(`Missing local reference: ${reference}`);
+  }
+}
+
+if (wrangleHtml) {
+  const wrangleLocalReferences = new Set();
+  const addWrangleReference = (value) => {
+    if (!value) return;
+    const trimmed = value.trim();
+    if (
+      trimmed === "" ||
+      trimmed.startsWith("#") ||
+      trimmed.startsWith("/") ||
+      trimmed.startsWith("mailto:") ||
+      trimmed.startsWith("tel:") ||
+      trimmed.startsWith("http://") ||
+      trimmed.startsWith("https://") ||
+      trimmed.startsWith("data:") ||
+      trimmed.startsWith("%")
+    ) {
+      return;
+    }
+    wrangleLocalReferences.add(trimmed);
+  };
+
+  for (const match of wrangleHtml.matchAll(/\s(?:src|href|data-image)="([^"]+)"/g)) {
+    addWrangleReference(match[1]);
+  }
+
+  for (const match of wrangleHtml.matchAll(/\ssrcset="([^"]+)"/g)) {
+    for (const candidate of match[1].split(",")) {
+      addWrangleReference(candidate.trim().split(/\s+/)[0]);
+    }
+  }
+
+  for (const match of wrangleHtml.matchAll(/url\(["']?([^"')]+)["']?\)/g)) {
+    addWrangleReference(match[1]);
+  }
+
+  for (const reference of wrangleLocalReferences) {
+    try {
+      await access(new URL(reference, wrangleArtifactRoot), constants.R_OK);
+    } catch {
+      failures.push(`Missing homepage local reference: ${reference}`);
+    }
   }
 }
 

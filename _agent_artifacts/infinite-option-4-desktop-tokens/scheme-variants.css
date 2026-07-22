@@ -450,9 +450,17 @@ html[data-scheme="wrangle"] .wrangle-hero h1 {
 html[data-scheme="wrangle"] .wrangle-hero-copy p {
   width: min(100%, 560px);
   margin: 22px auto 0;
-  color: #767b80;
+  color: #606870;
   font-size: clamp(17px, 1.45vw, 21px);
   line-height: 1.36;
+}
+
+html[data-scheme="wrangle"] .wrangle-hero-copy .wrangle-review-note {
+  max-width: 640px;
+  margin-top: 12px;
+  color: #4f5963;
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.45;
 }
 
 html[data-scheme="wrangle"] .wrangle-hero-cta {
@@ -609,12 +617,38 @@ html[data-scheme="wrangle"] .wrangle-product-shot {
   background: #10131d;
 }
 
+html[data-scheme="wrangle"] .wrangle-product-picture {
+  display: block;
+}
+
 html[data-scheme="wrangle"] .wrangle-product-shot img {
   display: block;
   width: 100%;
   height: clamp(430px, 45vw, 620px);
   object-fit: cover;
   object-position: top left;
+}
+
+html[data-scheme="wrangle"] .demo-data-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid #cfe4dc;
+  border-radius: 999px;
+  padding: 0 10px;
+  background: #f2fbf7;
+  color: #128345;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+html[data-scheme="wrangle"] .wrangle-product .demo-data-label {
+  position: absolute;
+  z-index: 2;
+  right: 14px;
+  bottom: 14px;
+  box-shadow: 0 12px 26px rgba(8, 18, 28, 0.18);
 }
 
 html[data-scheme="wrangle"] .wrangle-toolbar {
@@ -1905,7 +1939,8 @@ html[data-scheme="wrangle"] .wrangle-footer-mark img {
   border-radius: 8px;
 }
 
-html[data-scheme="wrangle"] .wrangle-footer h4 {
+html[data-scheme="wrangle"] .wrangle-footer .footer-label {
+  display: block;
   margin: 0 0 11px;
   color: #4a5157;
   font-size: 11px;
@@ -1915,7 +1950,7 @@ html[data-scheme="wrangle"] .wrangle-footer h4 {
 html[data-scheme="wrangle"] .wrangle-footer a {
   display: block;
   margin: 7px 0;
-  color: #7c858c;
+  color: #5f6870;
   font-size: 11px;
   font-weight: 650;
   text-decoration: none;
@@ -1932,7 +1967,7 @@ html[data-scheme="wrangle"] .wrangle-footer-bottom {
   justify-content: space-between;
   gap: 24px;
   margin-top: 56px;
-  color: #9ba3a9;
+  color: #68737b;
   font-size: 11px;
   font-weight: 620;
 }
@@ -3342,7 +3377,7 @@ html[data-scheme="wrangle"] .founder-x-top strong {
 
 html[data-scheme="wrangle"] .founder-x-top em {
   margin-top: 2px;
-  color: #8b949d;
+  color: #66717a;
   font-size: 11px;
   font-style: normal;
   font-weight: 700;
@@ -3920,7 +3955,7 @@ html[data-scheme="wrangle"] .founder-x-card p a {
     margin-bottom: 4px;
   }
 
-  html[data-scheme="wrangle"] .wrangle-footer h4 {
+  html[data-scheme="wrangle"] .wrangle-footer .footer-label {
     margin-bottom: 9px;
   }
 
@@ -3939,4 +3974,57 @@ html[data-scheme="wrangle"] .founder-x-card p a {
     bottom: -18px;
     font-size: 72px;
   }
+}
+
+/* Audit remediation: stronger small-text contrast and usable mobile targets. */
+html[data-scheme="wrangle"] .section-pill,
+html[data-scheme="wrangle"] .effect-pill,
+html[data-scheme="wrangle"] .effect-quote-card footer span,
+html[data-scheme="wrangle"] .pricing-plan-top span {
+  color: #0f773d !important;
+}
+
+html[data-scheme="wrangle"] .effect-window-bar,
+html[data-scheme="wrangle"] .effect-metric span,
+html[data-scheme="wrangle"] .effect-quote-card footer {
+  color: #626b73;
+}
+
+html[data-scheme="wrangle"] .effect-mini-stat b {
+  color: #0f773d;
+}
+
+html[data-scheme="wrangle"] .founder-x-top strong a,
+html[data-scheme="wrangle"] .founder-x-top em a {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+}
+
+html[data-scheme="wrangle"] .wrangle-footer a {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  margin: 0;
+}
+
+html[data-scheme="wrangle"] .download-compatibility {
+  max-width: 600px;
+  margin: 12px auto 0;
+  color: #626b73;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+html[data-scheme="wrangle"] .download-compatibility a {
+  color: #2f3032;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+html[data-scheme="wrangle"] .pricing-plan-left .download-compatibility {
+  margin-top: 12px;
+  text-align: left;
 }

@@ -7,18 +7,18 @@
   <meta name="description" content="Generate SEO and GEO briefs for pages that can appear in search, AI answers, comparison queries, and buyer research journeys.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#ffffff">
-  <link rel="canonical" href="https://www.infinite.fast/tools/seo-geo-brief-generator/">
+  <link rel="canonical" href="https://infinite.fast/tools/seo-geo-brief-generator/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Infinite">
   <meta property="og:title" content="Free SEO + GEO Brief Generator | Infinite">
   <meta property="og:description" content="Generate page briefs for Google, ChatGPT, Claude, Perplexity, and buyer comparison searches.">
-  <meta property="og:url" content="https://www.infinite.fast/tools/seo-geo-brief-generator/">
-  <meta property="og:image" content="https://www.infinite.fast/assets/infinite/ai-cmo-social-preview.png">
+  <meta property="og:url" content="https://infinite.fast/tools/seo-geo-brief-generator/">
+  <meta property="og:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Infinite AI CMO growth system">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://www.infinite.fast/assets/infinite/ai-cmo-social-preview.png">
+  <meta name="twitter:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
   <meta name="twitter:image:alt" content="Infinite AI CMO growth system">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
@@ -27,6 +27,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/seo-pages.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SEO + GEO Brief Generator",
+    "url": "https://infinite.fast/tools/seo-geo-brief-generator/",
+    "description": "A free browser-based generator for planning SEO and generative-engine optimization briefs from buyer queries and product positioning.",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Any",
+    "isAccessibleForFree": true,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Infinite",
+      "url": "https://infinite.fast/"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://infinite.fast/" },
+      { "@type": "ListItem", "position": 2, "name": "Free Tools", "item": "https://infinite.fast/tools/" },
+      { "@type": "ListItem", "position": 3, "name": "SEO + GEO Brief Generator", "item": "https://infinite.fast/tools/seo-geo-brief-generator/" }
+    ]
+  }
+  </script>
 </head>
 <body>
   <nav class="seo-nav" aria-label="Primary navigation">
@@ -42,16 +70,82 @@
         <p>Create briefs for pages that answer buyer questions across Google search, AI overviews, ChatGPT, Claude, and Perplexity.</p>
       </div>
     </section>
+
     <section class="seo-section">
       <div class="seo-shell seo-two-col">
-        <form class="seo-form-card" data-generator="seo-geo" data-output="#generator-output">
+        <form class="seo-form-card" data-generator="seo-geo" data-tool-name="seo-geo-brief-generator" data-output="#generator-output" data-status="#tool-status">
           <div class="seo-field"><label for="topic">Topic or query</label><input id="topic" name="topic" value="best AI CMO for indie hackers"></div>
           <div class="seo-field"><label for="product">Product</label><input id="product" name="product" value="Infinite"></div>
           <div class="seo-field"><label for="buyer">Buyer</label><input id="buyer" name="buyer" value="technical founders"></div>
-          <button class="seo-button" type="submit">Generate brief</button>
+          <div class="seo-field"><label for="differentiator">Defensible differentiator</label><input id="differentiator" name="differentiator" value="connects lead discovery, SEO, content ideas, and conversion testing"></div>
+          <div class="seo-form-actions">
+            <button class="seo-button" type="submit">Generate brief</button>
+            <div class="seo-result-controls" data-result-controls>
+              <button class="seo-button-secondary" type="button" data-copy-result aria-label="Copy generated SEO and GEO brief">Copy</button>
+              <button class="seo-button-secondary" type="button" data-download-result aria-label="Download generated SEO and GEO brief">Download</button>
+            </div>
+          </div>
+          <p class="seo-status" id="tool-status" role="status" aria-live="polite">Example result shown. Edit the fields and generate a custom version.</p>
           <p class="seo-context-note">Planning your AI-search stack too? Read Infinite's guide to the <a href="https://blog.infinite.fast/best-ai-seo-tools-for-founders">best AI SEO tools for founders</a>.</p>
         </form>
-        <div class="seo-output" id="generator-output" aria-live="polite"></div>
+        <div class="seo-output" id="generator-output" aria-live="polite">
+          <h2>Example result: best AI CMO for indie hackers brief</h2>
+          <p>Build the page for technical founders comparing AI CMO options across search and AI answer tools.</p>
+          <section class="seo-output-section">
+            <h3>Recommended structure</h3>
+            <ul class="seo-output-list">
+              <li><span>Define the category in plain founder language.</span></li>
+              <li><span>Explain when Infinite is a fit and when a specialist tool is better.</span></li>
+              <li><span>Source every comparison claim from public evidence or product UI.</span></li>
+            </ul>
+          </section>
+          <div class="seo-result-cta">
+            <h3>Turn this into an operating loop.</h3>
+            <p>Infinite helps founders keep search, content, and conversion work connected as buyer questions change.</p>
+            <a class="seo-button" href="/download">Get Infinite</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="seo-section">
+      <div class="seo-shell seo-content-grid">
+        <article class="seo-content-block">
+          <h2>How to use the brief</h2>
+          <ol>
+            <li>Collect source URLs before writing claims, especially for comparison or alternative pages.</li>
+            <li>Answer buyer questions directly before expanding into examples, screenshots, or tables.</li>
+            <li>Use internal links from tool pages, comparisons, and relevant blog posts so crawlers can understand the cluster.</li>
+          </ol>
+        </article>
+        <article class="seo-content-block">
+          <h2>Limitations</h2>
+          <ul>
+            <li>The generator does not crawl live search results or validate keyword volume.</li>
+            <li>It cannot prove competitor features, pricing, or availability. Use public sources.</li>
+            <li>AI answer visibility is not guaranteed by a brief; the page still needs useful content and crawlable evidence.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="seo-section">
+      <div class="seo-shell seo-faq-grid">
+        <article class="seo-content-block">
+          <h2>FAQs</h2>
+          <h3>What is GEO?</h3>
+          <p>GEO means generative-engine optimization: structuring pages so AI answer systems can understand the entity, claim, source, and buyer use case.</p>
+          <h3>Should SEO and GEO be separate pages?</h3>
+          <p>Usually no. A useful page for founders should answer human search intent and make claims easy for AI systems to parse, cite, and compare.</p>
+        </article>
+        <article class="seo-content-block">
+          <h2>Practical next steps</h2>
+          <ul>
+            <li>Draft a source list before drafting the page.</li>
+            <li>Add concise FAQs for the questions buyers ask before choosing a tool.</li>
+            <li>Use Infinite to keep briefs, pages, comparisons, and content ideas in one reviewed loop.</li>
+          </ul>
+        </article>
       </div>
     </section>
   </main>

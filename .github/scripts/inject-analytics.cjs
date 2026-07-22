@@ -116,18 +116,13 @@ function googleAnalyticsSnippet(tagId) {
     return "";
   }
 
-  // First-party proxied (see vercel.json "/gtm" rewrites): the gtag.js loader is served through
-  // /gtm/gtag/js (→ googletagmanager.com) and measurement hits are sent to /gtm/g/collect via
-  // transport_url (→ google-analytics.com), so ad blockers can't strip the direct Google hosts.
-  // NOTE: this is the LIGHTWEIGHT proxy — gtag.js hardcodes Google's hosts for some internal
-  // sub-requests, so it recovers the core pageview/event measurement, not necessarily 100%.
-  return `  <!-- Google tag (gtag.js) — first-party proxied -->
-  <script async src="/gtm/gtag/js?id=${encodeURIComponent(tagId)}"></script>
+  return `  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(tagId)}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag("js", new Date());
-    gtag("config", ${JSON.stringify(tagId)}, { transport_url: "/gtm" });
+    gtag("config", ${JSON.stringify(tagId)});
   </script>`;
 }
 

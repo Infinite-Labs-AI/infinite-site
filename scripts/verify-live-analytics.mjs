@@ -7,7 +7,7 @@
  *
  * WHY THIS EXISTS
  * ---------------
- * Analytics on www.infinite.fast died SILENTLY for ~a month. The live pages
+ * Analytics on infinite.fast died SILENTLY for ~a month. The live pages
  * simply stopped carrying the PostHog snippet — caused by a stale deploy, gaps
  * in the build-time injector, and a PostHog region flip (US host vs EU host).
  * Nobody noticed because nothing errored: the pages loaded fine, they just
@@ -25,11 +25,13 @@
  *
  * WHAT IT ASSERTS, PER PAGE
  * -------------------------
- *   1. Exactly ONE PostHog snippet  (0 = analytics dead; 2+ = double-count bug)
- *   2. PostHog project token starts with "phc_" AND equals the expected value
+ *   1. Canonical and Open Graph URL metadata use the apex infinite.fast URL
+ *   2. Exactly ONE PostHog snippet  (0 = analytics dead; 2+ = double-count bug)
+ *   3. PostHog project token starts with "phc_" AND equals the expected value
  *      (expected value comes from the repo variable, passed in as env)
- *   3. PostHog api_host is the first-party "/ingest" reverse-proxy path (snippet intact)
- *   4. A Google Analytics gtag loader is present
+ *   4. PostHog api_host is the first-party "/ingest" reverse-proxy path (snippet intact)
+ *   5. A direct Google Analytics gtag loader is present, with no unproven
+ *      relative transport_url proxy
  * PLUS one site-wide check: the proxied PostHog library at /ingest/static/array.js actually
  * resolves and is really PostHog — the relocated region-flip tripwire, and the thing that catches
  * a broken rewrite (which would silently kill analytics exactly like the original outage).
@@ -41,7 +43,7 @@
  * CONFIG (all overridable via env; sensible, LOUD defaults so it also runs
  * locally with zero setup)
  * ----------------------------------------------------------------------------
- *   SITE_BASE_URL              default https://www.infinite.fast
+ *   SITE_BASE_URL              default https://infinite.fast
  *   EXPECTED_POSTHOG_TOKEN     default = the known public prod token (below)
  *   EXPECTED_POSTHOG_API_HOST  default /ingest   (first-party reverse-proxy path → PostHog EU)
  *   EXPECTED_GA_TAG_ID         default G-JE3BZS61FZ   (empty env => "any G-* tag")
@@ -84,7 +86,7 @@ const PAGES = [
 // ---------------------------------------------------------------------------
 // Expected values (env wins; empty/whitespace env falls back to the default).
 // ---------------------------------------------------------------------------
-const SITE_BASE_URL = firstNonEmpty(process.env.SITE_BASE_URL, "https://www.infinite.fast").replace(/\/+$/, "");
+const SITE_BASE_URL = firstNonEmpty(process.env.SITE_BASE_URL, "https://infinite.fast").replace(/\/+$/, "");
 
 const POSTHOG_TOKEN_PREFIX = "phc_";
 const EXPECTED_POSTHOG_TOKEN = firstNonEmpty(
@@ -158,8 +160,28 @@ async function fetchPageHtml(url) {
  */
 function checkPage(label, html, failures) {
   const fail = (/** @type {string} */ msg) => failures.push(`[${label}] ${msg}`);
+  const expectedUrl = `${SITE_BASE_URL}${label}`;
 
-  // --- 1. Exactly one PostHog snippet ---------------------------------------
+  // --- 1. Apex canonical / share metadata ----------------------------------
+  if (/https:\/\/www\.infinite\.fast/.test(html)) {
+    fail("page contains www.infinite.fast; expected apex https://infinite.fast for main-site absolute URLs");
+  }
+
+  const canonicalMatch = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i);
+  if (!canonicalMatch) {
+    fail("canonical link MISSING");
+  } else if (canonicalMatch[1] !== expectedUrl) {
+    fail(`canonical link WRONG — live page uses "${canonicalMatch[1]}", expected "${expectedUrl}"`);
+  }
+
+  const ogUrlMatch = html.match(/<meta\b[^>]*property=["']og:url["'][^>]*content=["']([^"']+)["']/i);
+  if (!ogUrlMatch) {
+    fail("og:url MISSING");
+  } else if (ogUrlMatch[1] !== expectedUrl) {
+    fail(`og:url WRONG — live page uses "${ogUrlMatch[1]}", expected "${expectedUrl}"`);
+  }
+
+  // --- 2. Exactly one PostHog snippet ---------------------------------------
   // `posthog.init(` is the single unambiguous marker of one initialized
   // snippet. 0 => analytics is dead (the exact month-long outage). 2+ => a
   // double-injection bug (double-counts every event).
@@ -172,18 +194,18 @@ function checkPage(label, html, failures) {
     fail(`PostHog snippet DUPLICATED — found ${initCount} \`posthog.init(\` calls, expected exactly 1 (double-counts events)`);
   }
 
-  // --- 2. PostHog token: phc_ prefix + exact expected value -----------------
+  // --- 3. PostHog token: phc_ prefix + exact expected value -----------------
   if (initCount >= 1) {
     const token = initMatches[0][2];
     if (!token.startsWith(POSTHOG_TOKEN_PREFIX)) {
-      fail(`PostHog token has wrong prefix — got "${token}", expected it to start with "${POSTHOG_TOKEN_PREFIX}"`);
+      fail(`PostHog token has wrong prefix — got "${maskIdentifier(token)}", expected it to start with "${POSTHOG_TOKEN_PREFIX}"`);
     }
     if (token !== EXPECTED_POSTHOG_TOKEN) {
-      fail(`PostHog token MISMATCH — live page has "${token}", expected "${EXPECTED_POSTHOG_TOKEN}" (check the VITE_POSTHOG_PROJECT_TOKEN repo variable / your build's token)`);
+      fail(`PostHog token MISMATCH — live page has "${maskIdentifier(token)}", expected "${maskIdentifier(EXPECTED_POSTHOG_TOKEN)}" (check the VITE_POSTHOG_PROJECT_TOKEN repo variable / your build's token)`);
     }
   }
 
-  // --- 3. PostHog api_host: the first-party "/ingest" proxy path -------------
+  // --- 4. PostHog api_host: the first-party "/ingest" proxy path -------------
   // Only the init-config `api_host: "..."` matches; the `s.api_host.replace(...)`
   // inside the loader IIFE has no `:` so it is not caught here. This asserts the
   // snippet carries the expected proxy path; region correctness is the live
@@ -200,10 +222,19 @@ function checkPage(label, html, failures) {
     }
   }
 
-  // --- 4. Google Analytics gtag loader present ------------------------------
-  const gaMatch = html.match(/googletagmanager\.com\/gtag\/js\?id=([^"'&\s]+)/);
+  // --- 5. Google Analytics direct gtag loader present -----------------------
+  const proxiedGaMatch = html.match(/(?:src=["'])\/gtm\/gtag\/js\?id=([^"'&\s]+)/);
+  if (proxiedGaMatch) {
+    fail("Google Analytics uses the unproven relative /gtm loader; expected direct googletagmanager.com/gtag/js");
+  }
+
+  if (/transport_url\s*:/.test(html)) {
+    fail("Google Analytics config includes transport_url; expected direct Google collection");
+  }
+
+  const gaMatch = html.match(/https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=([^"'&\s]+)/);
   if (!gaMatch) {
-    fail("Google Analytics gtag loader MISSING (no googletagmanager.com/gtag/js?id=... on the live page)");
+    fail("Google Analytics direct gtag loader MISSING (no https://www.googletagmanager.com/gtag/js?id=... on the live page)");
   } else {
     const gaId = decodeURIComponent(gaMatch[1]);
     if (EXPECTED_GA_TAG_ID && gaId !== EXPECTED_GA_TAG_ID) {
@@ -219,7 +250,7 @@ async function main() {
   console.log("Live analytics guardrail");
   console.log(`  base URL          : ${SITE_BASE_URL}`);
   console.log(`  pages             : ${PAGES.join(", ")}`);
-  console.log(`  expect token      : ${EXPECTED_POSTHOG_TOKEN}`);
+  console.log(`  expect token      : ${maskIdentifier(EXPECTED_POSTHOG_TOKEN)}`);
   console.log(`  expect api_host   : ${EXPECTED_POSTHOG_API_HOST}`);
   console.log(`  expect GA tag id  : ${EXPECTED_GA_TAG_ID || "(any G-* tag)"}`);
   console.log("");
@@ -301,6 +332,13 @@ function sleep(ms) {
 /** @param {number} attempt */
 function backoffMs(attempt) {
   return Math.min(1000 * 2 ** (attempt - 1), 8000);
+}
+
+/** @param {string} value */
+function maskIdentifier(value) {
+  if (!value) return "";
+  if (value.length <= 10) return `${value.slice(0, 3)}...`;
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
 }
 
 main().catch((err) => {
