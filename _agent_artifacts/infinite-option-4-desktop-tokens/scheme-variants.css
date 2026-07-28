@@ -3266,6 +3266,83 @@ html[data-scheme="wrangle"] .founder-x-proof h2::before {
   content: none;
 }
 
+html[data-scheme="wrangle"] .founder-logo-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  max-width: 1030px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+html[data-scheme="wrangle"] .founder-logo-card {
+  display: flex;
+  min-height: 86px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(225, 230, 235, 0.88);
+  border-radius: 18px;
+  padding: 14px 12px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 16px 40px rgba(31, 72, 112, 0.07);
+  backdrop-filter: blur(14px);
+}
+
+html[data-scheme="wrangle"] .logo-wordmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  color: #171717;
+  font-size: clamp(16px, 1.35vw, 22px);
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+html[data-scheme="wrangle"] .logo-cloudflare {
+  color: #f6821f;
+}
+
+html[data-scheme="wrangle"] .logo-replit {
+  font-family: var(--mono);
+  font-weight: 800;
+}
+
+html[data-scheme="wrangle"] .logo-uber {
+  font-weight: 760;
+}
+
+html[data-scheme="wrangle"] .logo-vercel {
+  font-weight: 780;
+}
+
+html[data-scheme="wrangle"] .vercel-mark {
+  width: 0;
+  height: 0;
+  border-right: 7px solid transparent;
+  border-bottom: 13px solid #171717;
+  border-left: 7px solid transparent;
+}
+
+html[data-scheme="wrangle"] .logo-october {
+  font-weight: 720;
+  text-transform: lowercase;
+}
+
+html[data-scheme="wrangle"] .logo-spacex {
+  font-weight: 820;
+}
+
+html[data-scheme="wrangle"] .logo-daytona {
+  font-weight: 820;
+}
+
 html[data-scheme="wrangle"] .founder-x-strip {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -3417,6 +3494,14 @@ html[data-scheme="wrangle"] .founder-x-card p a {
 }
 
 @media (max-width: 960px) {
+  html[data-scheme="wrangle"] .founder-logo-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  html[data-scheme="wrangle"] .founder-logo-card {
+    min-height: 76px;
+  }
+
   html[data-scheme="wrangle"] .founder-x-strip {
     display: flex;
     overflow-x: auto;
@@ -3528,8 +3613,24 @@ html[data-scheme="wrangle"] .founder-x-card p a {
   }
 
   html[data-scheme="wrangle"] .founder-x-proof h2 {
-    max-width: 270px;
+    max-width: 310px;
     margin-bottom: 18px;
+    font-size: 28px !important;
+  }
+
+  html[data-scheme="wrangle"] .founder-logo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  html[data-scheme="wrangle"] .founder-logo-card {
+    min-height: 64px;
+    border-radius: 14px;
+    padding: 12px 10px;
+  }
+
+  html[data-scheme="wrangle"] .logo-wordmark {
+    font-size: 16px;
   }
 
   html[data-scheme="wrangle"] .founder-x-strip {
