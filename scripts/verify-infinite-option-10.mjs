@@ -10,6 +10,7 @@ const wranglePagePath = new URL("index-scheme-wrangle.html", wrangleArtifactRoot
 const wrangleStylePaths = [
   new URL("homepage-critical.css", wrangleArtifactRoot),
   new URL("light-common.css", wrangleArtifactRoot),
+  new URL("scheme-variants.css", wrangleArtifactRoot),
 ];
 
 const failures = [];
@@ -240,6 +241,16 @@ if (wrangleHtml) {
 
   for (const snippet of requiredWrangleSnippets) {
     if (!wrangleHtml.includes(snippet)) failures.push(`Missing homepage audit snippet: ${snippet}`);
+  }
+
+  const requiredWrangleStyleSnippets = [
+    ".logo-wordmark {",
+    "color: #ffffff;",
+    "border-bottom: 13px solid #ffffff;",
+  ];
+
+  for (const snippet of requiredWrangleStyleSnippets) {
+    if (!wrangleStyles.includes(snippet)) failures.push(`Missing homepage style snippet: ${snippet}`);
   }
 
   const wrangleSource = `${wrangleHtml}\n${wrangleStyles}`;
