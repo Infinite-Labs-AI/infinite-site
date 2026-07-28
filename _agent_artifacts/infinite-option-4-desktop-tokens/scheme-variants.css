@@ -3290,57 +3290,41 @@ html[data-scheme="wrangle"] .founder-logo-card {
   backdrop-filter: blur(14px);
 }
 
-html[data-scheme="wrangle"] .logo-wordmark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  max-width: 100%;
-  color: #ffffff;
-  font-size: clamp(16px, 1.35vw, 22px);
-  font-weight: 850;
-  letter-spacing: 0;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
+html[data-scheme="wrangle"] .founder-logo-img {
+  display: block;
+  width: auto;
+  max-width: min(100%, 132px);
+  height: auto;
+  max-height: 38px;
+  object-fit: contain;
+  filter: invert(1);
 }
 
-html[data-scheme="wrangle"] .logo-cloudflare {
-  color: #ffffff;
+html[data-scheme="wrangle"] .founder-logo-cloudflare {
+  max-width: 138px;
+  max-height: 30px;
 }
 
-html[data-scheme="wrangle"] .logo-replit {
-  font-family: var(--mono);
-  font-weight: 800;
+html[data-scheme="wrangle"] .founder-logo-replit,
+html[data-scheme="wrangle"] .founder-logo-vercel,
+html[data-scheme="wrangle"] .founder-logo-october {
+  max-width: 42px;
+  max-height: 42px;
 }
 
-html[data-scheme="wrangle"] .logo-uber {
-  font-weight: 760;
+html[data-scheme="wrangle"] .founder-logo-uber {
+  max-width: 104px;
+  max-height: 38px;
 }
 
-html[data-scheme="wrangle"] .logo-vercel {
-  font-weight: 780;
+html[data-scheme="wrangle"] .founder-logo-spacex {
+  max-width: 132px;
+  max-height: 28px;
 }
 
-html[data-scheme="wrangle"] .vercel-mark {
-  width: 0;
-  height: 0;
-  border-right: 7px solid transparent;
-  border-bottom: 13px solid #ffffff;
-  border-left: 7px solid transparent;
-}
-
-html[data-scheme="wrangle"] .logo-october {
-  font-weight: 720;
-  text-transform: lowercase;
-}
-
-html[data-scheme="wrangle"] .logo-spacex {
-  font-weight: 820;
-}
-
-html[data-scheme="wrangle"] .logo-daytona {
-  font-weight: 820;
+html[data-scheme="wrangle"] .founder-logo-daytona {
+  max-width: 128px;
+  max-height: 32px;
 }
 
 html[data-scheme="wrangle"] .founder-x-strip {
@@ -3629,8 +3613,16 @@ html[data-scheme="wrangle"] .founder-x-card p a {
     padding: 12px 10px;
   }
 
-  html[data-scheme="wrangle"] .logo-wordmark {
-    font-size: 16px;
+  html[data-scheme="wrangle"] .founder-logo-img {
+    max-width: min(100%, 120px);
+    max-height: 34px;
+  }
+
+  html[data-scheme="wrangle"] .founder-logo-replit,
+  html[data-scheme="wrangle"] .founder-logo-vercel,
+  html[data-scheme="wrangle"] .founder-logo-october {
+    max-width: 38px;
+    max-height: 38px;
   }
 
   html[data-scheme="wrangle"] .founder-x-strip {

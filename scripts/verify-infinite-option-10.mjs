@@ -184,13 +184,13 @@ if (wrangleHtml) {
     '<source type="image/webp" srcset="assets/hero/relay-hq-dashboard-624.webp 624w, assets/hero/relay-hq-dashboard-928.webp 928w, assets/hero/relay-hq-dashboard-1240.webp 1240w"',
     'width="1238" height="866" fetchpriority="high" loading="eager" decoding="async"',
     "TRUSTED BY TEAMS &amp; FOUNDERS FROM",
-    "Cloudflare",
-    "Replit",
-    "Uber",
-    "Vercel",
-    "october",
-    "SpaceX",
-    "Daytona",
+    "assets/trust-logos/cloudflare-black.png",
+    "assets/trust-logos/replit-black.png",
+    "assets/trust-logos/uber-black.png",
+    "assets/trust-logos/vercel-black.png",
+    "assets/trust-logos/october-black.png",
+    "assets/trust-logos/spacex-black.png",
+    "assets/trust-logos/daytona-black.png",
     "Put growth on <span>auto-pilot</span>",
     "https://www.producthunt.com/products/infinite-the-growth-engineering-agent",
     '"sameAs": [',
@@ -244,9 +244,9 @@ if (wrangleHtml) {
   }
 
   const requiredWrangleStyleSnippets = [
-    ".logo-wordmark {",
-    "color: #ffffff;",
-    "border-bottom: 13px solid #ffffff;",
+    ".founder-logo-img {",
+    "filter: invert(1);",
+    ".founder-logo-cloudflare {",
   ];
 
   for (const snippet of requiredWrangleStyleSnippets) {
