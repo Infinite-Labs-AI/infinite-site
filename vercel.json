@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "headers": [
     {
-      "source": "/homepage-20260722.css",
+      "source": "/homepage-20260728-trust-logos.css",
       "headers": [
         {
           "key": "Cache-Control",
