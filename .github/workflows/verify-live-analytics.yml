@@ -69,3 +69,6 @@ jobs:
           EXPECTED_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           EXPECTED_GA_TAG_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_TAG_ID }}
         run: node scripts/verify-live-analytics.mjs
+
+      - name: Verify AI crawler readiness
+        run: node scripts/verify-crawler-readiness.mjs

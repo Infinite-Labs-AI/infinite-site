@@ -24,25 +24,61 @@ for (const file of MAIN_SITE_FILES) {
 
 const robots = read("robots.txt");
 assert.match(robots, /^Sitemap: https:\/\/infinite\.fast\/sitemap\.xml$/m);
+const supportedCrawlerAgents = [
+  "*",
+  "OAI-SearchBot",
+  "GPTBot",
+  "Claude-SearchBot",
+  "ClaudeBot",
+  "PerplexityBot",
+  "Google-Extended",
+  "CCBot",
+];
+const robotsGroups = new Map(
+  robots
+    .split(/\n\s*\n/)
+    .filter((block) => block.startsWith("User-agent:"))
+    .map((block) => [block.match(/^User-agent:\s*(.+)$/m)?.[1], block]),
+);
+
+for (const agent of supportedCrawlerAgents) {
+  const group = robotsGroups.get(agent);
+  assert.ok(group, `robots.txt must explicitly declare ${agent}`);
+  assert.match(group, /^Allow: \/$/m, `${agent} must allow public pages`);
+  assert.match(group, /^Disallow: \/api\/$/m, `${agent} must exclude API endpoints`);
+  assert.match(group, /^Disallow: \/ingest\/$/m, `${agent} must exclude analytics ingestion`);
+}
 
 const llms = read("llms.txt");
+assert.match(llms, /^# Infinite$/m);
+assert.match(llms, /^> AI CMO for founders$/m);
 assert.match(llms, /^Canonical site: https:\/\/infinite\.fast\/$/m);
 assert.match(llms, /^Tools: https:\/\/infinite\.fast\/tools\/$/m);
 assert.match(llms, /^Comparisons: https:\/\/infinite\.fast\/compare\/$/m);
 assert.match(llms, /^Download: https:\/\/infinite\.fast\/download$/m);
 assert.match(llms, /^Blog: https:\/\/blog\.infinite\.fast\/$/m);
+assert.match(llms, /high-intent-lead-finder-template/);
+assert.match(llms, /seo-geo-brief-generator/);
+assert.match(llms, /infinite-vs-ploy/);
 
 const sitemap = read("sitemap.xml");
 assert.doesNotMatch(sitemap, /https:\/\/www\.infinite\.fast/);
 
+const liveWorkflow = read(".github/workflows/verify-live-analytics.yml");
+assert.match(
+  liveWorkflow,
+  /node scripts\/verify-crawler-readiness\.mjs/,
+  "scheduled live verification must include crawler readiness",
+);
+
 const expectedLastmodByPath = new Map([
-  ["/", "2026-07-22"],
+  ["/", "2026-07-29"],
   ["/tools/", "2026-07-22"],
   ["/tools/high-intent-lead-finder-template/", "2026-07-22"],
   ["/tools/seo-geo-brief-generator/", "2026-07-22"],
   ["/tools/landing-page-ab-test-ideas-generator/", "2026-07-22"],
   ["/tools/founder-content-ideas-generator/", "2026-07-22"],
-  ["/compare/", "2026-07-22"],
+  ["/compare/", "2026-07-29"],
   ["/compare/infinite-vs-okara/", "2026-07-22"],
   ["/compare/infinite-vs-ploy/", "2026-07-22"],
   ["/compare/infinite-vs-blaze/", "2026-07-22"],

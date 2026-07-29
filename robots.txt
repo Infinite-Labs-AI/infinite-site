@@ -1,7 +1,43 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /ingest/
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /api/
+Disallow: /ingest/
+
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /ingest/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /api/
+Disallow: /ingest/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+Disallow: /ingest/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Disallow: /ingest/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+Disallow: /ingest/
+
+User-agent: CCBot
+Allow: /
+Disallow: /api/
+Disallow: /ingest/
 
 Sitemap: https://infinite.fast/sitemap.xml
+
+# AI crawlers: see /llms.txt for canonical product information

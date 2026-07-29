@@ -43,8 +43,9 @@ assert.match(robots, /Sitemap:\s+https:\/\/infinite\.fast\/sitemap\.xml/);
 
 const homepage = readFileSync(pages[0][1], "utf8");
 assert.doesNotMatch(homepage, /Find leads, automates SEO/i);
-assert.match(homepage, /review-first/i);
-assert.match(homepage, /publishing[^<]{0,120}review|review[^<]{0,120}publishing/i);
+assert.match(homepage, /automate SEO and GEO/i);
+assert.match(homepage, /A\/B test landing pages/i);
+assert.match(homepage, /You shipped the app\. Now let Infinite get you customers\./i);
 
 const toolFiles = pages.slice(4, 8).map(([, file]) => file);
 for (const file of toolFiles) {
@@ -64,6 +65,15 @@ for (const event of ["tool_started", "tool_generated", "result_copied", "downloa
 const analyticsInjector = readFileSync(".github/scripts/inject-analytics.cjs", "utf8");
 assert.match(analyticsInjector, /app_download_clicked/);
 assert.match(analyticsInjector, /cta_location/);
+
+const comparisonHub = readFileSync("compare/index.html", "utf8");
+assert.match(comparisonHub, /"@type":\s*"CollectionPage"/);
+assert.match(comparisonHub, /"@type":\s*"ItemList"/);
+assert.equal(
+  (comparisonHub.match(/"@type":\s*"ListItem"/g) ?? []).length,
+  3,
+  "comparison hub schema must list all three comparison pages",
+);
 
 const comparisonFiles = pages.slice(9).map(([, file]) => file);
 for (const file of comparisonFiles) {
