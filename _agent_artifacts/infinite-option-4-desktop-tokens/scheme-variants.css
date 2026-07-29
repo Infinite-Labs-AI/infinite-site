@@ -3205,34 +3205,24 @@ html[data-scheme="wrangle"] .trend-ideas-output button {
 html[data-scheme="wrangle"] .founder-x-proof {
   position: relative;
   overflow: hidden;
-  padding: clamp(18px, 3vw, 38px) 0 clamp(54px, 7vw, 96px);
+  padding: clamp(58px, 7vw, 88px) 0 clamp(62px, 7vw, 92px);
   background: #ffffff;
   color: var(--scheme-ink);
 }
 
 html[data-scheme="wrangle"] .founder-x-proof::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(var(--scheme-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--scheme-grid) 1px, transparent 1px);
-  background-size: 160px 160px;
-  mask-image: linear-gradient(to bottom, transparent, #000 24%, #000 76%, transparent);
+  content: none;
 }
 
 html[data-scheme="wrangle"] .founder-x-proof .shell {
   position: relative;
   z-index: 1;
-  width: min(1180px, calc(100% - 48px));
-  border: 1px solid #e1e6eb;
-  border-radius: 30px;
-  padding: clamp(24px, 3vw, 36px);
-  background:
-    linear-gradient(90deg, rgba(255, 232, 246, 0.84), rgba(255, 255, 255, 0.96) 46%, rgba(202, 246, 255, 0.9)),
-    #ffffff;
-  box-shadow: 0 28px 82px rgba(31, 72, 112, 0.10);
+  width: min(1160px, calc(100% - 48px));
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 html[data-scheme="wrangle"] .founder-x-proof .section-pill,
@@ -3247,19 +3237,21 @@ html[data-scheme="wrangle"] .final-copy .section-pill {
 html[data-scheme="wrangle"] .founder-x-proof h2 {
   display: block;
   width: auto;
-  margin: 0 auto clamp(18px, 2.4vw, 28px);
+  max-width: none;
+  margin: 0 auto clamp(36px, 4vw, 48px);
   border: 0;
   border-radius: 0;
   padding: 0;
   background: transparent;
-  color: #353a3f;
-  font-family: "Hanken Grotesk", "IBM Plex Sans", system-ui, sans-serif;
-  font-size: clamp(38px, 4.6vw, 64px);
-  font-weight: 620;
-  letter-spacing: -0.03em;
-  line-height: 0.98;
+  color: #262a2f;
+  font-family: var(--mono);
+  font-size: clamp(12px, 1.05vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
   text-align: center;
   box-shadow: none;
+  text-transform: none;
 }
 
 html[data-scheme="wrangle"] .founder-x-proof h2::before {
@@ -3269,9 +3261,10 @@ html[data-scheme="wrangle"] .founder-x-proof h2::before {
 html[data-scheme="wrangle"] .founder-logo-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 12px;
+  align-items: center;
+  gap: clamp(24px, 4vw, 54px);
   width: 100%;
-  max-width: 1030px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 0;
   list-style: none;
@@ -3279,51 +3272,48 @@ html[data-scheme="wrangle"] .founder-logo-grid {
 
 html[data-scheme="wrangle"] .founder-logo-card {
   display: flex;
-  min-height: 86px;
+  min-width: 0;
+  min-height: 48px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 18px;
-  padding: 14px 12px;
-  background: linear-gradient(145deg, rgba(23, 23, 23, 0.96), rgba(47, 48, 50, 0.92));
-  box-shadow: 0 18px 42px rgba(23, 23, 23, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px);
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 html[data-scheme="wrangle"] .founder-logo-img {
   display: block;
   width: auto;
-  max-width: min(100%, 132px);
+  max-width: min(100%, 142px);
   height: auto;
   max-height: 38px;
   object-fit: contain;
-  filter: invert(1);
 }
 
 html[data-scheme="wrangle"] .founder-logo-cloudflare {
-  max-width: 138px;
+  max-width: 146px;
   max-height: 30px;
 }
 
 html[data-scheme="wrangle"] .founder-logo-replit,
 html[data-scheme="wrangle"] .founder-logo-vercel,
 html[data-scheme="wrangle"] .founder-logo-october {
-  max-width: 42px;
-  max-height: 42px;
-}
-
-html[data-scheme="wrangle"] .founder-logo-uber {
-  max-width: 104px;
+  max-width: 38px;
   max-height: 38px;
 }
 
+html[data-scheme="wrangle"] .founder-logo-uber {
+  max-width: 112px;
+  max-height: 40px;
+}
+
 html[data-scheme="wrangle"] .founder-logo-spacex {
-  max-width: 132px;
-  max-height: 28px;
+  max-width: 136px;
+  max-height: 26px;
 }
 
 html[data-scheme="wrangle"] .founder-logo-daytona {
-  max-width: 128px;
+  max-width: 132px;
   max-height: 32px;
 }
 
@@ -3479,11 +3469,12 @@ html[data-scheme="wrangle"] .founder-x-card p a {
 
 @media (max-width: 960px) {
   html[data-scheme="wrangle"] .founder-logo-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(90px, 1fr));
+    gap: 26px 32px;
   }
 
   html[data-scheme="wrangle"] .founder-logo-card {
-    min-height: 76px;
+    min-height: 44px;
   }
 
   html[data-scheme="wrangle"] .founder-x-strip {
@@ -3576,13 +3567,11 @@ html[data-scheme="wrangle"] .founder-x-card p a {
   }
 
   html[data-scheme="wrangle"] .founder-x-proof {
-    padding: 16px 0 44px;
+    padding: 48px 0 54px;
   }
 
   html[data-scheme="wrangle"] .founder-x-proof .shell {
     width: min(100% - 28px, 1180px);
-    border-radius: 22px;
-    padding: 18px 16px 16px;
   }
 
   html[data-scheme="wrangle"] .founder-x-proof h2,
@@ -3597,24 +3586,23 @@ html[data-scheme="wrangle"] .founder-x-card p a {
   }
 
   html[data-scheme="wrangle"] .founder-x-proof h2 {
-    max-width: 310px;
-    margin-bottom: 18px;
-    font-size: 28px !important;
+    max-width: 320px;
+    margin-bottom: 28px;
+    font-size: 12px !important;
+    line-height: 1.45 !important;
   }
 
   html[data-scheme="wrangle"] .founder-logo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    gap: 24px 28px;
   }
 
   html[data-scheme="wrangle"] .founder-logo-card {
-    min-height: 64px;
-    border-radius: 14px;
-    padding: 12px 10px;
+    min-height: 44px;
   }
 
   html[data-scheme="wrangle"] .founder-logo-img {
-    max-width: min(100%, 120px);
+    max-width: min(100%, 124px);
     max-height: 34px;
   }
 

@@ -183,7 +183,7 @@ if (wrangleHtml) {
     '<source type="image/avif" srcset="assets/hero/relay-hq-dashboard-624.avif 624w, assets/hero/relay-hq-dashboard-928.avif 928w, assets/hero/relay-hq-dashboard-1240.avif 1240w"',
     '<source type="image/webp" srcset="assets/hero/relay-hq-dashboard-624.webp 624w, assets/hero/relay-hq-dashboard-928.webp 928w, assets/hero/relay-hq-dashboard-1240.webp 1240w"',
     'width="1238" height="866" fetchpriority="high" loading="eager" decoding="async"',
-    "TRUSTED BY TEAMS &amp; FOUNDERS FROM",
+    "Trusted by teams &amp; founders from",
     "assets/trust-logos/cloudflare-black.png",
     "assets/trust-logos/replit-black.png",
     "assets/trust-logos/uber-black.png",
@@ -219,6 +219,7 @@ if (wrangleHtml) {
     "Latest release notes",
     "Publishing, outreach, and consequential changes stay review-first",
     "Publishing, outreach, and consequential changes remain review-first",
+    "filter: invert(1)",
     "Drew Lang",
     "@sanafounder",
     "Operator Notes",
@@ -245,8 +246,8 @@ if (wrangleHtml) {
 
   const requiredWrangleStyleSnippets = [
     ".founder-logo-img {",
-    "filter: invert(1);",
     ".founder-logo-cloudflare {",
+    "background: transparent;",
   ];
 
   for (const snippet of requiredWrangleStyleSnippets) {

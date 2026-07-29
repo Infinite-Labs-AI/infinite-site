@@ -82,7 +82,7 @@ assert.match(headerValue("Permissions-Policy") ?? "", /camera=\(\)/);
 assert.equal(headerValue("Strict-Transport-Security"), "max-age=31536000; includeSubDomains");
 
 const homepageCssHeaders =
-  vercel.headers?.find((entry) => entry.source === "/homepage-20260728-brand-logos.css")?.headers ?? [];
+  vercel.headers?.find((entry) => entry.source === "/homepage-20260729-spade-logos.css")?.headers ?? [];
 assert.equal(
   homepageCssHeaders.find((header) => header.key === "Cache-Control")?.value,
   "public, max-age=31536000, immutable",
