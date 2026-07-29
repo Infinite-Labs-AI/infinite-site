@@ -10,7 +10,7 @@ const artifactDir = path.join(
 );
 const homepageSource = path.join(artifactDir, "index-scheme-wrangle.html");
 const homepageCriticalSource = path.join(artifactDir, "homepage-critical.css");
-const homepageBundleName = "homepage-20260729-spade-logos.css";
+const homepageBundleName = "homepage-20260729-founder-x-posts.css";
 const homepageStylesheets = [
   path.join(repoRoot, "_agent_artifacts", "shared", "glaze-hero.css"),
   path.join(artifactDir, "problem-todesktop.css"),

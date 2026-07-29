@@ -23,8 +23,9 @@ try {
   assert.doesNotMatch(homepage, /homepage-20260722\.css/);
   assert.doesNotMatch(homepage, /homepage-20260728-trust-logos\.css/);
   assert.doesNotMatch(homepage, /homepage-20260728-brand-logos\.css/);
-  assert.doesNotMatch(homepage, /<link rel="preload" href="homepage-20260729-spade-logos\.css" as="style">/);
-  assert.match(homepage, /<link rel="stylesheet" href="homepage-20260729-spade-logos\.css" media="print" onload="this\.media='all';this\.onload=null">/);
+  assert.doesNotMatch(homepage, /homepage-20260729-spade-logos\.css/);
+  assert.doesNotMatch(homepage, /<link rel="preload" href="homepage-20260729-founder-x-posts\.css" as="style">/);
+  assert.match(homepage, /<link rel="stylesheet" href="homepage-20260729-founder-x-posts\.css" media="print" onload="this\.media='all';this\.onload=null">/);
   assert.doesNotMatch(homepage, /\.ttf["')]/);
 
   const criticalCss = homepage.match(/<style data-homepage-critical>([\s\S]*?)<\/style>/)?.[1] ?? "";
@@ -32,7 +33,7 @@ try {
   assert.match(criticalCss, /download-compatibility/);
   assert.ok(criticalCss.length > 20_000 && criticalCss.length < 50_000, "critical CSS must cover both target viewports without embedding the full bundle");
 
-  const homepageCss = readFileSync(join(distDir, "homepage-20260729-spade-logos.css"), "utf8");
+  const homepageCss = readFileSync(join(distDir, "homepage-20260729-founder-x-posts.css"), "utf8");
   assert.match(homepageCss, /data-scheme=(?:["']wrangle["']|wrangle)/);
   assert.match(homepageCss, /fonts\/ibm-plex\/ibm-plex-sans-400\.woff2/);
   assert.ok(homepageCss.length > 180_000, "deferred homepage bundle must contain inline and external source styles");

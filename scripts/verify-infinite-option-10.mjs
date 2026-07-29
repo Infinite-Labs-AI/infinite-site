@@ -183,16 +183,14 @@ if (wrangleHtml) {
     '<source type="image/avif" srcset="assets/hero/relay-hq-dashboard-624.avif 624w, assets/hero/relay-hq-dashboard-928.avif 928w, assets/hero/relay-hq-dashboard-1240.avif 1240w"',
     '<source type="image/webp" srcset="assets/hero/relay-hq-dashboard-624.webp 624w, assets/hero/relay-hq-dashboard-928.webp 928w, assets/hero/relay-hq-dashboard-1240.webp 1240w"',
     'width="1238" height="866" fetchpriority="high" loading="eager" decoding="async"',
-    "Trusted by teams &amp; founders from",
-    "assets/trust-logos/cloudflare-black.png",
-    "assets/trust-logos/replit-black.png",
-    "assets/trust-logos/uber-black.png",
-    "assets/trust-logos/vercel-black.png",
-    "assets/trust-logos/october-black.png",
-    "assets/trust-logos/spacex-black.png",
-    "assets/trust-logos/daytona-black.png",
+    "Loved by founders building in public",
+    "assets/edyme-avatar.png",
+    "assets/harshsaver-avatar.png",
+    "https://x.com/justedyme",
+    "https://x.com/harshsaver/status/2079496777783460227?s=20",
+    "building an AI growth agent for founders that acts more like a chief of staff than another dashboard",
+    "this has been a lifesaver!",
     "Put growth on <span>auto-pilot</span>",
-    "https://www.producthunt.com/products/infinite-the-growth-engineering-agent",
     '"sameAs": [',
     '"offers": {',
     'data-download-location="hero"',
@@ -207,7 +205,6 @@ if (wrangleHtml) {
     "Find leads, automates",
     "Trusted by top founders",
     "Public proof and release details",
-    "View original X post",
     "Official release",
     "Current public build",
     "Growth loop</strong><em>Signal to action",
@@ -245,9 +242,9 @@ if (wrangleHtml) {
   }
 
   const requiredWrangleStyleSnippets = [
-    ".founder-logo-img {",
-    ".founder-logo-cloudflare {",
-    "background: transparent;",
+    ".founder-x-strip-two {",
+    ".founder-x-card {",
+    "box-shadow: 0 16px 40px rgba(31, 72, 112, 0.075);",
   ];
 
   for (const snippet of requiredWrangleStyleSnippets) {

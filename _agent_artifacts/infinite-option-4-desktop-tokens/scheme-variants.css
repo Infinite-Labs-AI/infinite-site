@@ -3205,24 +3205,34 @@ html[data-scheme="wrangle"] .trend-ideas-output button {
 html[data-scheme="wrangle"] .founder-x-proof {
   position: relative;
   overflow: hidden;
-  padding: clamp(58px, 7vw, 88px) 0 clamp(62px, 7vw, 92px);
+  padding: clamp(18px, 3vw, 38px) 0 clamp(54px, 7vw, 96px);
   background: #ffffff;
   color: var(--scheme-ink);
 }
 
 html[data-scheme="wrangle"] .founder-x-proof::before {
-  content: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--scheme-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--scheme-grid) 1px, transparent 1px);
+  background-size: 160px 160px;
+  mask-image: linear-gradient(to bottom, transparent, #000 24%, #000 76%, transparent);
 }
 
 html[data-scheme="wrangle"] .founder-x-proof .shell {
   position: relative;
   z-index: 1;
-  width: min(1160px, calc(100% - 48px));
-  border: 0;
-  border-radius: 0;
-  padding: 0;
-  background: transparent;
-  box-shadow: none;
+  width: min(1180px, calc(100% - 48px));
+  border: 1px solid #e1e6eb;
+  border-radius: 30px;
+  padding: clamp(24px, 3vw, 36px);
+  background:
+    linear-gradient(90deg, rgba(255, 232, 246, 0.84), rgba(255, 255, 255, 0.96) 46%, rgba(202, 246, 255, 0.9)),
+    #ffffff;
+  box-shadow: 0 28px 82px rgba(31, 72, 112, 0.10);
 }
 
 html[data-scheme="wrangle"] .founder-x-proof .section-pill,
@@ -3237,21 +3247,19 @@ html[data-scheme="wrangle"] .final-copy .section-pill {
 html[data-scheme="wrangle"] .founder-x-proof h2 {
   display: block;
   width: auto;
-  max-width: none;
-  margin: 0 auto clamp(36px, 4vw, 48px);
+  margin: 0 auto clamp(18px, 2.4vw, 28px);
   border: 0;
   border-radius: 0;
   padding: 0;
   background: transparent;
-  color: #262a2f;
-  font-family: var(--mono);
-  font-size: clamp(12px, 1.05vw, 15px);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1.45;
+  color: #353a3f;
+  font-family: "Hanken Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+  font-size: clamp(38px, 4.6vw, 64px);
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
   text-align: center;
   box-shadow: none;
-  text-transform: none;
 }
 
 html[data-scheme="wrangle"] .founder-x-proof h2::before {
@@ -3379,6 +3387,16 @@ html[data-scheme="wrangle"] .founder-x-card:nth-child(8) {
   min-height: 168px;
 }
 
+html[data-scheme="wrangle"] .founder-x-strip-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 860px;
+}
+
+html[data-scheme="wrangle"] .founder-x-strip-two .founder-x-card {
+  grid-column: auto;
+  min-height: 184px;
+}
+
 html[data-scheme="wrangle"] .founder-x-top {
   display: flex;
   align-items: center;
@@ -3495,6 +3513,19 @@ html[data-scheme="wrangle"] .founder-x-card p a {
   html[data-scheme="wrangle"] .founder-x-card:nth-child(n) {
     grid-column: auto;
   }
+
+  html[data-scheme="wrangle"] .founder-x-strip-two {
+    display: grid;
+    grid-template-columns: 1fr;
+    overflow: visible;
+    padding-bottom: 0;
+    scroll-snap-type: none;
+  }
+
+  html[data-scheme="wrangle"] .founder-x-strip-two .founder-x-card {
+    flex-basis: auto;
+    width: 100%;
+  }
 }
 
 @keyframes trendPostLift {
@@ -3567,11 +3598,13 @@ html[data-scheme="wrangle"] .founder-x-card p a {
   }
 
   html[data-scheme="wrangle"] .founder-x-proof {
-    padding: 48px 0 54px;
+    padding: 16px 0 44px;
   }
 
   html[data-scheme="wrangle"] .founder-x-proof .shell {
     width: min(100% - 28px, 1180px);
+    border-radius: 22px;
+    padding: 18px 16px 16px;
   }
 
   html[data-scheme="wrangle"] .founder-x-proof h2,
@@ -3586,10 +3619,10 @@ html[data-scheme="wrangle"] .founder-x-card p a {
   }
 
   html[data-scheme="wrangle"] .founder-x-proof h2 {
-    max-width: 320px;
-    margin-bottom: 28px;
-    font-size: 12px !important;
-    line-height: 1.45 !important;
+    max-width: 310px;
+    margin-bottom: 18px;
+    font-size: 28px !important;
+    line-height: 1.04 !important;
   }
 
   html[data-scheme="wrangle"] .founder-logo-grid {
