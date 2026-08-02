@@ -14,6 +14,8 @@ let observedDownloadUa = null;
 let collectRequests = 0;
 let drainRequests = 0;
 let receiptRequests = 0;
+let forbiddenProbeRequests = 0;
+let runtimeSiteSourceKey = "";
 
 const server = createServer(async (request, response) => {
   const origin = `http://127.0.0.1:${server.address().port}`;
@@ -37,6 +39,12 @@ const server = createServer(async (request, response) => {
     response.end();
     return;
   }
+  if (url.pathname === "/tracking" || url.pathname === "/tracking/events" || url.pathname === "/sdk" || url.pathname === "/sdk/infinite.js") {
+    forbiddenProbeRequests += 1;
+    response.writeHead(404, { "cache-control": "no-store" });
+    response.end("not found");
+    return;
+  }
   if (url.pathname === "/infinite/events/collect" && request.method === "POST") {
     collectRequests += 1;
     observedCollectOrigin = request.headers.origin;
@@ -57,6 +65,22 @@ const server = createServer(async (request, response) => {
       createHmac("sha1", drainSecret).update(raw).digest("hex"),
     );
     const records = JSON.parse(raw);
+    for (const record of records) {
+      assert.equal(typeof record.id, "string", "Drain record id must be a string");
+      assert.equal(typeof record.deploymentId, "string", "Drain record deploymentId must be a string");
+      assert.equal(typeof record.host, "string", "Drain record host must be a string");
+      assert.equal(typeof record.timestamp, "number", "Drain record timestamp must be numeric");
+      assert.equal(typeof record.projectId, "string", "Drain record projectId must be a string");
+      assert.equal(typeof record.level, "string", "Drain record level must be a string");
+      if (record.proxy) {
+        assert.equal(typeof record.proxy.timestamp, "number", "Drain proxy timestamp must be numeric");
+        assert.equal(typeof record.proxy.method, "string", "Drain proxy method must be a string");
+        assert.equal(typeof record.proxy.host, "string", "Drain proxy host must be a string");
+        assert.equal(typeof record.proxy.path, "string", "Drain proxy path must be a string");
+        assert.equal(Array.isArray(record.proxy.userAgent), true, "Drain proxy userAgent must be an array");
+        assert.equal(typeof record.proxy.region, "string", "Drain proxy region must be a string");
+      }
+    }
     const accepted = records.filter((record) => ["edge", "redirect"].includes(record.source)
       && record.projectId === "prj_synthetic"
       && record.proxy?.host === "infinite.fast"
@@ -97,7 +121,7 @@ const server = createServer(async (request, response) => {
     <script>posthog.init("phc_test", { api_host: "/ingest", capture_pageview: false });</script>
     <script>var ga = "https://www.googletagmanager.com/gtag/js?id=G-TEST"; var config = { send_page_view: false };</script>
     <script data-infinite-consent-controller="managed">/* infinite:analytics-consent-change */</script>
-    <script data-infinite-runtime="managed">var runtimeConfig = {"collectPath":"/infinite/events/collect"};</script>
+    <script data-infinite-runtime="managed">var runtimeConfig = {${runtimeSiteSourceKey ? `"siteSourceKey":"${runtimeSiteSourceKey}",` : ""}"collectPath":"/infinite/events/collect"};</script>
   </head><body></body></html>`);
 });
 
@@ -111,6 +135,7 @@ try {
     EXPECTED_POSTHOG_TOKEN: "phc_test",
     EXPECTED_POSTHOG_API_HOST: "/ingest",
     EXPECTED_GA_TAG_ID: "G-TEST",
+    EXPECTED_INFINITE_SITE_SOURCE_KEY: "site_live_guardrail",
     SYNTHETIC_SITE_SOURCE_KEY: "site_synthetic_guardrail",
     ANALYTICS_RECEIPT_URL: `${baseUrl}/receipt`,
     ANALYTICS_RECEIPT_TOKEN: receiptToken,
@@ -122,6 +147,14 @@ try {
     RECEIPT_POLL_DELAY_MS: "1",
   };
 
+  const missingSourceKey = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+    ...commonEnv,
+    REQUIRE_SYNTHETIC_RECEIPTS: "0",
+  });
+  assert.notEqual(missingSourceKey.code, 0, "activation-mode verification must fail when deployed runtime omits the expected production source key");
+  assert.match(missingSourceKey.stderr, /siteSourceKey/);
+  runtimeSiteSourceKey = "site_live_guardrail";
+
   const disabled = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
     ...commonEnv,
     REQUIRE_SYNTHETIC_RECEIPTS: "0",
@@ -131,6 +164,7 @@ try {
   assert.equal(collectRequests, 0, "disabled verification must not call the collector");
   assert.equal(drainRequests, 0, "disabled verification must not call the Drain");
   assert.equal(receiptRequests, 0, "disabled verification must not query receipts");
+  assert.equal(forbiddenProbeRequests, 8, "disabled verification must probe forbidden tracking and sdk routes after the failing source-key run");
 
   const missing = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
     ...commonEnv,
@@ -156,6 +190,7 @@ try {
   assert.equal(collectRequests, 1);
   assert.equal(drainRequests, 1);
   assert.equal(receiptRequests, 3);
+  assert.equal(forbiddenProbeRequests, 16, "each verification run must probe forbidden tracking and sdk routes");
   assert.match(observedDownloadUa ?? "", /bot/i, "redirect probe must be bot-classified and excluded from production counts");
 } finally {
   server.close();

@@ -26,6 +26,7 @@ const EXPECTED_POSTHOG_TOKEN = firstNonEmpty(
 );
 const EXPECTED_POSTHOG_API_HOST = firstNonEmpty(process.env.EXPECTED_POSTHOG_API_HOST, "/ingest");
 const EXPECTED_GA_TAG_ID = firstNonEmpty(process.env.EXPECTED_GA_TAG_ID, "G-JE3BZS61FZ");
+const EXPECTED_INFINITE_SITE_SOURCE_KEY = firstNonEmpty(process.env.EXPECTED_INFINITE_SITE_SOURCE_KEY);
 const REQUIRE_SYNTHETIC_RECEIPTS = process.env.REQUIRE_SYNTHETIC_RECEIPTS === "1";
 const SYNTHETIC_SITE_SOURCE_KEY = firstNonEmpty(process.env.SYNTHETIC_SITE_SOURCE_KEY);
 const ANALYTICS_RECEIPT_URL = firstNonEmpty(process.env.ANALYTICS_RECEIPT_URL);
@@ -39,6 +40,7 @@ const RECEIPT_POLL_DELAY_MS = positiveInteger(process.env.RECEIPT_POLL_DELAY_MS,
 const FETCH_ATTEMPTS = 3;
 const FETCH_TIMEOUT_MS = 20_000;
 const DOWNLOAD_DESTINATION = "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
+const FORBIDDEN_ROUTE_PATHS = ["/tracking", "/tracking/events", "/sdk", "/sdk/infinite.js"];
 
 async function main() {
   console.log("Live analytics guardrail");
@@ -47,6 +49,7 @@ async function main() {
   console.log(`  expect token      : ${maskIdentifier(EXPECTED_POSTHOG_TOKEN)}`);
   console.log(`  expect api_host   : ${EXPECTED_POSTHOG_API_HOST}`);
   console.log(`  expect GA tag id  : ${EXPECTED_GA_TAG_ID || "(any G-* tag)"}`);
+  console.log(`  expect source key : ${EXPECTED_INFINITE_SITE_SOURCE_KEY ? maskIdentifier(EXPECTED_INFINITE_SITE_SOURCE_KEY) : "(not asserted)"}`);
   console.log(`  synthetic receipts: ${REQUIRE_SYNTHETIC_RECEIPTS ? "required" : "disabled"}`);
   console.log("");
 
@@ -79,6 +82,7 @@ async function main() {
   await checkPosthogProxy(failures);
   await checkDownloadRedirect(failures);
   await checkCspReport(failures);
+  await checkForbiddenRoutes(failures);
   await checkSyntheticReceipts(failures);
 
   console.log("");
@@ -129,7 +133,12 @@ function checkPage(label, html, failures) {
   const consentControllers = html.match(/data-infinite-consent-controller=["']managed["']/g) ?? [];
   if (consentControllers.length !== 1) fail(`found ${consentControllers.length} consent controllers; expected exactly 1`);
   if (!html.includes('"collectPath":"/infinite/events/collect"')) fail("shared runtime does not use the same-origin Infinite collect path");
-  if (/app\.ultima\.inc|\/api\/events\/track|custom_app_download_redirect/.test(html)) fail("live bytes contain a forbidden legacy/private tracker surface");
+  if (EXPECTED_INFINITE_SITE_SOURCE_KEY && !html.includes(`"siteSourceKey":"${escapeJsonForHtmlSearch(EXPECTED_INFINITE_SITE_SOURCE_KEY)}"`)) {
+    fail(`managed runtime does not contain expected production siteSourceKey ${maskIdentifier(EXPECTED_INFINITE_SITE_SOURCE_KEY)}`);
+  }
+  if (/app\.ultima\.inc|\/api\/events\/track|custom_app_download_redirect|\/tracking(?:\/|["'?#\s])|\/sdk(?:\/|["'?#\s])/.test(html)) {
+    fail("live bytes contain a forbidden legacy/private tracker surface");
+  }
 }
 
 function checkSecurityHeaders(headers, failures) {
@@ -193,6 +202,28 @@ async function checkCspReport(failures) {
   }
 }
 
+async function checkForbiddenRoutes(failures) {
+  for (const path of FORBIDDEN_ROUTE_PATHS) {
+    try {
+      const response = await fetch(`${SITE_BASE_URL}${path}`, {
+        method: path.endsWith(".js") ? "GET" : "POST",
+        redirect: "manual",
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: browserHeaders("infinite-analytics-guardrail/2.0"),
+      });
+      if (![404, 405].includes(response.status)) {
+        failures.push(`[forbidden-route] ${path} returned ${response.status}, expected 404/405`);
+        console.log(`  FAIL  forbidden route ${path} (${response.status})`);
+        continue;
+      }
+      console.log(`  PASS  forbidden route ${path} (${response.status})`);
+    } catch (error) {
+      failures.push(`[forbidden-route] ${path} probe failed: ${error.message}`);
+      console.log(`  FAIL  forbidden route ${path}`);
+    }
+  }
+}
+
 async function checkSyntheticReceipts(failures) {
   if (!REQUIRE_SYNTHETIC_RECEIPTS) {
     console.log("  SKIP  synthetic receipts (REQUIRE_SYNTHETIC_RECEIPTS is not 1)");
@@ -242,32 +273,73 @@ async function checkSyntheticReceipts(failures) {
 
   const documentId = `guardrail-edge-${randomUUID()}`;
   const redirectId = `guardrail-redirect-${randomUUID()}`;
-  const timestamp = new Date().toISOString();
+  const timestamp = Date.now();
+  const deploymentId = `dpl_${randomUUID().replaceAll("-", "")}`;
+  const region = "iad1";
+  const vercelRecord = ({ id, source, host = SYNTHETIC_PRODUCTION_HOST, projectId = SYNTHETIC_VERCEL_PROJECT_ID, message, destination, proxy }) => ({
+    id,
+    deploymentId,
+    source,
+    host,
+    timestamp,
+    projectId,
+    level: "info",
+    environment: "production",
+    ...(message ? { message } : {}),
+    ...(destination ? { destination } : {}),
+    ...(proxy ? { proxy: { timestamp, region, ...proxy } } : {}),
+  });
+  const proxy = ({ method = "GET", host = SYNTHETIC_PRODUCTION_HOST, path = "/", statusCode = 200, userAgent = ["Mozilla/5.0"] } = {}) => ({
+    method,
+    host,
+    path,
+    userAgent,
+    region,
+    timestamp,
+    statusCode,
+    scheme: "https",
+  });
   const records = [
-    {
+    vercelRecord({
       id: documentId,
       source: "edge",
-      environment: "production",
-      projectId: SYNTHETIC_VERCEL_PROJECT_ID,
       message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
-      timestamp,
-      proxy: { method: "GET", host: SYNTHETIC_PRODUCTION_HOST, statusCode: 200, path: "/", userAgent: ["Mozilla/5.0"] },
-    },
-    {
+      proxy: proxy(),
+    }),
+    vercelRecord({
       id: redirectId,
       source: "redirect",
-      environment: "production",
-      projectId: SYNTHETIC_VERCEL_PROJECT_ID,
       destination: DOWNLOAD_DESTINATION,
-      timestamp,
-      proxy: { method: "GET", host: SYNTHETIC_PRODUCTION_HOST, statusCode: 307, path: "/download", userAgent: ["Mozilla/5.0"] },
-    },
-    { id: `head-${randomUUID()}`, source: "edge", environment: "production", projectId: SYNTHETIC_VERCEL_PROJECT_ID, timestamp, proxy: { method: "HEAD", host: SYNTHETIC_PRODUCTION_HOST, statusCode: 200 } },
-    { id: `prefetch-${randomUUID()}`, source: "edge", environment: "production", projectId: SYNTHETIC_VERCEL_PROJECT_ID, message: "prefetch without middleware marker", timestamp, proxy: { method: "GET", host: SYNTHETIC_PRODUCTION_HOST, statusCode: 200, userAgent: ["Mozilla/5.0"], requestHeaders: { purpose: "prefetch" } } },
-    { id: `asset-${randomUUID()}`, source: "edge", environment: "production", projectId: SYNTHETIC_VERCEL_PROJECT_ID, message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/assets/app.js"}', timestamp, proxy: { method: "GET", host: SYNTHETIC_PRODUCTION_HOST, statusCode: 200, userAgent: ["Mozilla/5.0"] } },
-    { id: `bot-${randomUUID()}`, source: "edge", environment: "production", projectId: SYNTHETIC_VERCEL_PROJECT_ID, message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}', timestamp, proxy: { method: "GET", host: SYNTHETIC_PRODUCTION_HOST, statusCode: 200, userAgent: ["Googlebot"] } },
-    { id: `project-${randomUUID()}`, source: "edge", environment: "production", projectId: `${SYNTHETIC_VERCEL_PROJECT_ID}-wrong`, message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}', timestamp, proxy: { method: "GET", host: SYNTHETIC_PRODUCTION_HOST, statusCode: 200, userAgent: ["Mozilla/5.0"] } },
-    { id: `host-${randomUUID()}`, source: "edge", environment: "production", projectId: SYNTHETIC_VERCEL_PROJECT_ID, message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}', timestamp, proxy: { method: "GET", host: "wrong.example", statusCode: 200, userAgent: ["Mozilla/5.0"] } },
+      proxy: proxy({ path: "/download", statusCode: 307 }),
+    }),
+    vercelRecord({ id: `head-${randomUUID()}`, source: "edge", proxy: proxy({ method: "HEAD" }) }),
+    vercelRecord({ id: `prefetch-${randomUUID()}`, source: "edge", message: "prefetch without middleware marker", proxy: proxy() }),
+    vercelRecord({
+      id: `asset-${randomUUID()}`,
+      source: "edge",
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/assets/app.js"}',
+      proxy: proxy({ path: "/assets/app.js" }),
+    }),
+    vercelRecord({
+      id: `bot-${randomUUID()}`,
+      source: "edge",
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
+      proxy: proxy({ userAgent: ["Googlebot"] }),
+    }),
+    vercelRecord({
+      id: `project-${randomUUID()}`,
+      source: "edge",
+      projectId: `${SYNTHETIC_VERCEL_PROJECT_ID}-wrong`,
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
+      proxy: proxy(),
+    }),
+    vercelRecord({
+      id: `host-${randomUUID()}`,
+      source: "edge",
+      host: "wrong.example",
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
+      proxy: proxy({ host: "wrong.example" }),
+    }),
   ];
   try {
     const raw = JSON.stringify(records);
@@ -356,6 +428,10 @@ function maskIdentifier(value) {
   if (!value) return "";
   if (value.length <= 10) return `${value.slice(0, 3)}...`;
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
+function escapeJsonForHtmlSearch(value) {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 main().catch((error) => {

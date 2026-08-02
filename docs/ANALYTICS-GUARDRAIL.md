@@ -13,6 +13,8 @@ For every maintained relative main-site path, `scripts/verify-live-analytics.mjs
 - one direct Google tag loader definition with the expected measurement id;
 - GA4 `send_page_view: false`, with no `/gtm` loader or `transport_url`;
 - the exact same-origin `/infinite/events/collect` runtime path;
+- the expected production `siteSourceKey` when `EXPECTED_INFINITE_SITE_SOURCE_KEY` is configured;
+- no legacy `/tracking` or `/sdk` bytes and 404/405 responses from representative legacy route probes;
 - CSP reporting headers and a live `204` response from `/api/csp-report`;
 - a live PostHog proxy library response; and
 - the native `/download` 307/308 target. The redirect probe uses a bot-classified user agent so it is excluded from production redirect metrics.
@@ -21,7 +23,7 @@ When the separately approved synthetic configuration is enabled, the same job al
 
 1. generates a UUID and posts `site_page_view` through `https://infinite.fast/infinite/events/collect` with the dedicated synthetic source key and apex `Origin`;
 2. requires `202`, polls the authenticated diagnostic route, and requires a matching `environment=synthetic` receipt;
-3. submits an HMAC-signed mixed Drain batch containing valid document/redirect records plus `HEAD`, asset, bot/prefetch, wrong-project, and wrong-host records; and
+3. submits an HMAC-signed mixed Drain batch shaped like Vercel Log Drain JSON, containing valid document/redirect records plus schema-valid `HEAD`, asset, bot/prefetch, wrong-project, and wrong-host records; and
 4. requires only the valid synthetic document and redirect receipts.
 
 A direct API-host POST does not satisfy the same-origin test. Synthetic environment is derived from the provisioned source; the browser payload has no environment field. Synthetic rows must remain excluded from production aggregates, source timestamps, and readiness.
@@ -44,7 +46,7 @@ node .github/scripts/test-verify-live-analytics.mjs
 
 The last test starts a loopback server and exercises the full browser receipt, signed Drain receipt, download, CSP, PostHog proxy, and live-byte verifier logic without a production deploy or production row.
 
-Running `node scripts/verify-live-analytics.mjs` with no synthetic variables checks public bytes and routes and prints a clear `SKIP` for receipts. Before activation, the scheduled workflow must set `REQUIRE_SYNTHETIC_RECEIPTS=1` and provision all values listed in `.env.example`; missing receipt configuration then fails closed.
+Running `node scripts/verify-live-analytics.mjs` with no synthetic variables checks public bytes and routes and prints a clear `SKIP` for receipts. Before activation, the scheduled workflow must set `EXPECTED_INFINITE_SITE_SOURCE_KEY`, set `REQUIRE_SYNTHETIC_RECEIPTS=1`, and provision all values listed in `.env.example`; missing receipt configuration then fails closed.
 
 ## GitHub configuration
 
@@ -54,6 +56,7 @@ Required when `REQUIRE_SYNTHETIC_RECEIPTS=1`:
 
 | Kind | Name |
 | --- | --- |
+| Variable | `EXPECTED_INFINITE_SITE_SOURCE_KEY` |
 | Variable | `REQUIRE_SYNTHETIC_RECEIPTS=1` |
 | Variable | `ANALYTICS_RECEIPT_URL` |
 | Variable | `SYNTHETIC_DRAIN_URL` |
