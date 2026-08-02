@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 
 const repoRoot = process.cwd();
 const distDir = path.join(repoRoot, "dist");
@@ -106,7 +107,11 @@ for (const [index, tag] of homepageStylesheetTags.entries()) {
 
 fs.writeFileSync(path.join(distDir, "index.html"), homepageHtml);
 
-require(path.join(repoRoot, ".github/scripts/inject-analytics.cjs"));
+execFileSync(process.execPath, [path.join(repoRoot, ".github/scripts/inject-analytics.cjs")], {
+  cwd: repoRoot,
+  env: process.env,
+  stdio: "inherit",
+});
 normalizeApexAbsoluteUrls(distDir);
 
 function copyFromArtifact(sourceEntry, targetEntry) {

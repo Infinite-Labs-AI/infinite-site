@@ -1,73 +1,9 @@
 #!/usr/bin/env node
 // @ts-check
-/**
- * ============================================================================
- *  verify-live-analytics.mjs  —  the "never-again" analytics guardrail
- * ============================================================================
- *
- * WHY THIS EXISTS
- * ---------------
- * Analytics on infinite.fast died SILENTLY for ~a month. The live pages
- * simply stopped carrying the PostHog snippet — caused by a stale deploy, gaps
- * in the build-time injector, and a PostHog region flip (US host vs EU host).
- * Nobody noticed because nothing errored: the pages loaded fine, they just
- * weren't reporting.
- *
- * This script is the tripwire. It does NOT trust the repo, the build, the
- * injector, or any CI artifact. It fetches the REAL, PUBLIC, PRODUCTION pages
- * exactly as a browser would, and asserts the analytics tags are actually
- * present and correct on the bytes the CDN is serving to real users RIGHT NOW.
- *
- * It is deliberately independent of *how* the site is built. The founder is
- * about to replace the entire site; the build mechanism, framework, and file
- * layout may all change. This check only cares about one thing: do the live
- * pages carry the tags? If a future build stops injecting them, this goes red.
- *
- * WHAT IT ASSERTS, PER PAGE
- * -------------------------
- *   1. Canonical and Open Graph URL metadata use the apex infinite.fast URL
- *   2. Exactly ONE PostHog snippet  (0 = analytics dead; 2+ = double-count bug)
- *   3. PostHog project token starts with "phc_" AND equals the expected value
- *      (expected value comes from the repo variable, passed in as env)
- *   4. PostHog api_host is the first-party "/ingest" reverse-proxy path (snippet intact)
- *   5. A direct Google Analytics gtag loader is present, with no unproven
- *      relative transport_url proxy
- * PLUS one site-wide check: the proxied PostHog library at /ingest/static/array.js actually
- * resolves and is really PostHog — the relocated region-flip tripwire, and the thing that catches
- * a broken rewrite (which would silently kill analytics exactly like the original outage).
- *
- * Any failure -> a clear message naming the page + what's wrong -> exit 1 ->
- * red CI run. All pages/checks run before exiting, so one run reports every
- * problem at once.
- *
- * CONFIG (all overridable via env; sensible, LOUD defaults so it also runs
- * locally with zero setup)
- * ----------------------------------------------------------------------------
- *   SITE_BASE_URL              default https://infinite.fast
- *   EXPECTED_POSTHOG_TOKEN     default = the known public prod token (below)
- *   EXPECTED_POSTHOG_API_HOST  default /ingest   (first-party reverse-proxy path → PostHog EU)
- *   EXPECTED_GA_TAG_ID         default G-JE3BZS61FZ   (empty env => "any G-* tag")
- *
- * NOTE ON THE "TOKEN": a PostHog *project* token (phc_...) is a PUBLIC,
- * client-side identifier — it ships in the page HTML that anyone can View
- * Source on. It is NOT a secret. Hardcoding it as the fallback expected value
- * is intentional and safe, and makes the check meaningful even when the repo
- * variable is unset.
- */
 
+import { createHmac, randomUUID } from "node:crypto";
 import process from "node:process";
 
-// ---------------------------------------------------------------------------
-// LIVE PAGE LIST — MAINTAIN THIS BY HAND.
-// ---------------------------------------------------------------------------
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !! These are the live URLs that MUST carry analytics. This list is         !!
-// !! deliberately hand-maintained and NOT auto-discovered from the repo,     !!
-// !! because the guardrail must survive a full site replacement: the build   !!
-// !! mechanism and file layout are expected to change, but the set of public !!
-// !! pages we care about is a human decision. When you add or remove a real  !!
-// !! public page, UPDATE THIS LIST.                                          !!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 const PAGES = [
   "/",
   "/privacy/",
@@ -83,169 +19,29 @@ const PAGES = [
   "/compare/infinite-vs-blaze/",
 ];
 
-// ---------------------------------------------------------------------------
-// Expected values (env wins; empty/whitespace env falls back to the default).
-// ---------------------------------------------------------------------------
 const SITE_BASE_URL = firstNonEmpty(process.env.SITE_BASE_URL, "https://infinite.fast").replace(/\/+$/, "");
-
-const POSTHOG_TOKEN_PREFIX = "phc_";
 const EXPECTED_POSTHOG_TOKEN = firstNonEmpty(
   process.env.EXPECTED_POSTHOG_TOKEN,
-  // Public prod project token — safe to hardcode (see header note).
   "phc_wUuv4hpsa4jfi6fNSzWU9t3JSKneFHusRunsYenhjndJ",
 );
-// The live snippet's api_host is now the FIRST-PARTY reverse-proxy path (vercel.json "/ingest"
-// rewrites → PostHog EU). The region-flip tripwire moved off this string onto a live check that the
-// proxied library actually resolves (the "proxy liveness" step in main()).
-const EXPECTED_POSTHOG_API_HOST = firstNonEmpty(
-  process.env.EXPECTED_POSTHOG_API_HOST,
-  "/ingest",
-);
-// If empty, GA is only checked for presence of *some* G-* tag, not a specific id.
+const EXPECTED_POSTHOG_API_HOST = firstNonEmpty(process.env.EXPECTED_POSTHOG_API_HOST, "/ingest");
 const EXPECTED_GA_TAG_ID = firstNonEmpty(process.env.EXPECTED_GA_TAG_ID, "G-JE3BZS61FZ");
-
-// ---------------------------------------------------------------------------
-// Fetch helpers (retry transient failures; never retry a passed-but-wrong page)
-// ---------------------------------------------------------------------------
+const EXPECTED_INFINITE_SITE_SOURCE_KEY = firstNonEmpty(process.env.EXPECTED_INFINITE_SITE_SOURCE_KEY);
+const REQUIRE_SYNTHETIC_RECEIPTS = process.env.REQUIRE_SYNTHETIC_RECEIPTS === "1";
+const SYNTHETIC_SITE_SOURCE_KEY = firstNonEmpty(process.env.SYNTHETIC_SITE_SOURCE_KEY);
+const ANALYTICS_RECEIPT_URL = firstNonEmpty(process.env.ANALYTICS_RECEIPT_URL);
+const ANALYTICS_RECEIPT_TOKEN = firstNonEmpty(process.env.ANALYTICS_RECEIPT_TOKEN);
+const SYNTHETIC_DRAIN_URL = firstNonEmpty(process.env.SYNTHETIC_DRAIN_URL);
+const SYNTHETIC_DRAIN_SECRET = firstNonEmpty(process.env.SYNTHETIC_DRAIN_SECRET);
+const SYNTHETIC_VERCEL_PROJECT_ID = firstNonEmpty(process.env.SYNTHETIC_VERCEL_PROJECT_ID);
+const SYNTHETIC_PRODUCTION_HOST = firstNonEmpty(process.env.SYNTHETIC_PRODUCTION_HOST, "infinite.fast");
+const RECEIPT_POLL_ATTEMPTS = positiveInteger(process.env.RECEIPT_POLL_ATTEMPTS, 8);
+const RECEIPT_POLL_DELAY_MS = positiveInteger(process.env.RECEIPT_POLL_DELAY_MS, 2_000);
 const FETCH_ATTEMPTS = 3;
 const FETCH_TIMEOUT_MS = 20_000;
+const DOWNLOAD_DESTINATION = "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
+const FORBIDDEN_ROUTE_PATHS = ["/tracking", "/tracking/events", "/sdk", "/sdk/infinite.js"];
 
-/** @param {string} url */
-async function fetchPageHtml(url) {
-  let lastError = null;
-  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    try {
-      const res = await fetch(url, {
-        redirect: "follow",
-        signal: controller.signal,
-        headers: {
-          // Ask upstream not to hand us a stale cache; we want live bytes.
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-          "User-Agent": "infinite-analytics-guardrail/1.0 (+verify-live-analytics)",
-        },
-      });
-      clearTimeout(timer);
-
-      if (res.ok) {
-        return { ok: true, status: res.status, html: await res.text() };
-      }
-
-      // 5xx / 429 are transient — retry. Other statuses (e.g. 404) are real
-      // failures we should report immediately.
-      lastError = new Error(`HTTP ${res.status} ${res.statusText}`);
-      if (res.status >= 500 || res.status === 429) {
-        await sleep(backoffMs(attempt));
-        continue;
-      }
-      return { ok: false, status: res.status, html: "" };
-    } catch (err) {
-      clearTimeout(timer);
-      lastError = err;
-      if (attempt < FETCH_ATTEMPTS) await sleep(backoffMs(attempt));
-    }
-  }
-  return { ok: false, status: 0, html: "", error: lastError };
-}
-
-// ---------------------------------------------------------------------------
-// Per-page assertions. Pushes human-readable failures onto `failures`.
-// ---------------------------------------------------------------------------
-/**
- * @param {string} label   e.g. "/privacy/"
- * @param {string} html    raw page source
- * @param {string[]} failures  accumulator, messages are prefixed with the page
- */
-function checkPage(label, html, failures) {
-  const fail = (/** @type {string} */ msg) => failures.push(`[${label}] ${msg}`);
-  const expectedUrl = `${SITE_BASE_URL}${label}`;
-
-  // --- 1. Apex canonical / share metadata ----------------------------------
-  if (/https:\/\/www\.infinite\.fast/.test(html)) {
-    fail("page contains www.infinite.fast; expected apex https://infinite.fast for main-site absolute URLs");
-  }
-
-  const canonicalMatch = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i);
-  if (!canonicalMatch) {
-    fail("canonical link MISSING");
-  } else if (canonicalMatch[1] !== expectedUrl) {
-    fail(`canonical link WRONG — live page uses "${canonicalMatch[1]}", expected "${expectedUrl}"`);
-  }
-
-  const ogUrlMatch = html.match(/<meta\b[^>]*property=["']og:url["'][^>]*content=["']([^"']+)["']/i);
-  if (!ogUrlMatch) {
-    fail("og:url MISSING");
-  } else if (ogUrlMatch[1] !== expectedUrl) {
-    fail(`og:url WRONG — live page uses "${ogUrlMatch[1]}", expected "${expectedUrl}"`);
-  }
-
-  // --- 2. Exactly one PostHog snippet ---------------------------------------
-  // `posthog.init(` is the single unambiguous marker of one initialized
-  // snippet. 0 => analytics is dead (the exact month-long outage). 2+ => a
-  // double-injection bug (double-counts every event).
-  const initMatches = [...html.matchAll(/posthog\.init\s*\(\s*(['"])([^'"]+)\1/g)];
-  const initCount = initMatches.length;
-
-  if (initCount === 0) {
-    fail("PostHog snippet MISSING (no `posthog.init(` on the live page) — analytics is not reporting");
-  } else if (initCount > 1) {
-    fail(`PostHog snippet DUPLICATED — found ${initCount} \`posthog.init(\` calls, expected exactly 1 (double-counts events)`);
-  }
-
-  // --- 3. PostHog token: phc_ prefix + exact expected value -----------------
-  if (initCount >= 1) {
-    const token = initMatches[0][2];
-    if (!token.startsWith(POSTHOG_TOKEN_PREFIX)) {
-      fail(`PostHog token has wrong prefix — got "${maskIdentifier(token)}", expected it to start with "${POSTHOG_TOKEN_PREFIX}"`);
-    }
-    if (token !== EXPECTED_POSTHOG_TOKEN) {
-      fail(`PostHog token MISMATCH — live page has "${maskIdentifier(token)}", expected "${maskIdentifier(EXPECTED_POSTHOG_TOKEN)}" (check the VITE_POSTHOG_PROJECT_TOKEN repo variable / your build's token)`);
-    }
-  }
-
-  // --- 4. PostHog api_host: the first-party "/ingest" proxy path -------------
-  // Only the init-config `api_host: "..."` matches; the `s.api_host.replace(...)`
-  // inside the loader IIFE has no `:` so it is not caught here. This asserts the
-  // snippet carries the expected proxy path; region correctness is the live
-  // proxy-liveness check in main() (the proxied library must resolve to PostHog).
-  const apiHostMatches = [...html.matchAll(/api_host\s*:\s*(['"])([^'"]+)\1/g)];
-  if (apiHostMatches.length === 0) {
-    if (initCount >= 1) {
-      fail("PostHog api_host MISSING from the snippet config");
-    }
-  } else {
-    const apiHost = apiHostMatches[0][2];
-    if (apiHost !== EXPECTED_POSTHOG_API_HOST) {
-      fail(`PostHog api_host WRONG — live page uses "${apiHost}", expected "${EXPECTED_POSTHOG_API_HOST}" (region flip: events are going to the wrong PostHog region/project)`);
-    }
-  }
-
-  // --- 5. Google Analytics direct gtag loader present -----------------------
-  const proxiedGaMatch = html.match(/(?:src=["'])\/gtm\/gtag\/js\?id=([^"'&\s]+)/);
-  if (proxiedGaMatch) {
-    fail("Google Analytics uses the unproven relative /gtm loader; expected direct googletagmanager.com/gtag/js");
-  }
-
-  if (/transport_url\s*:/.test(html)) {
-    fail("Google Analytics config includes transport_url; expected direct Google collection");
-  }
-
-  const gaMatch = html.match(/https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=([^"'&\s]+)/);
-  if (!gaMatch) {
-    fail("Google Analytics direct gtag loader MISSING (no https://www.googletagmanager.com/gtag/js?id=... on the live page)");
-  } else {
-    const gaId = decodeURIComponent(gaMatch[1]);
-    if (EXPECTED_GA_TAG_ID && gaId !== EXPECTED_GA_TAG_ID) {
-      fail(`Google Analytics tag id MISMATCH — live page uses "${gaId}", expected "${EXPECTED_GA_TAG_ID}" (check the VITE_GOOGLE_ANALYTICS_TAG_ID repo variable)`);
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
 async function main() {
   console.log("Live analytics guardrail");
   console.log(`  base URL          : ${SITE_BASE_URL}`);
@@ -253,96 +49,393 @@ async function main() {
   console.log(`  expect token      : ${maskIdentifier(EXPECTED_POSTHOG_TOKEN)}`);
   console.log(`  expect api_host   : ${EXPECTED_POSTHOG_API_HOST}`);
   console.log(`  expect GA tag id  : ${EXPECTED_GA_TAG_ID || "(any G-* tag)"}`);
+  console.log(`  expect source key : ${EXPECTED_INFINITE_SITE_SOURCE_KEY ? maskIdentifier(EXPECTED_INFINITE_SITE_SOURCE_KEY) : "(not asserted)"}`);
+  console.log(`  synthetic receipts: ${REQUIRE_SYNTHETIC_RECEIPTS ? "required" : "disabled"}`);
   console.log("");
 
   /** @type {string[]} */
   const failures = [];
+  for (const page of PAGES) {
+    if (!page.startsWith("/") || /^https?:/i.test(page)) {
+      failures.push(`[config] page list entry must be a relative main-site path: ${page}`);
+    }
+  }
 
+  let rootResponse = null;
   for (const page of PAGES) {
     const url = `${SITE_BASE_URL}${page}`;
-    const result = await fetchPageHtml(url);
-
+    const result = await fetchTextWithRetry(url, {
+      headers: browserHeaders("infinite-analytics-guardrail/2.0 (+verify-live-analytics)"),
+    });
     if (!result.ok) {
-      const detail = result.status ? `HTTP ${result.status}` : `network error: ${result.error?.message ?? "unknown"}`;
-      failures.push(`[${page}] could not fetch ${url} — ${detail}`);
-      console.log(`  FAIL  ${page}  (${detail})`);
+      failures.push(`[${page}] could not fetch ${url} — ${result.detail}`);
+      console.log(`  FAIL  ${page}  (${result.detail})`);
       continue;
     }
-
+    if (page === "/") rootResponse = result;
     const before = failures.length;
-    checkPage(page, result.html, failures);
-    const pageFailures = failures.length - before;
-    console.log(`  ${pageFailures === 0 ? "PASS" : "FAIL"}  ${page}  (${result.html.length} bytes)`);
+    checkPage(page, result.text, failures);
+    console.log(`  ${failures.length === before ? "PASS" : "FAIL"}  ${page}  (${result.text.length} bytes)`);
   }
 
-  // --- Proxy liveness (relocated region-flip tripwire) ----------------------
-  // With the first-party reverse proxy, a broken "/ingest" rewrite = analytics DEAD even when the
-  // snippet looks perfect (the exact silent outage this guardrail exists to catch). So when api_host
-  // is a proxy path, verify the proxied PostHog library actually loads AND is really PostHog.
-  if (EXPECTED_POSTHOG_API_HOST.startsWith("/")) {
-    const proxyUrl = `${SITE_BASE_URL}${EXPECTED_POSTHOG_API_HOST}/static/array.js`;
-    const proxy = await fetchPageHtml(proxyUrl);
-    if (!proxy.ok) {
-      const detail = proxy.status ? `HTTP ${proxy.status}` : `network error: ${proxy.error?.message ?? "unknown"}`;
-      failures.push(`[proxy] ${proxyUrl} did not resolve — ${detail} (the /ingest reverse proxy is broken → analytics is dead)`);
-      console.log(`  FAIL  proxy ${EXPECTED_POSTHOG_API_HOST}/static/array.js  (${detail})`);
-    } else if (!/posthog/i.test(proxy.html)) {
-      failures.push(`[proxy] ${proxyUrl} returned ${proxy.html.length} bytes that are not the PostHog library (proxy misrouted / wrong region)`);
-      console.log(`  FAIL  proxy ${EXPECTED_POSTHOG_API_HOST}/static/array.js  (not PostHog)`);
-    } else {
-      console.log(`  PASS  proxy ${EXPECTED_POSTHOG_API_HOST}/static/array.js  (${proxy.html.length} bytes, PostHog lib)`);
-    }
-  }
+  if (rootResponse) checkSecurityHeaders(rootResponse.headers, failures);
+  await checkPosthogProxy(failures);
+  await checkDownloadRedirect(failures);
+  await checkCspReport(failures);
+  await checkForbiddenRoutes(failures);
+  await checkSyntheticReceipts(failures);
 
   console.log("");
-
   if (failures.length > 0) {
     console.error("Live analytics guardrail FAILED:\n");
-    for (const f of failures) {
-      console.error(`  - ${f}`);
-      // GitHub Actions annotation (rendered inline on the run) when in CI.
-      if (process.env.GITHUB_ACTIONS) console.error(`::error::${f}`);
+    for (const failure of failures) {
+      console.error(`  - ${failure}`);
+      if (process.env.GITHUB_ACTIONS) console.error(`::error::${failure}`);
     }
-    console.error(
-      "\nThe live site is missing or misconfiguring an analytics tag. See docs/ANALYTICS-GUARDRAIL.md.",
-    );
+    console.error("\nSee docs/ANALYTICS-GUARDRAIL.md. No production analytics activation is safe while this gate is red.");
     process.exit(1);
   }
 
-  console.log(`All ${PAGES.length} live page(s) carry correct PostHog + GA tags. Guardrail passed.`);
-  process.exit(0);
+  console.log(`All ${PAGES.length} live pages carry one shared runtime, consent-aware mirrors, and healthy route guardrails.`);
 }
 
-// ---------------------------------------------------------------------------
-// small utils
-// ---------------------------------------------------------------------------
-/** @param {...(string | undefined)} values */
-function firstNonEmpty(...values) {
-  for (const v of values) {
-    if (typeof v === "string" && v.trim() !== "") return v.trim();
+function checkPage(label, html, failures) {
+  const fail = (message) => failures.push(`[${label}] ${message}`);
+  const expectedUrl = `${SITE_BASE_URL}${label}`;
+  if (/https:\/\/www\.infinite\.fast/.test(html)) fail("page contains www.infinite.fast instead of the apex canonical host");
+
+  const canonical = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i)?.[1];
+  if (canonical !== expectedUrl) fail(`canonical link is ${JSON.stringify(canonical)}, expected ${JSON.stringify(expectedUrl)}`);
+  const ogUrl = html.match(/<meta\b[^>]*property=["']og:url["'][^>]*content=["']([^"']+)["']/i)?.[1];
+  if (ogUrl !== expectedUrl) fail(`og:url is ${JSON.stringify(ogUrl)}, expected ${JSON.stringify(expectedUrl)}`);
+
+  const posthogInits = [...html.matchAll(/posthog\.init\s*\(\s*(["'])([^"']+)\1/g)];
+  if (posthogInits.length !== 1) fail(`found ${posthogInits.length} PostHog initializations; expected exactly 1`);
+  if (posthogInits[0]) {
+    const token = posthogInits[0][2];
+    if (!token.startsWith("phc_")) fail(`PostHog token has an invalid prefix: ${maskIdentifier(token)}`);
+    if (token !== EXPECTED_POSTHOG_TOKEN) fail(`PostHog token mismatch: ${maskIdentifier(token)} vs ${maskIdentifier(EXPECTED_POSTHOG_TOKEN)}`);
   }
+  const apiHost = html.match(/api_host\s*:\s*(["'])([^"']+)\1/)?.[2];
+  if (apiHost !== EXPECTED_POSTHOG_API_HOST) fail(`PostHog api_host is ${JSON.stringify(apiHost)}, expected ${JSON.stringify(EXPECTED_POSTHOG_API_HOST)}`);
+  if (!/capture_pageview\s*:\s*false/.test(html)) fail("PostHog automatic page-view capture is not disabled");
+
+  if (/\/gtm\/gtag\/js|transport_url\s*:/.test(html)) fail("GA4 uses the forbidden /gtm or transport_url experiment");
+  const gaId = html.match(/https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=([^"'&\s]+)/)?.[1];
+  if (!gaId) fail("direct Google gtag loader definition is missing");
+  else if (EXPECTED_GA_TAG_ID && decodeURIComponent(gaId) !== EXPECTED_GA_TAG_ID) {
+    fail(`GA4 id is ${decodeURIComponent(gaId)}, expected ${EXPECTED_GA_TAG_ID}`);
+  }
+  if (!/send_page_view\s*:\s*false/.test(html)) fail("GA4 automatic page-view capture is not disabled");
+
+  const runtimes = html.match(/data-infinite-runtime=["']managed["']/g) ?? [];
+  if (runtimes.length !== 1) fail(`found ${runtimes.length} Infinite managed runtimes; expected exactly 1`);
+  const consentControllers = html.match(/data-infinite-consent-controller=["']managed["']/g) ?? [];
+  if (consentControllers.length !== 1) fail(`found ${consentControllers.length} consent controllers; expected exactly 1`);
+  if (!html.includes('"collectPath":"/infinite/events/collect"')) fail("shared runtime does not use the same-origin Infinite collect path");
+  if (EXPECTED_INFINITE_SITE_SOURCE_KEY && !html.includes(`"siteSourceKey":"${escapeJsonForHtmlSearch(EXPECTED_INFINITE_SITE_SOURCE_KEY)}"`)) {
+    fail(`managed runtime does not contain expected production siteSourceKey ${maskIdentifier(EXPECTED_INFINITE_SITE_SOURCE_KEY)}`);
+  }
+  if (/app\.ultima\.inc|\/api\/events\/track|custom_app_download_redirect|\/tracking(?:\/|["'?#\s])|\/sdk(?:\/|["'?#\s])/.test(html)) {
+    fail("live bytes contain a forbidden legacy/private tracker surface");
+  }
+}
+
+function checkSecurityHeaders(headers, failures) {
+  const csp = headers.get("content-security-policy") ?? "";
+  if (!csp.includes("report-uri /api/csp-report") || !csp.includes("report-to csp-endpoint")) {
+    failures.push("[headers] CSP reporting directives are missing");
+  }
+  const reporting = headers.get("reporting-endpoints") ?? "";
+  if (!reporting.includes("csp-endpoint=")) failures.push("[headers] Reporting-Endpoints is missing csp-endpoint");
+}
+
+async function checkPosthogProxy(failures) {
+  if (!EXPECTED_POSTHOG_API_HOST.startsWith("/")) return;
+  const path = `${EXPECTED_POSTHOG_API_HOST}/static/array.js`;
+  const result = await fetchTextWithRetry(`${SITE_BASE_URL}${path}`, { headers: browserHeaders("infinite-analytics-guardrail/2.0") });
+  if (!result.ok || !/posthog/i.test(result.text)) {
+    failures.push(`[proxy] ${path} is unavailable or not the PostHog library (${result.detail})`);
+    console.log(`  FAIL  proxy ${path}`);
+    return;
+  }
+  console.log(`  PASS  proxy ${path}  (${result.text.length} bytes, PostHog lib)`);
+}
+
+async function checkDownloadRedirect(failures) {
+  try {
+    const response = await fetch(`${SITE_BASE_URL}/download`, {
+      redirect: "manual",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: browserHeaders("infinite-analytics-guardrail-bot/2.0"),
+    });
+    const location = response.headers.get("location");
+    if (![307, 308].includes(response.status) || location !== DOWNLOAD_DESTINATION) {
+      failures.push(`[download] expected 307/308 to ${DOWNLOAD_DESTINATION}, received ${response.status} to ${location}`);
+      console.log(`  FAIL  /download ${response.status}`);
+      return;
+    }
+    console.log(`  PASS  /download ${response.status} (bot-classified, excluded from production redirect metrics)`);
+  } catch (error) {
+    failures.push(`[download] route check failed: ${error.message}`);
+    console.log("  FAIL  /download route check");
+  }
+}
+
+async function checkCspReport(failures) {
+  try {
+    const response = await fetch(`${SITE_BASE_URL}/api/csp-report`, {
+      method: "POST",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { "content-type": "application/csp-report" },
+      body: JSON.stringify({ "csp-report": { "document-uri": `${SITE_BASE_URL}/guardrail?redacted=1`, "violated-directive": "script-src", "blocked-uri": "inline" } }),
+    });
+    if (response.status !== 204) {
+      failures.push(`[csp] POST /api/csp-report returned ${response.status}, expected 204`);
+      console.log(`  FAIL  CSP report endpoint (${response.status})`);
+      return;
+    }
+    console.log("  PASS  CSP report endpoint (204)");
+  } catch (error) {
+    failures.push(`[csp] endpoint check failed: ${error.message}`);
+    console.log("  FAIL  CSP report endpoint");
+  }
+}
+
+async function checkForbiddenRoutes(failures) {
+  for (const path of FORBIDDEN_ROUTE_PATHS) {
+    try {
+      const response = await fetch(`${SITE_BASE_URL}${path}`, {
+        method: path.endsWith(".js") ? "GET" : "POST",
+        redirect: "manual",
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: browserHeaders("infinite-analytics-guardrail/2.0"),
+      });
+      if (![404, 405].includes(response.status)) {
+        failures.push(`[forbidden-route] ${path} returned ${response.status}, expected 404/405`);
+        console.log(`  FAIL  forbidden route ${path} (${response.status})`);
+        continue;
+      }
+      console.log(`  PASS  forbidden route ${path} (${response.status})`);
+    } catch (error) {
+      failures.push(`[forbidden-route] ${path} probe failed: ${error.message}`);
+      console.log(`  FAIL  forbidden route ${path}`);
+    }
+  }
+}
+
+async function checkSyntheticReceipts(failures) {
+  if (!REQUIRE_SYNTHETIC_RECEIPTS) {
+    console.log("  SKIP  synthetic receipts (REQUIRE_SYNTHETIC_RECEIPTS is not 1)");
+    return;
+  }
+
+  const config = {
+    SYNTHETIC_SITE_SOURCE_KEY,
+    ANALYTICS_RECEIPT_URL,
+    ANALYTICS_RECEIPT_TOKEN,
+    SYNTHETIC_DRAIN_URL,
+    SYNTHETIC_DRAIN_SECRET,
+    SYNTHETIC_VERCEL_PROJECT_ID,
+    SYNTHETIC_PRODUCTION_HOST,
+  };
+  const missing = Object.entries(config).filter(([, value]) => !value).map(([name]) => name);
+  if (missing.length > 0) {
+    failures.push(`[receipts] required configuration is missing: ${missing.join(", ")}`);
+    console.log(`  FAIL  synthetic receipts (${missing.join(", ")} missing)`);
+    return;
+  }
+
+  const eventId = randomUUID();
+  const browserPayload = {
+    eventId,
+    eventName: "site_page_view",
+    occurredAt: new Date().toISOString(),
+    anonymousId: randomUUID(),
+    sessionId: randomUUID(),
+    url: `${SITE_BASE_URL}/`,
+    siteSourceKey: SYNTHETIC_SITE_SOURCE_KEY,
+  };
+  try {
+    const response = await fetch(`${SITE_BASE_URL}/infinite/events/collect`, {
+      method: "POST",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { "content-type": "application/json", Origin: SITE_BASE_URL },
+      body: JSON.stringify(browserPayload),
+    });
+    if (response.status !== 202) throw new Error(`collect returned ${response.status}`);
+    await requireReceipt(eventId, "site_page_view");
+    console.log("  PASS  same-origin synthetic browser receipt (202 + authenticated receipt)");
+  } catch (error) {
+    failures.push(`[receipts] same-origin synthetic browser check failed: ${error.message}`);
+    console.log("  FAIL  same-origin synthetic browser receipt");
+  }
+
+  const documentId = `guardrail-edge-${randomUUID()}`;
+  const redirectId = `guardrail-redirect-${randomUUID()}`;
+  const timestamp = Date.now();
+  const deploymentId = `dpl_${randomUUID().replaceAll("-", "")}`;
+  const region = "iad1";
+  const vercelRecord = ({ id, source, host = SYNTHETIC_PRODUCTION_HOST, projectId = SYNTHETIC_VERCEL_PROJECT_ID, message, destination, proxy }) => ({
+    id,
+    deploymentId,
+    source,
+    host,
+    timestamp,
+    projectId,
+    level: "info",
+    environment: "production",
+    ...(message ? { message } : {}),
+    ...(destination ? { destination } : {}),
+    ...(proxy ? { proxy: { timestamp, region, ...proxy } } : {}),
+  });
+  const proxy = ({ method = "GET", host = SYNTHETIC_PRODUCTION_HOST, path = "/", statusCode = 200, userAgent = ["Mozilla/5.0"] } = {}) => ({
+    method,
+    host,
+    path,
+    userAgent,
+    region,
+    timestamp,
+    statusCode,
+    scheme: "https",
+  });
+  const records = [
+    vercelRecord({
+      id: documentId,
+      source: "edge",
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
+      proxy: proxy(),
+    }),
+    vercelRecord({
+      id: redirectId,
+      source: "redirect",
+      destination: DOWNLOAD_DESTINATION,
+      proxy: proxy({ path: "/download", statusCode: 307 }),
+    }),
+    vercelRecord({ id: `head-${randomUUID()}`, source: "edge", proxy: proxy({ method: "HEAD" }) }),
+    vercelRecord({ id: `prefetch-${randomUUID()}`, source: "edge", message: "prefetch without middleware marker", proxy: proxy() }),
+    vercelRecord({
+      id: `asset-${randomUUID()}`,
+      source: "edge",
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/assets/app.js"}',
+      proxy: proxy({ path: "/assets/app.js" }),
+    }),
+    vercelRecord({
+      id: `bot-${randomUUID()}`,
+      source: "edge",
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
+      proxy: proxy({ userAgent: ["Googlebot"] }),
+    }),
+    vercelRecord({
+      id: `project-${randomUUID()}`,
+      source: "edge",
+      projectId: `${SYNTHETIC_VERCEL_PROJECT_ID}-wrong`,
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
+      proxy: proxy(),
+    }),
+    vercelRecord({
+      id: `host-${randomUUID()}`,
+      source: "edge",
+      host: "wrong.example",
+      message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
+      proxy: proxy({ host: "wrong.example" }),
+    }),
+  ];
+  try {
+    const raw = JSON.stringify(records);
+    const signature = createHmac("sha1", SYNTHETIC_DRAIN_SECRET).update(raw).digest("hex");
+    const response = await fetch(SYNTHETIC_DRAIN_URL, {
+      method: "POST",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { "content-type": "application/json", "x-vercel-signature": signature },
+      body: raw,
+    });
+    const result = await response.json().catch(() => ({}));
+    if (response.status !== 202 || result.accepted !== 2) {
+      throw new Error(`Drain returned ${response.status} with accepted=${JSON.stringify(result.accepted)}`);
+    }
+    await requireReceipt(`vercel:${documentId}`, "site_document_request");
+    await requireReceipt(`vercel:${redirectId}`, "app_download_redirect");
+    console.log("  PASS  signed synthetic Drain receipt (mixed batch isolated)");
+  } catch (error) {
+    failures.push(`[receipts] signed synthetic Drain check failed: ${error.message}`);
+    console.log("  FAIL  signed synthetic Drain receipt");
+  }
+}
+
+async function requireReceipt(eventId, eventName) {
+  const receiptUrl = new URL(ANALYTICS_RECEIPT_URL);
+  receiptUrl.searchParams.set("eventId", eventId);
+  let last = "not received";
+  for (let attempt = 1; attempt <= RECEIPT_POLL_ATTEMPTS; attempt += 1) {
+    const response = await fetch(receiptUrl, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { authorization: `Bearer ${ANALYTICS_RECEIPT_TOKEN}` },
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.ok && payload.received === true) {
+      if (payload.eventId !== eventId || payload.eventName !== eventName || payload.environment !== "synthetic") {
+        throw new Error(`receipt mismatch for ${eventId}`);
+      }
+      return;
+    }
+    last = `HTTP ${response.status}`;
+    if (attempt < RECEIPT_POLL_ATTEMPTS) await sleep(RECEIPT_POLL_DELAY_MS);
+  }
+  throw new Error(`${eventId} was ${last} after ${RECEIPT_POLL_ATTEMPTS} attempts`);
+}
+
+async function fetchTextWithRetry(url, init = {}) {
+  let detail = "unknown error";
+  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(url, { ...init, redirect: "follow", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      const text = await response.text();
+      if (response.ok) return { ok: true, status: response.status, text, headers: response.headers, detail: "ok" };
+      detail = `HTTP ${response.status}`;
+      if (response.status < 500 && response.status !== 429) break;
+    } catch (error) {
+      detail = `network error: ${error.message}`;
+    }
+    if (attempt < FETCH_ATTEMPTS) await sleep(backoffMs(attempt));
+  }
+  return { ok: false, status: 0, text: "", headers: new Headers(), detail };
+}
+
+function browserHeaders(userAgent) {
+  return { "Cache-Control": "no-cache", Pragma: "no-cache", "User-Agent": userAgent };
+}
+
+function firstNonEmpty(...values) {
+  for (const value of values) if (typeof value === "string" && value.trim()) return value.trim();
   return "";
 }
 
-/** @param {number} ms */
+function positiveInteger(value, fallback) {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** @param {number} attempt */
 function backoffMs(attempt) {
-  return Math.min(1000 * 2 ** (attempt - 1), 8000);
+  return Math.min(1_000 * 2 ** (attempt - 1), 8_000);
 }
 
-/** @param {string} value */
 function maskIdentifier(value) {
   if (!value) return "";
   if (value.length <= 10) return `${value.slice(0, 3)}...`;
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
 }
 
-main().catch((err) => {
+function escapeJsonForHtmlSearch(value) {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+main().catch((error) => {
   console.error("Live analytics guardrail crashed unexpectedly:");
-  console.error(err);
+  console.error(error);
   process.exit(1);
 });

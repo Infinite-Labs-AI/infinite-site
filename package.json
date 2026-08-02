@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@vercel/functions": "3.7.6",
+    "infinite-tag": "0.3.1"
+  }
+}
