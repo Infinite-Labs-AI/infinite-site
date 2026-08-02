@@ -82,8 +82,19 @@ assert.equal(packageJson.private, true);
 assert.equal(packageJson.type, "module");
 assert.deepEqual(packageJson.devDependencies, {
   "@vercel/functions": "3.7.6",
-  "infinite-tag": "0.3.0",
+  "infinite-tag": "0.3.1",
 });
+const packageLock = JSON.parse(read("package-lock.json"));
+assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.3.1");
+assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.3.1");
+assert.equal(
+  packageLock.packages["node_modules/infinite-tag"].resolved,
+  "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.3.1.tgz",
+);
+assert.equal(
+  packageLock.packages["node_modules/infinite-tag"].integrity,
+  "sha512-0uBhEtUF4zD9sSzA3fNz0/F4BwuveBv+HCnjjjqZ0CYxwgQNl6hwvzQEman1+mokN/oSU9QF2YTgzEumea62wg==",
+);
 assert.match(read(".gitignore"), /^node_modules\/$/m);
 
 const injector = read(".github/scripts/inject-analytics.cjs");
@@ -125,13 +136,20 @@ assert.match(drainRunbook, /disabled.*Task 14.*Task 15/is);
 assert.match(drainRunbook, /Founder\/counsel approval.*pending.*retention receipts.*pending/is);
 const ledgerContract = read("docs/analytics/first-party-ledger-contract.md");
 assert.match(ledgerContract, /95af1293de230506f107ec526f53e132a81de87c/);
-assert.match(ledgerContract, /infinite-tag@0\.3\.0.*app_download_click.*destination_path.*placement.*unavailable/is);
+assert.match(ledgerContract, /infinite-tag@0\.3\.1.*96937b5.*dbde47d58fd2db7ea52cc30325a54d833dcec2b7a39e3f20ac48d9a6ed4b91f6/is);
+assert.match(ledgerContract, /registry.*latest.*0\.3\.1/is);
+assert.match(ledgerContract, /app_download_click.*cta_location.*destination_path/is);
+assert.match(ledgerContract, /data-download-location.*package-owned.*click listener/is);
+assert.doesNotMatch(ledgerContract, /placement is currently unavailable|future package release/i);
+assert.match(dataInventory, /app_download_click.*bounded CTA location.*destination path/is);
+assert.doesNotMatch(dataInventory, /download placement is unavailable/i);
 
 const siteAudit = read("scripts/verify-site-audit.mjs");
 assert.match(siteAudit, /renderInfiniteBrowserTag/);
 for (const eventName of ["site_page_view", "site_click", "app_download_click", "app_download_clicked"]) {
   assert.match(siteAudit, new RegExp(eventName), `site audit must inspect generated ${eventName}`);
 }
+assert.match(siteAudit, /data-download-location/);
 assert.doesNotMatch(siteAudit, /assert\.match\(analyticsInjector, \/app_download_clicked\//);
 
 const headers = vercel.headers?.find((entry) => entry.source === "/(.*)")?.headers ?? [];

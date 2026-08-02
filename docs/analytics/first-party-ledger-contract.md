@@ -6,7 +6,9 @@ Status: implementation contract. Production activation remains gated by the priv
 
 - Site base: `origin/main` at `95af1293de230506f107ec526f53e132a81de87c`.
 - Cloud/desktop analytics implementation: `ad10d6349c45224a6fcfdbe415b653321e399d90`.
-- Public package: exactly `infinite-tag@0.3.0`, published from reviewed SHA `117b444c534a2ff10bb9e8944e6f14d64b85a8c7`.
+- Public package: exactly `infinite-tag@0.3.1`, published from reviewed SHA `96937b5`.
+- Registry dist-tag receipt: `latest=0.3.1`.
+- Registry tarball SHA-256: `dbde47d58fd2db7ea52cc30325a54d833dcec2b7a39e3f20ac48d9a6ed4b91f6`.
 - Browser schema SHA-256: `919130276f983c61de47a75e986386c8bc7be543d4fd6706a71f0bc5481f34c0`.
 - Browser fixture SHA-256: `08d5ae19194044bf0f2d144c2bd50902baacb09f5170f66067d0e9fd9b9148a9`.
 
@@ -28,7 +30,7 @@ The public envelope may contain only the versioned contract fields: event id/nam
 
 Browser delivery is the same-origin path `/infinite/events/collect`, rewritten by Vercel to `https://api.ultima.inc/api/analytics/events/collect`. The site does not expose `/tracking` or `/sdk`. No source key means the Infinite destination is dormant while consented GA4 and PostHog mirrors continue.
 
-`infinite-tag@0.3.0` emits `app_download_click` with only `destination_path: "/download"`. Its download branch returns before reading placement metadata, so download placement is currently unavailable even though the public schema and collector permit bounded placement fields. The site retains its existing `data-download-location` markers for a future package release, but must not add a second click listener or claim that 0.3.0 preserves placement. The upstream follow-up is to update the package-owned download branch to map those markers into the same single event, add a package runtime test and download fixture proving the existing schema contract, and publish a separately reviewed version before the site dependency is changed.
+`infinite-tag@0.3.1` maps each valid `data-download-location` marker into the bounded `cta_location` property on the same package-owned `app_download_click` event, alongside `destination_path: "/download"`. The same properties are mirrored once to PostHog and GA4. The site keeps one package-owned click listener and must not add a second download emitter.
 
 ## Consent and privacy signals
 

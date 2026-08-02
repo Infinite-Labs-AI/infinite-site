@@ -53,6 +53,7 @@ const generatedAnalytics = renderInfiniteBrowserTag({
 for (const event of ["site_page_view", "site_click", "app_download_click", "app_download_clicked"]) {
   assert.match(generatedAnalytics, new RegExp(event), `generated package runtime must contain ${event}`);
 }
+assert.match(generatedAnalytics, /data-download-location/, "generated package runtime must consume download placement markers");
 const analyticsInjector = readFileSync(".github/scripts/inject-analytics.cjs", "utf8");
 assert.doesNotMatch(analyticsInjector, /app_download_clicked|cta_location/);
 

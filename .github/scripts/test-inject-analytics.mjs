@@ -14,6 +14,7 @@ const contractHashes = {
   "browser-collect-v1.schema.json": "919130276f983c61de47a75e986386c8bc7be543d4fd6706a71f0bc5481f34c0",
   "browser-collect-v1.fixture.json": "08d5ae19194044bf0f2d144c2bd50902baacb09f5170f66067d0e9fd9b9148a9",
 };
+const downloadLocations = ["navigation", "hero", "pricing", "final-cta"];
 
 const sourceArtifact = (siteSourceKey, productionHosts) => JSON.stringify({
   siteSourceKey,
@@ -24,11 +25,11 @@ const sourceArtifact = (siteSourceKey, productionHosts) => JSON.stringify({
 
 const page = (title) => `<!doctype html><html><head><title>${title}</title></head><body>
   <a href="/pricing" data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation">Pricing</a>
-  <a href="/download">Download for Mac</a>
+  ${downloadLocations.map((location) => `<a href="/download" data-download-location="${location}">Download for Mac</a>`).join("\n  ")}
 </body></html>`;
 
 try {
-  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.3.0");
+  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.3.1");
   for (const [name, expectedHash] of Object.entries(contractHashes)) {
     const bytes = readFileSync(join(repoRoot, "node_modules/infinite-tag/contracts", name));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), expectedHash, `${name} must match the reviewed public contract`);
@@ -104,20 +105,29 @@ try {
     cta_location: "navigation",
     destination_path: "/pricing/",
   });
-  granted.click(granted.download);
-  assert.equal(granted.infiniteEvents("app_download_click").length, 1);
-  assert.deepEqual(
-    granted.infiniteEvents("app_download_click")[0].properties,
-    { destination_path: "/download" },
-    "infinite-tag 0.3.0 does not preserve download placement metadata",
-  );
-  assert.equal(granted.posthogEvents("app_download_clicked").length, 1);
-  assert.equal(granted.gaEvents("app_download_clicked").length, 1);
+  assert.equal(granted.documentListenerCount("click"), 1, "the package must own exactly one site click listener");
+  for (const [index, location] of downloadLocations.entries()) {
+    granted.click(granted.downloads[location]);
+    const infiniteDownloads = granted.infiniteEvents("app_download_click");
+    const posthogDownloads = granted.posthogEvents("app_download_clicked");
+    const gaDownloads = granted.gaEvents("app_download_clicked");
+    assert.equal(infiniteDownloads.length, index + 1, `${location} must emit one Infinite download event`);
+    assert.equal(posthogDownloads.length, index + 1, `${location} must emit one PostHog download mirror`);
+    assert.equal(gaDownloads.length, index + 1, `${location} must emit one GA4 download mirror`);
+    assert.deepEqual(infiniteDownloads[index].properties, {
+      cta_location: location,
+      destination_path: "/download",
+    });
+    assert.equal(posthogDownloads[index][2].cta_location, location);
+    assert.equal(posthogDownloads[index][2].destination_path, "/download");
+    assert.equal(gaDownloads[index][2].cta_location, location);
+    assert.equal(gaDownloads[index][2].destination_path, "/download");
+  }
   assert.doesNotMatch(JSON.stringify(granted.infiniteBodies), /Download for Mac|Pricing/);
 
   granted.setConsent(false);
-  granted.click(granted.download);
-  assert.equal(granted.infiniteEvents("app_download_click").length, 1, "revocation stops later clicks");
+  granted.click(granted.downloads.hero);
+  assert.equal(granted.infiniteEvents("app_download_click").length, 4, "revocation stops later clicks");
   granted.setConsent(true);
   assert.equal(granted.xEvents("config").length, 1, "re-grant does not duplicate X initialization");
   assert.equal(granted.metaEvents("init").length, 1, "re-grant does not duplicate Meta initialization");
@@ -283,10 +293,13 @@ function executeAnalytics(html, {
       "data-analytics-cta-location": "navigation",
     },
   });
-  const download = element({
-    href: `${origin}/download?campaign=secret`,
-    attributes: { "data-download-location": "hero" },
-  });
+  const downloads = Object.fromEntries(downloadLocations.map((location) => [
+    location,
+    element({
+      href: `${origin}/download?campaign=secret`,
+      attributes: { "data-download-location": location },
+    }),
+  ]));
   const documentListeners = new Map();
   const document = {
     referrer: "https://search.example/results?q=secret",
@@ -295,7 +308,9 @@ function executeAnalytics(html, {
     getElementsByTagName: () => [{ parentNode: { insertBefore: (node) => insertedScripts.push(node) } }],
     head: { appendChild: (node) => insertedScripts.push(node) },
     body: { appendChild() {} },
-    addEventListener: (name, listener) => documentListeners.set(name, listener),
+    addEventListener: (name, listener) => {
+      documentListeners.set(name, [...(documentListeners.get(name) ?? []), listener]);
+    },
   };
   const window = {
     location: {
@@ -348,7 +363,7 @@ function executeAnalytics(html, {
   const metaEvents = (name) => (window.fbq?.queue ?? []).filter((entry) => entry[0] === name);
   return {
     cta,
-    download,
+    downloads,
     infiniteBodies,
     infiniteEvents: (name) => infiniteBodies.filter((body) => body.eventName === name),
     posthogEvents,
@@ -356,8 +371,11 @@ function executeAnalytics(html, {
     xEvents,
     metaEvents,
     insertedScripts,
+    documentListenerCount: (name) => documentListeners.get(name)?.length ?? 0,
     setConsent: (granted) => window.setInfiniteAnalyticsConsent(granted),
-    click: (target) => documentListeners.get("click")?.({ target }),
+    click: (target) => {
+      for (const listener of documentListeners.get("click") ?? []) listener({ target });
+    },
   };
 }
 
