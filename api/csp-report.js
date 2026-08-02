@@ -33,11 +33,19 @@ function safeUri(value) {
   }
 }
 
+function rawBodyString(body) {
+  if (typeof body === "string") return body;
+  if (body instanceof ArrayBuffer) return Buffer.from(body).toString("utf8");
+  if (ArrayBuffer.isView(body)) return Buffer.from(body.buffer, body.byteOffset, body.byteLength).toString("utf8");
+  return undefined;
+}
+
 function parseBody(body) {
-  if (typeof body === "string") {
-    if (Buffer.byteLength(body, "utf8") > MAX_BODY_BYTES) throw new ReportError(413);
+  const raw = rawBodyString(body);
+  if (raw !== undefined) {
+    if (Buffer.byteLength(raw, "utf8") > MAX_BODY_BYTES) throw new ReportError(413);
     try {
-      return JSON.parse(body);
+      return JSON.parse(raw);
     } catch (_error) {
       throw new ReportError(400);
     }

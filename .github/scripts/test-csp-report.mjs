@@ -43,6 +43,21 @@ try {
   });
 
   warnings.length = 0;
+  const rawLegacy = invoke("POST", Buffer.from(JSON.stringify({
+    "csp-report": {
+      "document-uri": "https://infinite.fast/guardrail?secret=redacted",
+      "violated-directive": "script-src",
+      "blocked-uri": "inline",
+    },
+  })));
+  assert.equal(rawLegacy.statusCode, 204);
+  assert.deepEqual(JSON.parse(warnings[0][1]), {
+    document: "https://infinite.fast/guardrail",
+    violatedDirective: "script-src",
+    blocked: "inline",
+  });
+
+  warnings.length = 0;
   const modern = invoke("POST", JSON.stringify([
     { type: "deprecation", body: { message: "must not be logged" } },
     {
