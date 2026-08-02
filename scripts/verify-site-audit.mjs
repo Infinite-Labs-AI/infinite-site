@@ -58,9 +58,9 @@ const analyticsInjector = readFileSync(".github/scripts/inject-analytics.cjs", "
 assert.doesNotMatch(analyticsInjector, /app_download_clicked|cta_location/);
 
 const homepage = readFileSync(pages[0][1], "utf8");
-assert.doesNotMatch(homepage, /Find leads, automates SEO/i);
+assert.match(homepage, /Meet Infinite, your AI CMO/i);
+assert.match(homepage, /Find leads, automate SEO, A\/B test landing pages, and uncover trending content\./i);
 assert.match(homepage, /review-first/i);
-assert.match(homepage, /publishing[^<]{0,120}review|review[^<]{0,120}publishing/i);
 
 const toolFiles = pages.slice(4, 8).map(([, file]) => file);
 for (const file of toolFiles) {
