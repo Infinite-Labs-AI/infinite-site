@@ -47,7 +47,7 @@ async function main() {
   console.log(`  expect token      : ${maskIdentifier(EXPECTED_POSTHOG_TOKEN)}`);
   console.log(`  expect api_host   : ${EXPECTED_POSTHOG_API_HOST}`);
   console.log(`  expect GA tag id  : ${EXPECTED_GA_TAG_ID || "(any G-* tag)"}`);
-  console.log(`  synthetic receipts: ${REQUIRE_SYNTHETIC_RECEIPTS ? "required" : "optional"}`);
+  console.log(`  synthetic receipts: ${REQUIRE_SYNTHETIC_RECEIPTS ? "required" : "disabled"}`);
   console.log("");
 
   /** @type {string[]} */
@@ -194,6 +194,11 @@ async function checkCspReport(failures) {
 }
 
 async function checkSyntheticReceipts(failures) {
+  if (!REQUIRE_SYNTHETIC_RECEIPTS) {
+    console.log("  SKIP  synthetic receipts (REQUIRE_SYNTHETIC_RECEIPTS is not 1)");
+    return;
+  }
+
   const config = {
     SYNTHETIC_SITE_SOURCE_KEY,
     ANALYTICS_RECEIPT_URL,
@@ -205,8 +210,8 @@ async function checkSyntheticReceipts(failures) {
   };
   const missing = Object.entries(config).filter(([, value]) => !value).map(([name]) => name);
   if (missing.length > 0) {
-    if (REQUIRE_SYNTHETIC_RECEIPTS) failures.push(`[receipts] required configuration is missing: ${missing.join(", ")}`);
-    console.log(`  ${REQUIRE_SYNTHETIC_RECEIPTS ? "FAIL" : "SKIP"}  synthetic receipts (${missing.join(", ")} missing)`);
+    failures.push(`[receipts] required configuration is missing: ${missing.join(", ")}`);
+    console.log(`  FAIL  synthetic receipts (${missing.join(", ")} missing)`);
     return;
   }
 

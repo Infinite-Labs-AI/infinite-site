@@ -11,6 +11,9 @@ const drainSecret = "drain-test-secret";
 const received = new Map();
 let observedCollectOrigin = null;
 let observedDownloadUa = null;
+let collectRequests = 0;
+let drainRequests = 0;
+let receiptRequests = 0;
 
 const server = createServer(async (request, response) => {
   const origin = `http://127.0.0.1:${server.address().port}`;
@@ -35,6 +38,7 @@ const server = createServer(async (request, response) => {
     return;
   }
   if (url.pathname === "/infinite/events/collect" && request.method === "POST") {
+    collectRequests += 1;
     observedCollectOrigin = request.headers.origin;
     const payload = JSON.parse(await body(request));
     assert.equal(payload.siteSourceKey, "site_synthetic_guardrail");
@@ -46,6 +50,7 @@ const server = createServer(async (request, response) => {
     return;
   }
   if (url.pathname === "/synthetic-drain" && request.method === "POST") {
+    drainRequests += 1;
     const raw = await body(request);
     assert.equal(
       request.headers["x-vercel-signature"],
@@ -70,6 +75,7 @@ const server = createServer(async (request, response) => {
     return;
   }
   if (url.pathname === "/receipt") {
+    receiptRequests += 1;
     assert.equal(request.headers.authorization, `Bearer ${receiptToken}`);
     const eventId = url.searchParams.get("eventId");
     const event = received.get(eventId);
@@ -99,13 +105,12 @@ await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const baseUrl = `http://127.0.0.1:${server.address().port}`;
 
 try {
-  const result = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+  const commonEnv = {
     ...process.env,
     SITE_BASE_URL: baseUrl,
     EXPECTED_POSTHOG_TOKEN: "phc_test",
     EXPECTED_POSTHOG_API_HOST: "/ingest",
     EXPECTED_GA_TAG_ID: "G-TEST",
-    REQUIRE_SYNTHETIC_RECEIPTS: "1",
     SYNTHETIC_SITE_SOURCE_KEY: "site_synthetic_guardrail",
     ANALYTICS_RECEIPT_URL: `${baseUrl}/receipt`,
     ANALYTICS_RECEIPT_TOKEN: receiptToken,
@@ -115,6 +120,32 @@ try {
     SYNTHETIC_PRODUCTION_HOST: "infinite.fast",
     RECEIPT_POLL_ATTEMPTS: "2",
     RECEIPT_POLL_DELAY_MS: "1",
+  };
+
+  const disabled = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+    ...commonEnv,
+    REQUIRE_SYNTHETIC_RECEIPTS: "0",
+  });
+  assert.equal(disabled.code, 0, disabled.stderr || disabled.stdout);
+  assert.match(disabled.stdout, /SKIP\s+synthetic receipts \(REQUIRE_SYNTHETIC_RECEIPTS is not 1\)/);
+  assert.equal(collectRequests, 0, "disabled verification must not call the collector");
+  assert.equal(drainRequests, 0, "disabled verification must not call the Drain");
+  assert.equal(receiptRequests, 0, "disabled verification must not query receipts");
+
+  const missing = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+    ...commonEnv,
+    REQUIRE_SYNTHETIC_RECEIPTS: "1",
+    SYNTHETIC_DRAIN_SECRET: "",
+  });
+  assert.notEqual(missing.code, 0, "enabled verification must fail closed on missing configuration");
+  assert.match(missing.stderr, /SYNTHETIC_DRAIN_SECRET/);
+  assert.equal(collectRequests, 0, "missing enabled configuration must fail before collector calls");
+  assert.equal(drainRequests, 0, "missing enabled configuration must fail before Drain calls");
+  assert.equal(receiptRequests, 0, "missing enabled configuration must fail before receipt calls");
+
+  const result = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+    ...commonEnv,
+    REQUIRE_SYNTHETIC_RECEIPTS: "1",
   });
   assert.equal(result.code, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /PASS\s+same-origin synthetic browser receipt/);
@@ -122,6 +153,9 @@ try {
   assert.match(result.stdout, /PASS\s+\/download 307/);
   assert.match(result.stdout, /PASS\s+CSP report endpoint/);
   assert.equal(observedCollectOrigin, baseUrl);
+  assert.equal(collectRequests, 1);
+  assert.equal(drainRequests, 1);
+  assert.equal(receiptRequests, 3);
   assert.match(observedDownloadUa ?? "", /bot/i, "redirect probe must be bot-classified and excluded from production counts");
 } finally {
   server.close();
