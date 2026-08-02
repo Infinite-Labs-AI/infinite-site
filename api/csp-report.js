@@ -26,9 +26,10 @@ function safeUri(value) {
 
   try {
     const url = new URL(bounded);
+    if (!["http:", "https:"].includes(url.protocol)) return undefined;
     return `${url.origin}${url.pathname}`.slice(0, MAX_LOGGED_URI_BYTES);
   } catch (_error) {
-    return bounded.slice(0, 200);
+    return undefined;
   }
 }
 

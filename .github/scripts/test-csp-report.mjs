@@ -69,6 +69,18 @@ try {
   });
 
   warnings.length = 0;
+  const unsafeLocations = invoke("POST", {
+    "csp-report": {
+      "document-uri": "not-a-url?secret=redacted",
+      "violated-directive": "img-src",
+      "blocked-uri": "data:text/plain,private-payload",
+    },
+  });
+  assert.equal(unsafeLocations.statusCode, 204);
+  assert.deepEqual(JSON.parse(warnings[0][1]), { violatedDirective: "img-src" });
+  assert.doesNotMatch(warnings[0][1], /redacted|private-payload/);
+
+  warnings.length = 0;
   assert.equal(invoke("POST", "{malformed", "application/csp-report").statusCode, 400);
   assert.equal(invoke("POST", undefined, "application/csp-report").statusCode, 400);
   assert.equal(invoke("POST", {}, "application/json").statusCode, 415);
