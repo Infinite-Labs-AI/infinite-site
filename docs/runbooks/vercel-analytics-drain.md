@@ -24,9 +24,10 @@ Export or inspect the saved Drain after configuration and retain a redacted snap
 2. Obtain explicit approval for the team-wide impact of disabling Drain IP Address Visibility, then disable it. The server lane needs request counts, not unique-person IP data.
 3. Provision/reconcile the production and dedicated synthetic sources through the authenticated control plane. Do not insert rows with ad hoc SQL.
 4. Record the exact Vercel project id and confirm the source's enabled verified host binding is exactly `infinite.fast`.
-5. Resolve the deployed GA measurement id and PostHog token/host to the exact properties connected to the Infinite workspace. Record only non-secret identities.
-6. Confirm the production site build has no `INFINITE_SITE_SOURCE_KEY`; the Drain is disabled; and no production receipt exists.
-7. Publish the reviewed privacy policy and approve the data inventory, consent behavior, raw/aggregate retention, deletion workflow, and processors.
+5. Export the authenticated browser-safe source as exact `InfinitePublicArtifact` JSON into `INFINITE_SITE_SOURCE_ARTIFACT`. Production builds require it and fail unless its normalized `productionHosts` exactly match `INFINITE_PRODUCTION_HOSTS`; when `INFINITE_SITE_SOURCE_KEY` is later enabled, it must exactly match the artifact key. The artifact alone does not activate the dormant runtime.
+6. Resolve the deployed GA measurement id and PostHog token/host to the exact properties connected to the Infinite workspace. Record only non-secret identities.
+7. Confirm the production site build has no `INFINITE_SITE_SOURCE_KEY`; the Drain is disabled; and no production receipt exists.
+8. Publish the reviewed privacy policy and approve the data inventory, consent behavior, raw/aggregate retention, deletion workflow, and processors.
 
 ## Synthetic validation
 

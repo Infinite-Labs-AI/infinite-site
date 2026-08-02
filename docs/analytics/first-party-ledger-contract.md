@@ -28,6 +28,8 @@ The public envelope may contain only the versioned contract fields: event id/nam
 
 Browser delivery is the same-origin path `/infinite/events/collect`, rewritten by Vercel to `https://api.ultima.inc/api/analytics/events/collect`. The site does not expose `/tracking` or `/sdk`. No source key means the Infinite destination is dormant while consented GA4 and PostHog mirrors continue.
 
+`infinite-tag@0.3.0` emits `app_download_click` with only `destination_path: "/download"`. Its download branch returns before reading canonical `data-analytics-cta-id` or `data-analytics-cta-location` attributes, so download placement is currently unavailable even though the public schema and collector permit those bounded fields. The site must not add a second click listener or claim that placement is preserved. The exact upstream follow-up is to update the package-owned download branch to read those canonical attributes into the same single event, add a package runtime test and download fixture proving the existing schema contract, publish a separately reviewed version, and only then add matching site markup.
+
 ## Consent and privacy signals
 
 Analytics consent is required and stored as `infinite_analytics_consent`. One change event governs Infinite, PostHog, and GA4. DNT or GPC suppresses all three regardless of a stored grant. Consent withdrawal stops future browser emission. Server-observed document and redirect requests are disclosed separately because they occur before browser code can run and are not controlled by browser consent.

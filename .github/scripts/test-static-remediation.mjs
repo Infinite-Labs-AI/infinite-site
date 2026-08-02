@@ -95,21 +95,32 @@ assert.doesNotMatch(deployPreparation, /require\(path\.join\(repoRoot, "\.github
 
 const homepage = read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html");
 assert.match(homepage, /data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation"/);
-assert.match(homepage, /href="\/download" data-download-location="hero"/);
+assert.doesNotMatch(homepage, /data-download-location=/, "0.3.0 does not preserve download placement");
 
 const privacy = read("privacy/index.html");
 assert.match(privacy, /Website visitor analytics/i);
 assert.match(privacy, /90 days/i);
 assert.match(privacy, /25 months/i);
 assert.match(privacy, /Do Not Track.*Global Privacy Control|Global Privacy Control.*Do Not Track/is);
-assert.match(privacy, /server.*request.*redirect.*not controlled by.*browser consent/is);
+assert.match(privacy, /first-party.*(?:ledger|collection).*remain(?:s)? disabled.*approved activation/is);
+assert.match(privacy, /if approved and activated.*server.*request.*redirect/is);
+assert.doesNotMatch(privacy, /On <code>infinite\.fast<\/code>, we use a first-party Infinite event ledger/i);
 assert.doesNotMatch(privacy, /We do not host, receive, store, or have access to that data\./);
 
 const guardrail = read("docs/ANALYTICS-GUARDRAIL.md");
 assert.match(guardrail, /same-origin.*synthetic.*receipt/is);
 assert.match(guardrail, /does not prove.*100%|not.*100% capture/is);
 assert.match(read("docs/runbooks/vercel-analytics-drain.md"), /disabled.*Task 14.*Task 15/is);
-assert.match(read("docs/analytics/first-party-ledger-contract.md"), /95af1293de230506f107ec526f53e132a81de87c/);
+const ledgerContract = read("docs/analytics/first-party-ledger-contract.md");
+assert.match(ledgerContract, /95af1293de230506f107ec526f53e132a81de87c/);
+assert.match(ledgerContract, /infinite-tag@0\.3\.0.*app_download_click.*destination_path.*placement.*unavailable/is);
+
+const siteAudit = read("scripts/verify-site-audit.mjs");
+assert.match(siteAudit, /renderInfiniteBrowserTag/);
+for (const eventName of ["site_page_view", "site_click", "app_download_click", "app_download_clicked"]) {
+  assert.match(siteAudit, new RegExp(eventName), `site audit must inspect generated ${eventName}`);
+}
+assert.doesNotMatch(siteAudit, /assert\.match\(analyticsInjector, \/app_download_clicked\//);
 
 const headers = vercel.headers?.find((entry) => entry.source === "/(.*)")?.headers ?? [];
 const headerValue = (key) => headers.find((header) => header.key.toLowerCase() === key.toLowerCase())?.value;

@@ -193,8 +193,6 @@ if (wrangleHtml) {
     "Put growth on <span>auto-pilot</span>",
     '"sameAs": [',
     '"offers": {',
-    'data-download-location="hero"',
-    'data-download-location="pricing"',
     "Dashboard metrics use demo data.",
     "Demo data",
     'class="footer-label"',
@@ -202,6 +200,7 @@ if (wrangleHtml) {
 
   const forbiddenWrangleSnippets = [
     "https://www.infinite.fast",
+    "data-download-location=",
     "Find leads, automates",
     "Trusted by top founders",
     "Public proof and release details",

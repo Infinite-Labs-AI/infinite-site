@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { renderInfiniteBrowserTag } from "infinite-tag";
 
 const origin = "https://infinite.fast";
 const pages = [
@@ -41,6 +42,20 @@ assert.doesNotMatch(sitemap, /blog\.infinite\.fast|www\.infinite\.fast/);
 const robots = readFileSync("robots.txt", "utf8");
 assert.match(robots, /Sitemap:\s+https:\/\/infinite\.fast\/sitemap\.xml/);
 
+const generatedAnalytics = renderInfiniteBrowserTag({
+  siteSourceKey: "site_audit_fixture",
+  collectPath: "/infinite/events/collect",
+  productionHosts: ["infinite.fast"],
+  respectDnt: true,
+  consent: { mode: "required", storageKey: "infinite_analytics_consent" },
+  mirrors: ["posthog", "ga4"],
+});
+for (const event of ["site_page_view", "site_click", "app_download_click", "app_download_clicked"]) {
+  assert.match(generatedAnalytics, new RegExp(event), `generated package runtime must contain ${event}`);
+}
+const analyticsInjector = readFileSync(".github/scripts/inject-analytics.cjs", "utf8");
+assert.doesNotMatch(analyticsInjector, /app_download_clicked|cta_location/);
+
 const homepage = readFileSync(pages[0][1], "utf8");
 assert.doesNotMatch(homepage, /Find leads, automates SEO/i);
 assert.match(homepage, /review-first/i);
@@ -60,10 +75,6 @@ const toolScript = readFileSync("assets/seo-tools.js", "utf8");
 for (const event of ["tool_started", "tool_generated", "result_copied", "download_clicked"]) {
   assert.match(toolScript, new RegExp(event), `tool analytics must emit ${event}`);
 }
-
-const analyticsInjector = readFileSync(".github/scripts/inject-analytics.cjs", "utf8");
-assert.match(analyticsInjector, /app_download_clicked/);
-assert.match(analyticsInjector, /cta_location/);
 
 const comparisonFiles = pages.slice(9).map(([, file]) => file);
 for (const file of comparisonFiles) {

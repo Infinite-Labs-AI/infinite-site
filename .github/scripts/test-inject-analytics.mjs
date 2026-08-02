@@ -24,7 +24,7 @@ const sourceArtifact = (siteSourceKey, productionHosts) => JSON.stringify({
 
 const page = (title) => `<!doctype html><html><head><title>${title}</title></head><body>
   <a href="/pricing" data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation">Pricing</a>
-  <a href="/download" data-download-location="hero">Download for Mac</a>
+  <a href="/download">Download for Mac</a>
 </body></html>`;
 
 try {
@@ -106,7 +106,11 @@ try {
   });
   granted.click(granted.download);
   assert.equal(granted.infiniteEvents("app_download_click").length, 1);
-  assert.deepEqual(granted.infiniteEvents("app_download_click")[0].properties, { destination_path: "/download" });
+  assert.deepEqual(
+    granted.infiniteEvents("app_download_click")[0].properties,
+    { destination_path: "/download" },
+    "infinite-tag 0.3.0 does not preserve download placement metadata",
+  );
   assert.equal(granted.posthogEvents("app_download_clicked").length, 1);
   assert.equal(granted.gaEvents("app_download_clicked").length, 1);
   assert.doesNotMatch(JSON.stringify(granted.infiniteBodies), /Download for Mac|Pricing/);
@@ -281,7 +285,7 @@ function executeAnalytics(html, {
   });
   const download = element({
     href: `${origin}/download?campaign=secret`,
-    attributes: { "data-download-location": "hero" },
+    attributes: {},
   });
   const documentListeners = new Map();
   const document = {
