@@ -1,25 +1,26 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { Readable } from "node:stream";
 
 const source = readFileSync(new URL("../../api/csp-report.js", import.meta.url), "utf8");
-assert.match(source, /export default function cspReport/);
+assert.match(source, /export default async function cspReport/);
 assert.doesNotMatch(source, /module\.exports|require\s*\(/);
 const { default: handler } = await import("../../api/csp-report.js");
 const originalWarn = console.warn;
 const warnings = [];
 console.warn = (...values) => warnings.push(values);
 
-const invoke = (method, body, contentType = "application/csp-report") => {
+const invoke = async (method, body, contentType = "application/csp-report") => {
   const response = { headers: {}, statusCode: 200 };
   response.setHeader = (key, value) => { response.headers[key] = value; };
   response.status = (statusCode) => { response.statusCode = statusCode; return response; };
   response.end = () => response;
-  handler({ method, body, headers: { "content-type": contentType } }, response);
+  await handler({ method, body, headers: { "content-type": contentType } }, response);
   return response;
 };
 
 try {
-  const legacy = invoke("POST", {
+  const legacy = await invoke("POST", {
     "csp-report": {
       "document-uri": "https://infinite.fast/tools/?secret=redacted",
       "violated-directive": "script-src-elem",
@@ -43,7 +44,7 @@ try {
   });
 
   warnings.length = 0;
-  const rawLegacy = invoke("POST", Buffer.from(JSON.stringify({
+  const rawLegacy = await invoke("POST", Buffer.from(JSON.stringify({
     "csp-report": {
       "document-uri": "https://infinite.fast/guardrail?secret=redacted",
       "violated-directive": "script-src",
@@ -58,7 +59,29 @@ try {
   });
 
   warnings.length = 0;
-  const modern = invoke("POST", JSON.stringify([
+  const streamedLegacyRequest = Readable.from([Buffer.from(JSON.stringify({
+    "csp-report": {
+      "document-uri": "https://infinite.fast/streamed?secret=redacted",
+      "violated-directive": "connect-src",
+      "blocked-uri": "https://unexpected.example/collect?private=1",
+    },
+  }))]);
+  streamedLegacyRequest.method = "POST";
+  streamedLegacyRequest.headers = { "content-type": "application/csp-report" };
+  const streamedLegacy = { headers: {}, statusCode: 200 };
+  streamedLegacy.setHeader = (key, value) => { streamedLegacy.headers[key] = value; };
+  streamedLegacy.status = (statusCode) => { streamedLegacy.statusCode = statusCode; return streamedLegacy; };
+  streamedLegacy.end = () => streamedLegacy;
+  await handler(streamedLegacyRequest, streamedLegacy);
+  assert.equal(streamedLegacy.statusCode, 204);
+  assert.deepEqual(JSON.parse(warnings[0][1]), {
+    document: "https://infinite.fast/streamed",
+    violatedDirective: "connect-src",
+    blocked: "https://unexpected.example/collect",
+  });
+
+  warnings.length = 0;
+  const modern = await invoke("POST", JSON.stringify([
     { type: "deprecation", body: { message: "must not be logged" } },
     {
       type: "csp-violation",
@@ -84,7 +107,7 @@ try {
   });
 
   warnings.length = 0;
-  const unsafeLocations = invoke("POST", {
+  const unsafeLocations = await invoke("POST", {
     "csp-report": {
       "document-uri": "not-a-url?secret=redacted",
       "violated-directive": "img-src",
@@ -96,18 +119,18 @@ try {
   assert.doesNotMatch(warnings[0][1], /redacted|private-payload/);
 
   warnings.length = 0;
-  assert.equal(invoke("POST", "{malformed", "application/csp-report").statusCode, 400);
-  assert.equal(invoke("POST", undefined, "application/csp-report").statusCode, 400);
-  assert.equal(invoke("POST", {}, "application/json").statusCode, 415);
-  assert.equal(invoke("POST", "x".repeat(64 * 1024 + 1), "application/csp-report").statusCode, 413);
-  assert.equal(invoke("POST", Array.from({ length: 21 }, () => ({ type: "csp-violation", body: {} })), "application/reports+json").statusCode, 413);
-  assert.equal(invoke("POST", {
+  assert.equal((await invoke("POST", "{malformed", "application/csp-report")).statusCode, 400);
+  assert.equal((await invoke("POST", undefined, "application/csp-report")).statusCode, 400);
+  assert.equal((await invoke("POST", {}, "application/json")).statusCode, 415);
+  assert.equal((await invoke("POST", "x".repeat(64 * 1024 + 1), "application/csp-report")).statusCode, 413);
+  assert.equal((await invoke("POST", Array.from({ length: 21 }, () => ({ type: "csp-violation", body: {} })), "application/reports+json")).statusCode, 413);
+  assert.equal((await invoke("POST", {
     "csp-report": { "document-uri": `https://infinite.fast/${"x".repeat(2049)}` },
-  }).statusCode, 413);
-  assert.equal(invoke("POST", [{ type: "deprecation", body: {} }], "application/reports+json").statusCode, 400);
+  })).statusCode, 413);
+  assert.equal((await invoke("POST", [{ type: "deprecation", body: {} }], "application/reports+json")).statusCode, 400);
   assert.equal(warnings.length, 0, "rejected and unrelated payloads must not be logged");
 
-  const rejected = invoke("GET");
+  const rejected = await invoke("GET");
   assert.equal(rejected.statusCode, 405);
   assert.equal(rejected.headers.Allow, "POST");
 } finally {

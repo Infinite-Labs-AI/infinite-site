@@ -40,6 +40,19 @@ function rawBodyString(body) {
   return undefined;
 }
 
+async function readStreamBody(req) {
+  if (!req || typeof req[Symbol.asyncIterator] !== "function") return undefined;
+  const chunks = [];
+  let bytes = 0;
+  for await (const chunk of req) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    bytes += buffer.length;
+    if (bytes > MAX_BODY_BYTES) throw new ReportError(413);
+    chunks.push(buffer);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
 function parseBody(body) {
   const raw = rawBodyString(body);
   if (raw !== undefined) {
@@ -91,7 +104,7 @@ function sanitizeReport(report) {
   return Object.fromEntries(Object.entries(sanitized).filter(([, value]) => value !== undefined));
 }
 
-export default function cspReport(req, res) {
+export default async function cspReport(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   if (req.method !== "POST") {
@@ -109,7 +122,7 @@ export default function cspReport(req, res) {
   }
 
   try {
-    const body = parseBody(req.body);
+    const body = parseBody(req.body ?? await readStreamBody(req));
     const reports = reportBodies(contentType, body);
     const sanitized = reports.map(sanitizeReport);
     if (sanitized.some((report) => Object.keys(report).length === 0)) throw new ReportError(400);
