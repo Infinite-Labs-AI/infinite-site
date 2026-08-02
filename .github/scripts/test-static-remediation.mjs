@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 
@@ -59,12 +59,57 @@ for (const [, url, lastmod] of urlBlocks) {
 }
 
 const vercel = JSON.parse(read("vercel.json"));
+assert.equal(vercel.installCommand, "npm ci");
 const rewrites = vercel.rewrites ?? [];
 assert.equal(
   rewrites.some((rewrite) => String(rewrite.source).startsWith("/gtm")),
   false,
   "GA4 must not use the unproven /gtm relative transport proxy",
 );
+assert.deepEqual(
+  rewrites.find((rewrite) => rewrite.source === "/infinite/events/collect"),
+  {
+    source: "/infinite/events/collect",
+    destination: "https://api.ultima.inc/api/analytics/events/collect",
+  },
+  "Infinite browser events must use the exact same-origin public collect rewrite",
+);
+assert.equal(existsSync(new URL("../../api/download.js", import.meta.url)), false, "the native /download redirect must not become a function");
+assert.equal(existsSync(new URL("../workflows/deploy-pages.yml", import.meta.url)), false, "Vercel is the only production host");
+
+const packageJson = JSON.parse(read("package.json"));
+assert.equal(packageJson.private, true);
+assert.equal(packageJson.type, "module");
+assert.deepEqual(packageJson.devDependencies, {
+  "@vercel/functions": "3.7.6",
+  "infinite-tag": "0.3.0",
+});
+assert.match(read(".gitignore"), /^node_modules\/$/m);
+
+const injector = read(".github/scripts/inject-analytics.cjs");
+assert.match(injector, /await import\("infinite-tag"\)/);
+assert.doesNotMatch(injector, /_1BU|\/api\/events\/track|custom_app_download_redirect|appDownloadTrackingSnippet|link_text/);
+const deployPreparation = read("scripts/prepare-static-deploy.cjs");
+assert.match(deployPreparation, /execFileSync\(process\.execPath, \[path\.join\(repoRoot, "\.github\/scripts\/inject-analytics\.cjs"\)\]/);
+assert.doesNotMatch(deployPreparation, /require\(path\.join\(repoRoot, "\.github\/scripts\/inject-analytics\.cjs"\)\)/);
+
+const homepage = read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html");
+assert.match(homepage, /data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation"/);
+assert.match(homepage, /href="\/download" data-download-location="hero"/);
+
+const privacy = read("privacy/index.html");
+assert.match(privacy, /Website visitor analytics/i);
+assert.match(privacy, /90 days/i);
+assert.match(privacy, /25 months/i);
+assert.match(privacy, /Do Not Track.*Global Privacy Control|Global Privacy Control.*Do Not Track/is);
+assert.match(privacy, /server.*request.*redirect.*not controlled by.*browser consent/is);
+assert.doesNotMatch(privacy, /We do not host, receive, store, or have access to that data\./);
+
+const guardrail = read("docs/ANALYTICS-GUARDRAIL.md");
+assert.match(guardrail, /same-origin.*synthetic.*receipt/is);
+assert.match(guardrail, /does not prove.*100%|not.*100% capture/is);
+assert.match(read("docs/runbooks/vercel-analytics-drain.md"), /disabled.*Task 14.*Task 15/is);
+assert.match(read("docs/analytics/first-party-ledger-contract.md"), /95af1293de230506f107ec526f53e132a81de87c/);
 
 const headers = vercel.headers?.find((entry) => entry.source === "/(.*)")?.headers ?? [];
 const headerValue = (key) => headers.find((header) => header.key.toLowerCase() === key.toLowerCase())?.value;

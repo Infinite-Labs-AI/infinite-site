@@ -1,4 +1,5 @@
 {
+  "installCommand": "npm ci",
   "buildCommand": "node scripts/prepare-static-deploy.cjs",
   "outputDirectory": "dist",
   "headers": [
@@ -73,6 +74,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/infinite/events/collect", "destination": "https://api.ultima.inc/api/analytics/events/collect" },
     { "source": "/ingest/static/:path(.*)", "destination": "https://eu-assets.i.posthog.com/static/:path" },
     { "source": "/ingest/array/:path(.*)", "destination": "https://eu-assets.i.posthog.com/array/:path" },
     { "source": "/ingest/:path(.*)", "destination": "https://eu.i.posthog.com/:path" }

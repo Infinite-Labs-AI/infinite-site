@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
-import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
 
-const require = createRequire(import.meta.url);
-const handler = require("../../api/csp-report.js");
+const source = readFileSync(new URL("../../api/csp-report.js", import.meta.url), "utf8");
+assert.match(source, /export default function cspReport/);
+assert.doesNotMatch(source, /module\.exports|require\s*\(/);
+const { default: handler } = await import("../../api/csp-report.js");
 const originalWarn = console.warn;
 console.warn = () => {};
 

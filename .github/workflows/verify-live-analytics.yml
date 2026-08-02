@@ -4,8 +4,8 @@
 #
 #  WHY: analytics on www.infinite.fast died silently for ~a month (stale deploy
 #  + injector gaps + a PostHog region flip). This workflow checks the LIVE,
-#  PUBLIC production pages — independent of how the site is built — and goes RED
-#  the moment a page stops carrying the PostHog + GA tags.
+#  PUBLIC production pages and synthetic end-to-end routes — independent of how
+#  the site is built — and goes RED when the shared runtime or a route breaks.
 #
 #  It runs in three situations:
 #    1. push          — right after main changes. Vercel deploys independently,
@@ -42,7 +42,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify live analytics tags
+    name: Verify analytics build and live receipts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout (for the verifier script + page list)
@@ -52,6 +52,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: npm
+
+      - name: Install reviewed analytics dependencies
+        run: npm ci
+
+      - name: Verify local analytics contracts
+        run: |
+          node .github/scripts/test-inject-analytics.mjs
+          node .github/scripts/test-routing-middleware.mjs
+          node .github/scripts/test-static-remediation.mjs
+          node .github/scripts/test-prepare-static-deploy.mjs
+          node .github/scripts/test-csp-report.mjs
+          node .github/scripts/test-verify-live-analytics.mjs
+
+      - name: Require a clean reviewed checkout after local verification
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       # Vercel builds independently on every push to main. Give that build time
       # to go live before we read the live bytes. Skipped for schedule/manual
@@ -60,7 +78,7 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         run: sleep 180
 
-      - name: Verify live analytics tags
+      - name: Verify live analytics bytes and routes
         env:
           # Expected values come from repo variables (Settings -> Secrets and
           # variables -> Actions -> Variables). The script has safe public
@@ -68,4 +86,12 @@ jobs:
           EXPECTED_POSTHOG_TOKEN: ${{ vars.VITE_POSTHOG_PROJECT_TOKEN }}
           EXPECTED_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           EXPECTED_GA_TAG_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_TAG_ID }}
+          REQUIRE_SYNTHETIC_RECEIPTS: ${{ vars.REQUIRE_SYNTHETIC_RECEIPTS }}
+          SYNTHETIC_SITE_SOURCE_KEY: ${{ secrets.SYNTHETIC_SITE_SOURCE_KEY }}
+          ANALYTICS_RECEIPT_URL: ${{ vars.ANALYTICS_RECEIPT_URL }}
+          ANALYTICS_RECEIPT_TOKEN: ${{ secrets.ANALYTICS_RECEIPT_TOKEN }}
+          SYNTHETIC_DRAIN_URL: ${{ vars.SYNTHETIC_DRAIN_URL }}
+          SYNTHETIC_DRAIN_SECRET: ${{ secrets.SYNTHETIC_DRAIN_SECRET }}
+          SYNTHETIC_VERCEL_PROJECT_ID: ${{ vars.SYNTHETIC_VERCEL_PROJECT_ID }}
+          SYNTHETIC_PRODUCTION_HOST: infinite.fast
         run: node scripts/verify-live-analytics.mjs

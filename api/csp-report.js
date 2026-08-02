@@ -10,7 +10,7 @@ function safeUri(value) {
   }
 }
 
-module.exports = function cspReport(req, res) {
+export default function cspReport(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   if (req.method !== "POST") {
@@ -37,4 +37,4 @@ module.exports = function cspReport(req, res) {
   }));
 
   return res.status(204).end();
-};
+}

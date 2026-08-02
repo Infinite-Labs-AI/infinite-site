@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy | Infinite</title>
-  <meta name="description" content="Read Infinite's Privacy Policy covering local-first data, Google Analytics, optional hosted services, data retention, deletion, and security." />
+  <meta name="description" content="Read Infinite's Privacy Policy covering the desktop product, hosted services, website analytics, data retention, deletion, and processors." />
   <meta name="theme-color" content="#0d1117" />
   <link rel="canonical" href="https://infinite.fast/privacy/" />
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Infinite" />
   <meta property="og:title" content="Privacy Policy | Infinite" />
-  <meta property="og:description" content="Read Infinite's Privacy Policy covering local-first data, Google Analytics, optional hosted services, data retention, deletion, and security." />
+  <meta property="og:description" content="Read Infinite's Privacy Policy covering the desktop product, hosted services, website analytics, data retention, deletion, and processors." />
   <meta property="og:url" content="https://infinite.fast/privacy/" />
   <meta property="og:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
   <meta property="og:image:width" content="1200">
@@ -21,7 +21,7 @@
   <meta name="twitter:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
   <meta name="twitter:image:alt" content="Infinite AI CMO growth system">
   <meta name="twitter:title" content="Privacy Policy | Infinite" />
-  <meta name="twitter:description" content="Read Infinite's Privacy Policy covering local-first data, Google Analytics, optional hosted services, data retention, deletion, and security." />
+  <meta name="twitter:description" content="Read Infinite's Privacy Policy covering the desktop product, hosted services, website analytics, data retention, deletion, and processors." />
 
   <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png" />
@@ -280,49 +280,45 @@
       </div>
       <article>
         <h1>Privacy Policy</h1>
+        <p><strong>Last updated: 2 August 2026.</strong></p>
 
-        <p>This Privacy Policy explains how <strong>Ultima AI, Inc.</strong>, a Delaware corporation (United States) ("Ultima," "we," "us"), handles information in connection with <strong>Infinite Growth OS</strong> ("Infinite," the "Software," the "Service") — a self-hosted, local-first growth-analytics runtime that connects your business data sources and helps you understand what changed and why.</p>
-
-        <p>Our guiding principle is simple: <strong>you own your growth data, and it stays on your machine.</strong> This policy describes the limited cases in which any data reaches our servers, and how we treat data you authorize us to access from third parties such as Google.</p>
-
-        <blockquote>This document is a plain-language policy intended to satisfy applicable disclosure requirements (including the Google API Services User Data Policy). It is not legal advice; have counsel review before publishing.</blockquote>
+        <p>This Privacy Policy explains how <strong>Ultima AI, Inc.</strong>, a Delaware corporation (United States) ("Ultima," "we," "us"), handles information in connection with <strong>Infinite Growth OS</strong>, the Infinite desktop application, <code>infinite.fast</code>, and related hosted services (together, "Infinite" or the "Service"). Infinite is local-first, but some features use Infinite-hosted cloud infrastructure. This policy identifies those boundaries instead of treating every workflow as device-only.</p>
 
         <h2>1. Who we are</h2>
 
         <p>Ultima AI, Inc., a Delaware corporation (United States).<br />Contact: <strong>support@ultima.inc</strong></p>
 
-        <h2>2. The local-first model — your data lives on YOUR computer, not ours</h2>
+        <h2>2. Local and hosted processing</h2>
 
-        <p>Infinite runs entirely on <strong>your own machine</strong>. When you connect a data source (for example Google Analytics, PostHog, Stripe, Shopify, Meta, or X), the data that is synced is stored in a <strong>database on your own device that you control</strong> — <strong>not</strong> on Ultima's servers. We do not host, receive, store, or have access to that data.</p>
+        <p>The Infinite desktop application performs substantial work on your device and can keep local project and execution data there. Account, workspace, collaboration, connector, analytics, and other hosted features may also send data to or store data in Infinite's cloud services when you enable or use them. The product surface should identify whether a feature is local or hosted before you connect data or run an action.</p>
 
         <ul>
-          <li><strong>Raw records</strong> (events, orders, customers, and any personal data they contain) <strong>never leave your machine.</strong> They live only in your local store.</li>
-          <li><strong>We cannot see</strong> your connected accounts, your synced data, or your credentials. They are held locally on your device and encrypted at rest.</li>
-          <li>There is <strong>no Ultima-hosted copy</strong> of your business data. If your machine is the only place you've run Infinite, then your machine is the only place your data exists.</li>
+          <li><strong>Local data</strong> remains under your device and operating-system controls.</li>
+          <li><strong>Hosted workspace data</strong> is processed to provide the features you request, enforce workspace access, synchronize supported providers, and operate the Service.</li>
+          <li><strong>Credentials and tokens</strong> are limited to the connection and feature you authorize and are protected in transit and at rest. Bring-your-own credentials may remain local where the product explicitly says so; hosted connections necessarily send credentials or delegated tokens to the hosted execution boundary.</li>
+          <li>We do not sell connected-source or website analytics data.</li>
         </ul>
 
         <h2>3. Google user data (Google Analytics)</h2>
 
-        <p>If you connect Google Analytics, Infinite uses Google OAuth to read your Google Analytics data <strong>into the local store on your own machine</strong>. Your Google Analytics data is <strong>never sent to Ultima's servers</strong> — it is read directly from Google to your device.</p>
+        <p>If you connect Google Analytics, Infinite uses the Google authorization mode shown in the product. A device-only connection reads authorized data to your device. A hosted connector processes the authorized metrics and credentials in Infinite's cloud so it can synchronize the workspace and provide the hosted feature you requested.</p>
 
         <ul>
           <li><strong>Scopes requested:</strong> read access to your Google Analytics data (<code>analytics.readonly</code>) and, where you enable provisioning features, limited account configuration (<code>analytics.edit</code>).</li>
-          <li><strong>How it is used:</strong> solely to read your Google Analytics metrics into your <strong>local</strong> Infinite store so the Software can compute summaries, trends, and insights for you, and (only if you ask) to assist with setup tasks you initiate. We do <strong>not</strong> use Google user data for advertising, and we do <strong>not</strong> sell it.</li>
+          <li><strong>How it is used:</strong> to read authorized Google Analytics metrics, compute the summaries and insights you request, synchronize a hosted workspace when enabled, and perform setup changes you explicitly initiate. We do <strong>not</strong> use Google user data for advertising, and we do <strong>not</strong> sell it.</li>
         </ul>
 
-        <h3>Two ways to connect — both keep your data and tokens on your machine</h3>
+        <h3>Connection modes</h3>
 
-        <p>You choose how the Google sign-in is authorized. <strong>In both cases, the resulting access and refresh tokens are exchanged and stored locally on your device (encrypted), and Ultima does not receive your tokens or your Analytics data.</strong> The only difference is whose Google app shows on the consent screen:</p>
+        <p>You may use your own Google app or Infinite's verified Google app where those choices are offered. The product must identify whether token exchange and subsequent API calls are device-only or hosted. Hosted credentials are encrypted and access-controlled; local credentials remain under your device controls.</p>
 
         <ol>
-          <li><strong>Use your own Google app (bring-your-own).</strong> You create your own OAuth credentials in your own Google Cloud project and paste them into Infinite. The authorization is strictly between <strong>you and Google</strong>, using <strong>your</strong> app — Ultima is not involved in the connection at all, and the API usage counts against your own Google quota.</li>
-          <li><strong>Quick connect with Infinite's Google app.</strong> For convenience, you authorize through Infinite's verified Google app. You still sign in to Google in your own browser, and the tokens are still exchanged and stored <strong>locally on your device</strong> by the software running on your machine — <strong>Ultima still does not receive your tokens or your data.</strong> What's different: Google's consent screen shows <em>Infinite's</em> app, and API calls count against Infinite's shared quota.</li>
+          <li><strong>Use your own Google app.</strong> API usage is associated with your Google Cloud project. Storage and execution follow the local or hosted mode shown when you connect it.</li>
+          <li><strong>Use Infinite's Google app.</strong> Google's consent screen identifies Infinite and API usage may use Infinite's shared quota. The authorized scope is still limited to the connection and features you request.</li>
         </ol>
 
-        <blockquote>Either way, your Google Analytics data flows <strong>Google → your machine</strong>, never <strong>through Ultima</strong>. (If we later offer an optional hosted connection broker, this policy will be updated before that option exists.)</blockquote>
-
         <ul>
-          <li><strong>Where it is stored:</strong> in your local Infinite database; OAuth tokens are stored <strong>encrypted on your device</strong>. We do not retain your Google data on our servers under either option.</li>
+          <li><strong>Where it is stored:</strong> in the local store for device-only connections and in the protected hosted workspace store for hosted connections, according to the mode you enable.</li>
           <li><strong>Sharing:</strong> we do not transfer your Google user data to third parties. We never sell it.</li>
           <li><strong>Limited Use:</strong> Infinite's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the <strong>Limited Use</strong> requirements.</li>
         </ul>
@@ -331,33 +327,40 @@
 
         <h2>4. Other connected sources</h2>
 
-        <p>PostHog, Stripe, Shopify, Meta, X, and any other source you connect behave the same way: their data is synced into your local store and stays there. Credentials and tokens for these sources are stored encrypted on your device.</p>
+        <p>For PostHog, Stripe, Shopify, Meta, X, and other sources, the product identifies the requested scopes and whether execution is local or hosted. Connected data is used to provide the analysis or action you request. Hosted credentials and data are workspace-scoped and access-controlled; device-only credentials remain under your device controls.</p>
 
-        <h2>5. When data reaches our servers (optional, only if you use hosted features)</h2>
+        <h2 id="website-visitor-analytics">5. Website visitor analytics</h2>
 
-        <p>The free, local product does not send your business data to us. If you choose to use an <strong>optional paid/hosted action</strong> (for example, a hosted "growth audit" report):</p>
+        <p>On <code>infinite.fast</code>, we use a first-party Infinite event ledger and keep Google Analytics 4 and PostHog as parallel measurement providers. Browser analytics is off until you select <strong>Allow analytics</strong>. One stored consent choice governs Infinite, PostHog, and Google Analytics together. Optional X or Meta campaign pixels, when configured, use the same grant. You can reopen <strong>Privacy choices</strong> on any page to grant or withdraw consent.</p>
 
         <ul>
-          <li>Your device sends us a <strong>numbers-only aggregated summary</strong> (e.g., revenue change, traffic change, top campaigns by name) — <strong>not</strong> raw records or personal data. This summary is used to generate the requested result and is <strong>not retained beyond the request</strong>.</li>
-          <li>The <strong>result</strong> (the report) may be stored for your workspace so you can re-open it across your devices. You can <strong>delete</strong> it at any time, and it is purged when you delete your workspace or account.</li>
-          <li><strong>Account information</strong> you provide for a hosted plan (identity, billing, API key) is stored on our servers to operate the Service.</li>
+          <li><strong>Browser events:</strong> page views, structural CTA clicks, and clicks on the same-origin download route. We do not put query strings, link text, DOM text, workspace identity, source authority, or environment choice in the public event envelope.</li>
+          <li><strong>Browser storage:</strong> a consent value and random visitor identifier in local storage, plus a random session identifier in session storage. After consent, PostHog and Google Analytics may use their own cookies or browser storage under their published terms.</li>
+          <li><strong>Privacy signals:</strong> when the browser exposes Do Not Track or Global Privacy Control, the shared browser runtime suppresses Infinite, PostHog, and Google Analytics even if an older consent value says granted.</li>
+          <li><strong>Server observations:</strong> Vercel supplies production document-request and <code>/download</code> redirect logs. This server request/redirect collection is not controlled by browser consent because the server necessarily receives a request in order to serve or redirect it. We filter known bots and previews and keep this lane separate from browser views.</li>
+          <li><strong>Purpose:</strong> site reliability, aggregate audience measurement, conversion analysis, and comparison of the three browser providers during the shadow period.</li>
+          <li><strong>Accuracy:</strong> no analytics system captures mathematically 100% of people. Browser blocking, consent, privacy signals, bots, network delivery, and provider processing can produce different totals.</li>
         </ul>
 
-        <h2>6. AI sub-processors</h2>
+        <p>Raw first-party website ledger events are retained for <strong>90 days</strong>. Daily first-party aggregates are retained for <strong>25 months</strong>. Provider-side Google Analytics and PostHog data follows the retention configured for those services and their processor terms. Website analytics processors are Vercel (hosting and request logs), our database and cloud infrastructure providers (first-party ledger storage and processing), PostHog, and Google Analytics. X and Meta are additional processors only when their optional pixels are configured.</p>
 
-        <p>When you run a hosted AI action, the aggregated summary may be processed by large-language-model providers acting as our sub-processors — currently <strong>Anthropic</strong> and/or <strong>OpenAI</strong> — under their business/API terms with <strong>no-training / no-retention</strong> settings enabled. When you bring your own model or key, your data goes to the endpoint <strong>you</strong> configure, under that provider's terms.</p>
+        <h2>6. Hosted features and AI sub-processors</h2>
+
+        <p>Account information, hosted workspace context, requested action inputs, and saved results may reach our servers when you use hosted features. When you run a hosted AI action, the data needed for that action may be processed by model providers acting as our sub-processors — currently <strong>Anthropic</strong> and/or <strong>OpenAI</strong> — under the applicable business/API terms and configured data controls. When you bring your own model or key, your data goes to the endpoint <strong>you</strong> configure, under that provider's terms.</p>
 
         <h2>7. Data retention and deletion</h2>
 
         <ul>
           <li><strong>Local data:</strong> controlled entirely by you; delete it by removing the local store or disconnecting sources.</li>
-          <li><strong>Hosted data (if any):</strong> action results and account/brand context are retained until you delete them or close your account; deleting a workspace/account purges its stored results.</li>
+          <li><strong>Hosted workspace data:</strong> retained while needed to provide the workspace or until you delete it, subject to legal, security, backup, and fraud-prevention obligations.</li>
+          <li><strong>Website analytics:</strong> first-party raw events are deleted after 90 days and daily aggregates after 25 months. Withdrawing browser consent stops future browser events; it does not rewrite already aggregated statistics or prevent the server from receiving a request you make.</li>
+          <li><strong>Provider data:</strong> use Google Analytics, PostHog, X, or Meta controls to manage data those processors hold, and contact us for records under our control.</li>
           <li><strong>Requests:</strong> to exercise access, correction, or deletion rights, contact support@ultima.inc.</li>
         </ul>
 
         <h2>8. Security</h2>
 
-        <p>We use industry-standard measures, including encryption of credentials and tokens at rest. No method of storage or transmission is 100% secure, but because the local-first model keeps your raw data on your own device, the data exposed to us is minimized by design.</p>
+        <p>We use administrative, technical, and organizational measures appropriate to the Service, including encryption in transit and protection of credentials and tokens at rest. No method of storage or transmission is 100% secure.</p>
 
         <h2>9. Children's privacy</h2>
 
