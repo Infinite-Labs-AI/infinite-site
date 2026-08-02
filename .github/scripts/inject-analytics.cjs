@@ -7,13 +7,30 @@ void (async () => {
   const productionHosts = parseProductionHosts(process.env.INFINITE_PRODUCTION_HOSTS);
   const isProductionBuild = process.env.VERCEL_ENV === "production";
   const configuredSourceKey = nonEmpty(process.env.INFINITE_SITE_SOURCE_KEY);
+  const configuredSourceArtifact = nonEmpty(process.env.INFINITE_SITE_SOURCE_ARTIFACT);
+  const sourceArtifact = isProductionBuild
+    ? parseSourceArtifact(configuredSourceArtifact)
+    : undefined;
   const siteSourceKey = isProductionBuild ? configuredSourceKey : undefined;
 
   if (isProductionBuild && productionHosts.length === 0) {
     throw new Error("Production analytics require INFINITE_PRODUCTION_HOSTS from verified site-source bindings.");
   }
+  if (isProductionBuild && !sameValues(productionHosts, sourceArtifact.productionHosts)) {
+    throw new Error("Production analytics deployment productionHosts disagree with INFINITE_SITE_SOURCE_ARTIFACT.");
+  }
+  if (
+    isProductionBuild
+    && configuredSourceKey
+    && configuredSourceKey !== sourceArtifact.siteSourceKey
+  ) {
+    throw new Error("Production analytics deployment siteSourceKey disagrees with INFINITE_SITE_SOURCE_ARTIFACT.");
+  }
   if (!isProductionBuild && configuredSourceKey) {
     console.warn("Ignoring INFINITE_SITE_SOURCE_KEY outside a production build.");
+  }
+  if (!isProductionBuild && configuredSourceArtifact) {
+    console.warn("Ignoring INFINITE_SITE_SOURCE_ARTIFACT outside a production build.");
   }
 
   const posthog = posthogSnippet({
@@ -63,11 +80,68 @@ function nonEmpty(value) {
 }
 
 function parseProductionHosts(value) {
-  const hosts = (value ?? "")
-    .split(",")
-    .map((host) => host.trim().toLowerCase().replace(/\.$/, ""))
-    .filter(Boolean);
+  return normalizeProductionHosts(
+    (value ?? "")
+      .split(",")
+      .filter(Boolean),
+  );
+}
+
+function parseSourceArtifact(value) {
+  if (!value) {
+    throw new Error(
+      "Production analytics require INFINITE_SITE_SOURCE_ARTIFACT from the authenticated site-source control plane.",
+    );
+  }
+  let artifact;
+  try {
+    artifact = JSON.parse(value);
+  } catch (error) {
+    throw new Error(`INFINITE_SITE_SOURCE_ARTIFACT must be valid JSON: ${error.message}`);
+  }
+  if (!artifact || typeof artifact !== "object" || Array.isArray(artifact)) {
+    throw new Error("INFINITE_SITE_SOURCE_ARTIFACT must contain one public source artifact object.");
+  }
+  if (!/^site_[A-Za-z0-9_-]+$/.test(artifact.siteSourceKey ?? "")) {
+    throw new Error("INFINITE_SITE_SOURCE_ARTIFACT has an invalid siteSourceKey.");
+  }
+  if (!Array.isArray(artifact.productionHosts) || artifact.productionHosts.length === 0) {
+    throw new Error("INFINITE_SITE_SOURCE_ARTIFACT requires non-empty productionHosts.");
+  }
+  if (artifact.collectPath !== "/infinite/events/collect") {
+    throw new Error("INFINITE_SITE_SOURCE_ARTIFACT collectPath must be /infinite/events/collect.");
+  }
+  if (artifact.staticProxy !== "vercel") {
+    throw new Error("INFINITE_SITE_SOURCE_ARTIFACT staticProxy must be vercel.");
+  }
+  return {
+    siteSourceKey: artifact.siteSourceKey,
+    productionHosts: normalizeProductionHosts(artifact.productionHosts),
+  };
+}
+
+function normalizeProductionHosts(values) {
+  const hosts = values.map((value) => {
+    if (typeof value !== "string") {
+      throw new Error("Analytics production hosts must be strings.");
+    }
+    const host = value.trim().toLowerCase().replace(/\.$/, "");
+    const labels = host.split(".");
+    if (
+      host.length > 253
+      || labels.some(
+        (label) => !label || label.length > 63 || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(label),
+      )
+    ) {
+      throw new Error(`Invalid analytics production host: ${value}`);
+    }
+    return host;
+  });
   return [...new Set(hosts)].sort();
+}
+
+function sameValues(left, right) {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function findHtmlFiles(dir) {

@@ -15,6 +15,13 @@ const contractHashes = {
   "browser-collect-v1.fixture.json": "08d5ae19194044bf0f2d144c2bd50902baacb09f5170f66067d0e9fd9b9148a9",
 };
 
+const sourceArtifact = (siteSourceKey, productionHosts) => JSON.stringify({
+  siteSourceKey,
+  collectPath: "/infinite/events/collect",
+  productionHosts,
+  staticProxy: "vercel",
+});
+
 const page = (title) => `<!doctype html><html><head><title>${title}</title></head><body>
   <a href="/pricing" data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation">Pricing</a>
   <a href="/download" data-download-location="hero">Download for Mac</a>
@@ -43,6 +50,10 @@ try {
     META_PIXEL_ID: "1234567890",
     INFINITE_SITE_SOURCE_KEY: "site_synthetic_test",
     INFINITE_PRODUCTION_HOSTS: "infinite.fast,www.infinite.fast",
+    INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact(
+      "site_synthetic_test",
+      ["WWW.INFINITE.FAST.", "infinite.fast"],
+    ),
     VERCEL_ENV: "production",
   });
 
@@ -134,6 +145,7 @@ try {
       POSTHOG_PROJECT_TOKEN: "phc_test_project_token",
       GOOGLE_ANALYTICS_TAG_ID: "G-TEST1234",
       INFINITE_PRODUCTION_HOSTS: "infinite.fast",
+      INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact("site_production_dormant", ["infinite.fast"]),
       VERCEL_ENV: "production",
     });
     const dormantHtml = readFileSync(join(dormantDir, "dist/index.html"), "utf8");
@@ -169,12 +181,68 @@ try {
     mkdirSync(join(invalidProductionDir, "dist"), { recursive: true });
     writeFileSync(join(invalidProductionDir, "dist/index.html"), page("Invalid production"));
     assert.throws(
-      () => runInjector(invalidProductionDir, { INFINITE_PRODUCTION_HOSTS: "", VERCEL_ENV: "production" }),
+      () => runInjector(invalidProductionDir, {
+        INFINITE_PRODUCTION_HOSTS: "",
+        INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact("site_production", ["infinite.fast"]),
+        VERCEL_ENV: "production",
+      }),
       (error) => String(error.stderr).includes("Production analytics require INFINITE_PRODUCTION_HOSTS"),
       "production builds fail closed without verified host bindings",
     );
   } finally {
     rmSync(invalidProductionDir, { recursive: true, force: true });
+  }
+
+  const missingArtifactDir = mkdtempSync(join(tmpdir(), "infinite-analytics-missing-artifact-"));
+  try {
+    mkdirSync(join(missingArtifactDir, "dist"), { recursive: true });
+    writeFileSync(join(missingArtifactDir, "dist/index.html"), page("Missing artifact"));
+    assert.throws(
+      () => runInjector(missingArtifactDir, {
+        INFINITE_PRODUCTION_HOSTS: "infinite.fast",
+        VERCEL_ENV: "production",
+      }),
+      (error) => String(error.stderr).includes("INFINITE_SITE_SOURCE_ARTIFACT"),
+      "production builds require the authenticated public source artifact",
+    );
+  } finally {
+    rmSync(missingArtifactDir, { recursive: true, force: true });
+  }
+
+  const wrongHostDir = mkdtempSync(join(tmpdir(), "infinite-analytics-wrong-host-"));
+  try {
+    mkdirSync(join(wrongHostDir, "dist"), { recursive: true });
+    writeFileSync(join(wrongHostDir, "dist/index.html"), page("Wrong host"));
+    assert.throws(
+      () => runInjector(wrongHostDir, {
+        INFINITE_SITE_SOURCE_KEY: "site_production",
+        INFINITE_PRODUCTION_HOSTS: "wrong.example",
+        INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact("site_production", ["infinite.fast"]),
+        VERCEL_ENV: "production",
+      }),
+      (error) => String(error.stderr).includes("productionHosts disagree"),
+      "production builds reject host inputs that disagree with the source artifact",
+    );
+  } finally {
+    rmSync(wrongHostDir, { recursive: true, force: true });
+  }
+
+  const wrongKeyDir = mkdtempSync(join(tmpdir(), "infinite-analytics-wrong-key-"));
+  try {
+    mkdirSync(join(wrongKeyDir, "dist"), { recursive: true });
+    writeFileSync(join(wrongKeyDir, "dist/index.html"), page("Wrong key"));
+    assert.throws(
+      () => runInjector(wrongKeyDir, {
+        INFINITE_SITE_SOURCE_KEY: "site_wrong",
+        INFINITE_PRODUCTION_HOSTS: "infinite.fast",
+        INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact("site_production", ["infinite.fast"]),
+        VERCEL_ENV: "production",
+      }),
+      (error) => String(error.stderr).includes("siteSourceKey disagrees"),
+      "production builds reject source keys that disagree with the source artifact",
+    );
+  } finally {
+    rmSync(wrongKeyDir, { recursive: true, force: true });
   }
 } finally {
   rmSync(tempDir, { recursive: true, force: true });

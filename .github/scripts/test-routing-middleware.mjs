@@ -42,6 +42,8 @@ const excluded = [
   request("https://infinite.fast/sitemap.xml"),
   request("https://infinite.fast/llms.txt"),
   request("https://infinite.fast/privacy", { method: "HEAD" }),
+  request("https://infinite.fast/privacy", { headers: { purpose: "prefetch" } }),
+  request("https://infinite.fast/privacy", { headers: { "sec-purpose": "prefetch" } }),
   request("https://infinite.fast/privacy", { headers: { "sec-fetch-dest": "empty" } }),
   request("https://infinite.fast/privacy", { headers: { "user-agent": "Googlebot/2.1" } }),
   request("https://infinite.fast/privacy", { headers: { "user-agent": "curl/8.0" } }),

@@ -12,6 +12,12 @@ try {
     env: {
       ...process.env,
       INFINITE_PRODUCTION_HOSTS: "infinite.fast,www.infinite.fast",
+      INFINITE_SITE_SOURCE_ARTIFACT: JSON.stringify({
+        siteSourceKey: "site_production_dormant",
+        collectPath: "/infinite/events/collect",
+        productionHosts: ["infinite.fast", "www.infinite.fast"],
+        staticProxy: "vercel",
+      }),
       VERCEL_ENV: "production",
     },
     stdio: "pipe",

@@ -35,11 +35,18 @@ function isProductionDocumentNavigation(request, path) {
   if (request.method !== "GET") return false;
   if (EXCLUDED_PATHS.has(path) || EXCLUDED_PREFIXES.some((prefix) => path.startsWith(prefix))) return false;
   if (path.slice(path.lastIndexOf("/") + 1).includes(".")) return false;
+  if (isPrefetch(request)) return false;
   const destination = request.headers.get("sec-fetch-dest");
   const userAgent = request.headers.get("user-agent") ?? "";
   if (BOT_UA.test(userAgent)) return false;
   if (destination) return destination === "document";
   return /Mozilla\//.test(userAgent) && request.headers.get("accept")?.includes("text/html") === true;
+}
+
+function isPrefetch(request) {
+  return [request.headers.get("purpose"), request.headers.get("sec-purpose")].some((value) =>
+    value?.toLowerCase().split(/[\s,;]+/).includes("prefetch"),
+  );
 }
 
 export default function middleware(request) {
