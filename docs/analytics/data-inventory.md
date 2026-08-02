@@ -1,6 +1,6 @@
 # Infinite.fast analytics data inventory
 
-Status: implementation inventory. Founder/counsel approval and processor-setting receipts are required before a production Infinite source key or Vercel Drain is enabled.
+Status: prepared, not approved. Founder/counsel approval and exact processor and platform retention receipts remain pending. A production Infinite source key or Vercel Drain must not be enabled before those gates are recorded.
 
 | Data | Purpose and authority | Retention/deletion | Processor and access |
 | --- | --- | --- | --- |
@@ -12,6 +12,7 @@ Status: implementation inventory. Founder/counsel approval and processor-setting
 | PostHog browser mirror | Provider-specific ongoing website comparison and historical continuity | Provider-side setting and contract; any Infinite-synced aggregates follow the workspace retention policy | PostHog; configured public project token, EU ingest proxy |
 | GA4 browser mirror | Provider-specific acquisition/reporting comparison and historical continuity | Provider-side setting and contract; any Infinite-synced aggregates follow the workspace retention policy | Google Analytics; direct Google loader after consent |
 | Optional X/Meta pixels | Campaign measurement only when configured | Provider-side setting and contract | X and Meta; initialized only after the shared analytics grant |
+| Content Security Policy reports: sanitized document origin and path, blocked origin and path (or `inline`/`eval`/`self`), effective or violated directive, and disposition | Website security diagnostics; no query strings, script samples, full policies, account ids, or workspace ids | Bounded Vercel function logs; exact platform retention receipt remains pending; no analytics ledger or database row | Vercel function runtime and restricted platform logs |
 | Vercel document marker: normalized path only | Canonical server-observed human document request | Drain delivery to the raw ledger: 90 days; Vercel platform-log retention follows the approved plan/setting | Vercel Edge logs and signed Drain; exact project/host binding |
 | Vercel `/download` redirect log | Canonical redirect/request count, not completed download | Raw ledger: 90 days; daily aggregates: 25 months | Vercel redirect logs and signed Drain |
 | Request IP | Short-lived quota/rate context only | Never persisted in the analytics ledger; any platform handling follows the processor setting | Vercel/network boundary; collector may derive an in-memory rotating HMAC quota key |

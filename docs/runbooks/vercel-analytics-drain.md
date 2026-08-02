@@ -2,6 +2,8 @@
 
 Status: prepared but disabled. This repository change does not create a site source, configure or activate a Drain, change Vercel variables, deploy, or create a production receipt. Activation is prohibited until the Task 14 privacy gate and coordinated Task 15 release are explicitly approved.
 
+Gate receipt status: Founder/counsel approval is pending, and processor and platform retention receipts are pending.
+
 ## Frozen configuration
 
 Configure the Infinite site's Vercel Drain with all of the following and no substitutes:

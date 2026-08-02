@@ -285,7 +285,7 @@ function executeAnalytics(html, {
   });
   const download = element({
     href: `${origin}/download?campaign=secret`,
-    attributes: {},
+    attributes: { "data-download-location": "hero" },
   });
   const documentListeners = new Map();
   const document = {

@@ -46,7 +46,7 @@ const expectedLastmodByPath = new Map([
   ["/compare/infinite-vs-okara/", "2026-07-22"],
   ["/compare/infinite-vs-ploy/", "2026-07-22"],
   ["/compare/infinite-vs-blaze/", "2026-07-22"],
-  ["/privacy/", "2026-07-22"],
+  ["/privacy/", "2026-08-02"],
   ["/terms/", "2026-07-22"],
 ]);
 
@@ -95,22 +95,34 @@ assert.doesNotMatch(deployPreparation, /require\(path\.join\(repoRoot, "\.github
 
 const homepage = read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html");
 assert.match(homepage, /data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation"/);
-assert.doesNotMatch(homepage, /data-download-location=/, "0.3.0 does not preserve download placement");
+for (const location of ["navigation", "hero", "pricing", "final-cta"]) {
+  assert.match(homepage, new RegExp(`href="/download"[^>]*data-download-location="${location}"`));
+}
 
 const privacy = read("privacy/index.html");
+assert.match(privacy, /Last updated: 2 August 2026/);
 assert.match(privacy, /Website visitor analytics/i);
 assert.match(privacy, /90 days/i);
 assert.match(privacy, /25 months/i);
 assert.match(privacy, /Do Not Track.*Global Privacy Control|Global Privacy Control.*Do Not Track/is);
 assert.match(privacy, /first-party.*(?:ledger|collection).*remain(?:s)? disabled.*approved activation/is);
 assert.match(privacy, /if approved and activated.*server.*request.*redirect/is);
+assert.match(privacy, /Content Security Policy.*sanitized.*document.*blocked.*directive.*disposition/is);
+assert.match(privacy, /Content Security Policy.*query strings.*script samples.*security diagnostics/is);
 assert.doesNotMatch(privacy, /On <code>infinite\.fast<\/code>, we use a first-party Infinite event ledger/i);
 assert.doesNotMatch(privacy, /We do not host, receive, store, or have access to that data\./);
+
+const dataInventory = read("docs/analytics/data-inventory.md");
+assert.match(dataInventory, /Status: prepared, not approved.*approval.*retention receipts.*pending/is);
+assert.match(dataInventory, /Content Security Policy.*document origin and path.*blocked origin and path.*directive.*disposition/is);
+assert.match(dataInventory, /Content Security Policy.*Vercel function logs.*exact platform retention receipt.*pending/is);
 
 const guardrail = read("docs/ANALYTICS-GUARDRAIL.md");
 assert.match(guardrail, /same-origin.*synthetic.*receipt/is);
 assert.match(guardrail, /does not prove.*100%|not.*100% capture/is);
-assert.match(read("docs/runbooks/vercel-analytics-drain.md"), /disabled.*Task 14.*Task 15/is);
+const drainRunbook = read("docs/runbooks/vercel-analytics-drain.md");
+assert.match(drainRunbook, /disabled.*Task 14.*Task 15/is);
+assert.match(drainRunbook, /Founder\/counsel approval.*pending.*retention receipts.*pending/is);
 const ledgerContract = read("docs/analytics/first-party-ledger-contract.md");
 assert.match(ledgerContract, /95af1293de230506f107ec526f53e132a81de87c/);
 assert.match(ledgerContract, /infinite-tag@0\.3\.0.*app_download_click.*destination_path.*placement.*unavailable/is);
