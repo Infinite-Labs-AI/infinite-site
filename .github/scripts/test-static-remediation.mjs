@@ -101,6 +101,13 @@ const injector = read(".github/scripts/inject-analytics.cjs");
 assert.match(injector, /await import\("infinite-tag"\)/);
 assert.match(injector, /gtag\("event", "app_download_clicked"/);
 assert.doesNotMatch(injector, /_1BU|\/api\/events\/track|custom_app_download_redirect|appDownloadTrackingSnippet|link_text/);
+// Consent gating (2026-08-04): the shared gate exists, the download bridge refuses to
+// preventDefault without an initialized gtag, and the banner carries the host gate + the
+// manual revocation hook.
+assert.match(injector, /window\.__infiniteConsentGate = function/);
+assert.match(injector, /typeof window\.gtag !== "function"/);
+assert.match(injector, /window\.infinitePrivacyChoices = renderWhenReady/);
+assert.match(injector, /hosts\.indexOf\(location\.hostname\.toLowerCase\(\)/);
 const deployPreparation = read("scripts/prepare-static-deploy.cjs");
 assert.match(deployPreparation, /execFileSync\(process\.execPath, \[path\.join\(repoRoot, "\.github\/scripts\/inject-analytics\.cjs"\)\]/);
 assert.doesNotMatch(deployPreparation, /require\(path\.join\(repoRoot, "\.github\/scripts\/inject-analytics\.cjs"\)\)/);
@@ -120,6 +127,11 @@ assert.match(privacy, /Do Not Track.*Global Privacy Control|Global Privacy Contr
 assert.match(privacy, /Infinite first-party analytics.*measure website use by default/is);
 assert.match(privacy, /Do Not Track.*Global Privacy Control.*Infinite first-party browser runtime/is);
 assert.doesNotMatch(privacy, /Browser analytics is off until|Privacy choices/);
+// The revocation control lives on the privacy policy page — where the banner's own
+// policy links land — and reopens the prompt regardless of any stored decision.
+assert.match(privacy, /Manage analytics preferences/);
+assert.match(privacy, /window\.infinitePrivacyChoices/);
+assert.match(privacy, /Google Analytics, PostHog, and any configured campaign pixels do not initialize unless you grant/);
 assert.match(privacy, /Content Security Policy.*sanitized.*document.*blocked.*directive.*disposition/is);
 assert.match(privacy, /Content Security Policy.*query strings.*script samples.*security diagnostics/is);
 assert.doesNotMatch(privacy, /We do not host, receive, store, or have access to that data\./);

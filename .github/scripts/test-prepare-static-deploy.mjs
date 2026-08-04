@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync, rmSync } from "node:fs";
+import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 const repoRoot = new URL("../..", import.meta.url).pathname;
@@ -60,6 +60,47 @@ try {
   const sitemap = readFileSync(join(distDir, "sitemap.xml"), "utf8");
   assert.doesNotMatch(sitemap, /https:\/\/www\.infinite\.fast/);
   assert.match(sitemap, /<loc>https:\/\/infinite\.fast\/<\/loc>/);
+
+  // Consent gating: GA4 and PostHog defer through the shared gate, the gate is defined
+  // before the first gated snippet, the download bridge guards on gtag availability, and
+  // the banner is host-gated to the verified production hosts with the manual
+  // revocation hook exposed. (Production builds carry no X/Meta pixels → 2 gated lanes.)
+  assert.match(homepage, /window\.__infiniteConsentGate = function/);
+  assert.equal((homepage.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 2, "PostHog and GA4 must both defer through the shared consent gate");
+  assert.ok(
+    homepage.indexOf("window.__infiniteConsentGate = function") < homepage.indexOf("posthog.init("),
+    "the consent gate must be defined before the first gated snippet",
+  );
+  assert.match(homepage, /typeof window\.gtag !== "function"/);
+  assert.match(homepage, /window\.infinitePrivacyChoices/);
+  assert.match(homepage, /var hosts = \["infinite\.fast","www\.infinite\.fast"\]/);
+
+  // The middleware document manifest must exactly match the deployed HTML page set —
+  // adding (or removing) a page without updating middleware.js breaks CI here, not
+  // the production pageview lane.
+  const { KNOWN_DOCUMENT_PATHS } = await import(new URL("../../middleware.js", import.meta.url));
+  assert.deepEqual(
+    [...KNOWN_DOCUMENT_PATHS].sort(),
+    htmlDocumentPaths(distDir).sort(),
+    "middleware.js KNOWN_DOCUMENT_PATHS must exactly match the built dist HTML page set — update the manifest whenever a document page is added or removed",
+  );
 } finally {
   rmSync(distDir, { recursive: true, force: true });
+}
+
+function htmlDocumentPaths(dir, prefix = "/") {
+  const paths = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      paths.push(...htmlDocumentPaths(join(dir, entry.name), `${prefix}${entry.name}/`));
+    } else if (entry.name.endsWith(".html")) {
+      assert.equal(
+        entry.name,
+        "index.html",
+        `${prefix}${entry.name}: document pages must be directory index.html files so the middleware manifest can canonicalize them`,
+      );
+      paths.push(prefix);
+    }
+  }
+  return paths;
 }

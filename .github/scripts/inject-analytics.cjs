@@ -48,13 +48,14 @@ void (async () => {
     mirrors: [],
   });
   const snippets = [
+    consentGateSnippet(),
     posthog,
     ga4,
     ga4DownloadSnippet(process.env.GOOGLE_ANALYTICS_TAG_ID),
     xPixelSnippet(process.env.X_PIXEL_ID),
     metaPixelSnippet(process.env.META_PIXEL_ID),
     runtime,
-    privacyConsentPromptSnippet(),
+    privacyConsentPromptSnippet(productionHosts),
   ].filter(Boolean);
 
   const pages = findHtmlFiles(distDir);
@@ -156,10 +157,45 @@ function findHtmlFiles(dir) {
   return files;
 }
 
+// One shared consent gate for the third-party lanes (GA4, PostHog, X, Meta). It applies the
+// SAME state machine as the Infinite runtime (infinite-tag >= 0.3.4 semantics):
+// - explicit stored denial → never start (an explicit decision governs in both directions);
+// - a global privacy signal (DNT/GPC) without a stored grant → wait; a live
+//   "infinite:analytics-consent-change" grant (the consent prompt / manage control) starts
+//   the lane right then — late init is fine, gtag config / posthog.init fire their own
+//   page view on start;
+// - everyone else (the normal visitor) → start immediately, exactly as before.
+// Emitted BEFORE every gated snippet; each gated snippet stays otherwise self-contained.
+function consentGateSnippet() {
+  return `  <script>
+    (function () {
+      window.__infiniteConsentGate = function (start) {
+        var started = false;
+        function run() {
+          if (started) return;
+          started = true;
+          try { start(); } catch (_startError) {}
+        }
+        try {
+          window.addEventListener("infinite:analytics-consent-change", function (event) {
+            if (event && event.detail && event.detail.granted === true) run();
+          });
+          var stored = null;
+          try { stored = localStorage.getItem("infinite_analytics_consent"); } catch (_storageError) {}
+          if (stored === "denied") return;
+          var signal = navigator.doNotTrack === "1" || navigator.globalPrivacyControl === true;
+          if (!signal || stored === "granted") run();
+        } catch (_error) {}
+      };
+    })();
+  </script>`;
+}
+
 function posthogSnippet({ apiHost, uiHost, projectToken }) {
   if (!apiHost || !projectToken) return "";
   const uiHostLine = uiHost ? `\n      ui_host: ${JSON.stringify(uiHost)},` : "";
   return `  <script>
+    window.__infiniteConsentGate(function () {
     !(function (t, e) {
       var o, n, p, r;
       e.__SV ||
@@ -196,18 +232,26 @@ function posthogSnippet({ apiHost, uiHost, projectToken }) {
       defaults: "2026-01-30",
     });
     posthog.register({ platform: "website" });
+    });
   </script>`;
 }
 
 function googleAnalyticsSnippet(tagId) {
   if (!tagId) return "";
+  // The gtag.js loader is injected inside the gate so a non-consented signal visitor's
+  // browser never even contacts googletagmanager.com.
   return `  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(tagId)}"></script>
   <script>
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
-    window.gtag("js", new Date());
-    window.gtag("config", ${JSON.stringify(tagId)});
+    window.__infiniteConsentGate(function () {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+      window.gtag("js", new Date());
+      window.gtag("config", ${JSON.stringify(tagId)});
+      var loader = document.createElement("script");
+      loader.async = true;
+      loader.src = "https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(tagId)}";
+      document.head.appendChild(loader);
+    });
   </script>`;
 }
 
@@ -221,15 +265,17 @@ function googleAnalyticsSnippet(tagId) {
 // secondary "Manage". Manage swaps to a first-party-analytics toggle with "Save choices";
 // the toggle defaults OFF because the visitor's privacy signal is their standing default,
 // so "Accept All" is the explicit override and saving with the toggle off records a denial.
-function privacyConsentPromptSnippet() {
+// Host-gated to the build's verified production hosts: on preview deploys / unlisted aliases
+// the runtime is inert (a decision would store nothing), so the banner must not render there.
+// Also exposes window.infinitePrivacyChoices() — the privacy-policy page's "Manage analytics
+// preferences" control — which re-renders the banner ignoring any stored decision and without
+// requiring a privacy signal, so a stored choice can always be revoked or changed.
+function privacyConsentPromptSnippet(productionHosts) {
   return `  <script>
     (function () {
       try {
-        var signal = navigator.doNotTrack === "1" || navigator.globalPrivacyControl === true;
-        if (!signal) return;
-        var stored = null;
-        try { stored = localStorage.getItem("infinite_analytics_consent"); } catch (_e) {}
-        if (stored === "granted" || stored === "denied") return;
+        var hosts = ${JSON.stringify(productionHosts)};
+        if (hosts.indexOf(location.hostname.toLowerCase().replace(/\\.$/, "")) === -1) return;
         function textEl(tag, css, text) {
           var el = document.createElement(tag);
           if (css) el.style.cssText = css;
@@ -306,11 +352,20 @@ function privacyConsentPromptSnippet() {
           wrap.appendChild(card);
           document.body.appendChild(wrap);
         }
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", render);
-        } else {
-          render();
+        function renderWhenReady() {
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", render);
+          } else {
+            render();
+          }
         }
+        window.infinitePrivacyChoices = renderWhenReady;
+        var signal = navigator.doNotTrack === "1" || navigator.globalPrivacyControl === true;
+        if (!signal) return;
+        var stored = null;
+        try { stored = localStorage.getItem("infinite_analytics_consent"); } catch (_e) {}
+        if (stored === "granted" || stored === "denied") return;
+        renderWhenReady();
       } catch (_error) {}
     })();
   </script>`;
@@ -326,6 +381,10 @@ function ga4DownloadSnippet(tagId) {
       try {
         var destination = new URL(anchor.href, location.href);
         if (destination.origin !== location.origin || destination.pathname.replace(/\\/+$/, "") !== "/download") return;
+        // GA4 is consent-gated: when it never initialized, window.gtag does not exist. Leave
+        // the navigation completely untouched then — cancelling it before a gtag throw would
+        // silently kill the Download button (the server redirect lane still counts the click).
+        if (typeof window.gtag !== "function") return;
         var locationToken = anchor.getAttribute("data-analytics-cta-location") || anchor.getAttribute("data-download-location");
         var sameTab = event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && anchor.getAttribute("target") !== "_blank";
         var followed = false;
@@ -351,10 +410,12 @@ function xPixelSnippet(pixelId) {
   if (!pixelId) return "";
   return `  <!-- X Pixel Code -->
   <script>
+    window.__infiniteConsentGate(function () {
     !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
     },s.version="1.1",s.queue=[],u=t.createElement(n),u.async=!0,u.src="https://static.ads-twitter.com/uwt.js",
     a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,"script");
     window.twq("config", ${JSON.stringify(pixelId)});
+    });
   </script>`;
 }
 
@@ -362,6 +423,7 @@ function metaPixelSnippet(pixelId) {
   if (!pixelId) return "";
   return `  <!-- Meta Pixel Code -->
   <script>
+    window.__infiniteConsentGate(function () {
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -372,5 +434,6 @@ function metaPixelSnippet(pixelId) {
     "https://connect.facebook.net/en_US/fbevents.js");
     window.fbq("init", ${JSON.stringify(pixelId)});
     window.fbq("track", "PageView");
+    });
   </script>`;
 }

@@ -7,17 +7,25 @@ const PRODUCTION_HOSTS = new Set(
     .map((host) => host.trim().toLowerCase().replace(/\.$/, ""))
     .filter(Boolean),
 );
-const EXCLUDED_PREFIXES = ["/api/", "/assets/", "/fonts/", "/logos/", "/ingest/", "/infinite/"];
-const EXCLUDED_PATHS = new Set([
-  "/download",
-  "/LICENSE",
-  "/favicon-16.png",
-  "/favicon-32.png",
-  "/apple-touch-icon.png",
-  "/logo.png",
-  "/robots.txt",
-  "/sitemap.xml",
-  "/llms.txt",
+// The exact set of REAL document pages the static deploy serves, as normalizedPath()
+// canonicalizes them. The middleware logs BEFORE routing, so without this manifest any
+// scanner sweep of a non-existent path with browser-shaped headers counted as a pageview.
+// /download stays excluded: its redirect is counted by the server redirect lane.
+// Guardrail: test-prepare-static-deploy.mjs fails whenever this set and the built dist's
+// HTML page set disagree — update BOTH together when adding or removing a page.
+export const KNOWN_DOCUMENT_PATHS = new Set([
+  "/",
+  "/compare/",
+  "/compare/infinite-vs-blaze/",
+  "/compare/infinite-vs-okara/",
+  "/compare/infinite-vs-ploy/",
+  "/privacy/",
+  "/terms/",
+  "/tools/",
+  "/tools/founder-content-ideas-generator/",
+  "/tools/high-intent-lead-finder-template/",
+  "/tools/landing-page-ab-test-ideas-generator/",
+  "/tools/seo-geo-brief-generator/",
 ]);
 
 function normalizedPath(rawUrl) {
@@ -33,8 +41,7 @@ function isProductionDocumentNavigation(request, path) {
   const host = url.hostname.toLowerCase().replace(/\.$/, "");
   if (process.env.VERCEL_ENV !== "production" || !PRODUCTION_HOSTS.has(host)) return false;
   if (request.method !== "GET") return false;
-  if (EXCLUDED_PATHS.has(path) || EXCLUDED_PREFIXES.some((prefix) => path.startsWith(prefix))) return false;
-  if (path.slice(path.lastIndexOf("/") + 1).includes(".")) return false;
+  if (!KNOWN_DOCUMENT_PATHS.has(path)) return false;
   if (isPrefetch(request)) return false;
   const destination = request.headers.get("sec-fetch-dest");
   const userAgent = request.headers.get("user-agent") ?? "";

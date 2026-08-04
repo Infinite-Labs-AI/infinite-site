@@ -119,6 +119,10 @@ function checkPage(label, html, failures) {
   const apiHost = html.match(/api_host\s*:\s*(["'])([^"']+)\1/)?.[2];
   if (apiHost !== EXPECTED_POSTHOG_API_HOST) fail(`PostHog api_host is ${JSON.stringify(apiHost)}, expected ${JSON.stringify(EXPECTED_POSTHOG_API_HOST)}`);
 
+  if (!/__infiniteConsentGate/.test(html)) fail("shared consent gate for the third-party lanes is missing");
+  if (!/typeof window\.gtag/.test(html)) fail("download click bridge lacks the gtag-availability guard (dead Download button for non-consented GPC visitors)");
+  if (!/infinitePrivacyChoices/.test(html)) fail("manual privacy-choices (revocation) hook is missing");
+
   if (/\/gtm\/gtag\/js|transport_url\s*:/.test(html)) fail("GA4 uses the forbidden /gtm or transport_url experiment");
   const gaId = html.match(/https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=([^"'&\s]+)/)?.[1];
   if (!gaId) fail("direct Google gtag loader definition is missing");

@@ -79,6 +79,16 @@ try {
     assert.doesNotMatch(html, /_1BU|\/api\/events\/track|custom_app_download_redirect/);
     assert.doesNotMatch(html, /\/gtm\/|transport_url|app\.ultima\.inc|\/tracking\/|\/sdk\//);
     assert.equal((html.match(/<\/head>/g) ?? []).length, 1);
+    // Consent gating structure: one shared gate defined before the first gated snippet,
+    // and all four third-party lanes (PostHog, GA4, X, Meta) defer through it.
+    assert.equal((html.match(/window\.__infiniteConsentGate = function/g) ?? []).length, 1, "exactly one shared consent gate per page");
+    assert.equal((html.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 4, "PostHog, GA4, X, and Meta must all defer through the shared consent gate");
+    assert.ok(
+      html.indexOf("window.__infiniteConsentGate = function") < html.indexOf("posthog.init("),
+      "the consent gate must be defined before the first gated snippet",
+    );
+    assert.match(html, /typeof window\.gtag !== "function"/);
+    assert.match(html, /window\.infinitePrivacyChoices/);
   }
 
   const syntheticHtml = readFileSync(indexPath, "utf8");
@@ -90,9 +100,16 @@ try {
   // denial sticks even without any privacy signal.
   const declined = executeAnalytics(syntheticHtml, { storedConsent: "denied" });
   assert.equal(declined.infiniteBodies.length, 0, "an explicit stored denial sticks");
+  // The gate applies the same both-directions rule to the third-party lanes.
+  assert.equal(declined.gaConfigs().length, 0, "an explicit stored denial gates GA4 even without a privacy signal");
+  assert.equal(declined.loaderSrcs().length, 0, "an explicit stored denial loads no third-party libraries");
+  assert.equal(declined.xEvents("config").length, 0, "an explicit stored denial gates the X pixel");
+  assert.equal(declined.metaEvents("init").length, 0, "an explicit stored denial gates the Meta pixel");
   assert.equal(granted.gaConfigs().length, 1, "GA4 keeps its direct config and automatic page view");
   assert.equal(granted.xEvents("config").length, 1, "X keeps its existing direct initialization");
   assert.equal(granted.metaEvents("init").length, 1, "Meta keeps its existing direct initialization");
+  assert.ok(granted.loaderSrcs().some((src) => src.includes("/static/array.js")), "PostHog loads immediately for a no-signal visitor");
+  assert.ok(granted.loaderSrcs().some((src) => src.includes("www.googletagmanager.com/gtag/js")), "gtag.js loads immediately for a no-signal visitor");
 
   granted.click(granted.cta);
   assert.equal(granted.infiniteEvents("site_click").length, 1);
@@ -119,19 +136,80 @@ try {
   assert.doesNotMatch(JSON.stringify(granted.infiniteBodies), /Download for Mac|Pricing/);
 
   // The global privacy signal is the DEFAULT: it suppresses only visitors with no decision.
+  // Since the consent-gate fix, GA4 and PostHog honor the exact same state machine.
   const dntUndecided = executeAnalytics(syntheticHtml, { doNotTrack: "1" });
   assert.equal(dntUndecided.infiniteBodies.length, 0, "DNT suppresses Infinite while undecided");
+  assert.equal(dntUndecided.gaConfigs().length, 0, "DNT suppresses GA4 while undecided");
+  assert.equal(dntUndecided.loaderSrcs().length, 0, "DNT loads no third-party libraries while undecided");
+  assert.equal(dntUndecided.xEvents("config").length, 0, "DNT suppresses the X pixel while undecided");
+  assert.equal(dntUndecided.metaEvents("init").length, 0, "DNT suppresses the Meta pixel while undecided");
+  // With GA4 un-initialized, the download bridge must leave the click completely alone:
+  // cancelling the navigation before an undefined-gtag throw would silently kill the
+  // Download button. The server /download redirect lane still counts the click.
+  const gatedDownloadClick = dntUndecided.click(dntUndecided.downloads.hero);
+  assert.equal(gatedDownloadClick.defaultPrevented, false, "without gtag the download listener must not preventDefault");
+  assert.equal(dntUndecided.gaEvents("app_download_clicked").length, 0, "without gtag no GA4 download event is attempted");
 
   const gpcUndecided = executeAnalytics(syntheticHtml, { globalPrivacyControl: true });
   assert.equal(gpcUndecided.infiniteBodies.length, 0, "GPC suppresses Infinite while undecided");
+  assert.equal(gpcUndecided.gaConfigs().length, 0, "GPC suppresses GA4 while undecided");
+  assert.equal(gpcUndecided.loaderSrcs().length, 0, "GPC loads no third-party libraries while undecided");
 
   // Per the GPC spec (infinite-tag >= 0.3.4), the user's explicit site-specific choice
   // takes precedence over the global signal — this is what the consent prompt records.
   const dnt = executeAnalytics(syntheticHtml, { storedConsent: "granted", doNotTrack: "1" });
   assert.equal(dnt.infiniteEvents("site_page_view").length, 1, "a stored grant overrides DNT");
+  assert.equal(dnt.gaConfigs().length, 1, "a stored grant restores GA4 under DNT");
+  assert.ok(dnt.loaderSrcs().some((src) => src.includes("/static/array.js")), "a stored grant restores PostHog under DNT");
 
   const gpc = executeAnalytics(syntheticHtml, { storedConsent: "granted", globalPrivacyControl: true });
   assert.equal(gpc.infiniteEvents("site_page_view").length, 1, "a stored grant overrides GPC");
+  assert.equal(gpc.gaConfigs().length, 1, "a stored grant restores GA4 under GPC");
+
+  // Live decisions through the banner: a GPC/DNT visitor with no stored decision sees the
+  // prompt; accepting initializes GA4 + PostHog + pixels right then (late init fires their
+  // own page views); saving with the toggle off records a denial and keeps everything off.
+  const liveGrant = executeAnalytics(syntheticHtml, { doNotTrack: "1" });
+  assert.equal(liveGrant.hasPrivacyChoices(), true, "production hosts expose the manual privacy-choices control");
+  liveGrant.fireDomContentLoaded();
+  assert.equal(liveGrant.bannerVisible(), true, "a signal visitor with no decision sees the banner");
+  liveGrant.pressBanner("Accept All");
+  assert.equal(liveGrant.bannerVisible(), false, "deciding dismisses the banner");
+  assert.deepEqual(liveGrant.consentChanges(), [true], "Accept All dispatches one granted consent change");
+  assert.equal(liveGrant.gaConfigs().length, 1, "a live grant initializes GA4 immediately");
+  assert.ok(liveGrant.loaderSrcs().some((src) => src.includes("www.googletagmanager.com/gtag/js")), "a live grant loads gtag.js");
+  assert.ok(liveGrant.loaderSrcs().some((src) => src.includes("/static/array.js")), "a live grant loads PostHog");
+  assert.equal(liveGrant.xEvents("config").length, 1, "a live grant initializes the X pixel");
+  assert.equal(liveGrant.metaEvents("init").length, 1, "a live grant initializes the Meta pixel");
+
+  const liveDeny = executeAnalytics(syntheticHtml, { globalPrivacyControl: true });
+  liveDeny.fireDomContentLoaded();
+  liveDeny.pressBanner("Manage");
+  liveDeny.pressBanner("Save choices");
+  assert.equal(liveDeny.bannerVisible(), false, "saving dismisses the banner");
+  assert.deepEqual(liveDeny.consentChanges(), [false], "saving with the toggle off records a denial");
+  assert.equal(liveDeny.gaConfigs().length, 0, "a live denial keeps GA4 off");
+  assert.equal(liveDeny.loaderSrcs().length, 0, "a live denial loads no third-party libraries");
+
+  // The banner is host-gated: where the runtime is inert (previews, unlisted aliases) a
+  // decision would store nothing, so neither the banner nor the manual control may exist.
+  const previewSignal = executeAnalytics(syntheticHtml, { doNotTrack: "1", hostname: "branch-preview.vercel.app" });
+  assert.equal(previewSignal.hasPrivacyChoices(), false, "unlisted hosts must not expose the manual control");
+  previewSignal.fireDomContentLoaded();
+  assert.equal(previewSignal.bannerVisible(), false, "unlisted hosts must never render the banner");
+
+  // Revocation: the privacy-policy page's control re-renders the banner ignoring the
+  // stored decision and without any privacy signal, so a stored grant can be withdrawn.
+  const revoke = executeAnalytics(syntheticHtml, { storedConsent: "granted" });
+  assert.equal(revoke.gaConfigs().length, 1, "stored grant without a signal initializes GA4 as usual");
+  assert.equal(revoke.hasPrivacyChoices(), true);
+  revoke.openPrivacyChoices();
+  revoke.fireDomContentLoaded();
+  assert.equal(revoke.bannerVisible(), true, "the manual control renders the banner despite a stored decision and no signal");
+  revoke.pressBanner("Manage");
+  revoke.pressBanner("Save choices");
+  assert.equal(revoke.bannerVisible(), false);
+  assert.deepEqual(revoke.consentChanges(), [false], "saving with the toggle off revokes the stored grant");
 
   const preview = executeAnalytics(syntheticHtml, {
     storedConsent: "granted",
@@ -289,13 +367,17 @@ function executeAnalytics(html, {
     }),
   ]));
   const documentListeners = new Map();
+  const consentChanges = [];
+  const body = createNode("body");
   const document = {
     referrer: "https://search.example/results?q=secret",
     readyState: "loading",
-    createElement: (tagName) => ({ tagName, style: {}, setAttribute() {}, querySelector: () => null }),
+    createElement: (tagName) => createNode(tagName),
+    createTextNode: (text) => ({ nodeType: 3, data: String(text) }),
+    getElementById: (id) => findNodeById(body, id),
     getElementsByTagName: () => [{ parentNode: { insertBefore: (node) => insertedScripts.push(node) } }],
     head: { appendChild: (node) => insertedScripts.push(node) },
-    body: { appendChild() {} },
+    body,
     addEventListener: (name, listener) => {
       documentListeners.set(name, [...(documentListeners.get(name) ?? []), listener]);
     },
@@ -308,7 +390,10 @@ function executeAnalytics(html, {
       pathname: "/tools/",
     },
     addEventListener: (name, listener) => listeners.set(name, [...(listeners.get(name) ?? []), listener]),
-    dispatchEvent: (event) => { for (const listener of listeners.get(event.type) ?? []) listener(event); },
+    dispatchEvent: (event) => {
+      if (event.type === "infinite:analytics-consent-change") consentChanges.push(event.detail?.granted);
+      for (const listener of listeners.get(event.type) ?? []) listener(event);
+    },
     posthog: [],
   };
   const context = {
@@ -361,8 +446,21 @@ function executeAnalytics(html, {
     xEvents,
     metaEvents,
     insertedScripts,
+    loaderSrcs: () => insertedScripts.map((node) => String(node.src ?? "")),
     documentListenerCount: (name) => documentListeners.get(name)?.length ?? 0,
     setConsent: (granted) => window.setInfiniteAnalyticsConsent(granted),
+    consentChanges: () => [...consentChanges],
+    fireDomContentLoaded: () => { for (const listener of documentListeners.get("DOMContentLoaded") ?? []) listener(); },
+    bannerVisible: () => Boolean(findNodeById(body, "infinite-privacy-prompt")),
+    pressBanner: (label) => {
+      const banner = findNodeById(body, "infinite-privacy-prompt");
+      if (!banner) throw new Error("privacy banner is not rendered");
+      const button = findButton(banner, label);
+      if (!button) throw new Error(`privacy banner button not found: ${label}`);
+      for (const listener of button.listeners.get("click") ?? []) listener({});
+    },
+    hasPrivacyChoices: () => typeof window.infinitePrivacyChoices === "function",
+    openPrivacyChoices: () => window.infinitePrivacyChoices(),
     click: (target) => {
       const event = {
         target,
@@ -381,6 +479,50 @@ function storageApi(map) {
     getItem: (key) => map.get(key) ?? null,
     setItem: (key, value) => map.set(key, String(value)),
   };
+}
+
+// Minimal DOM node for scripts that BUILD UI (the consent banner): tracks children,
+// attributes, and per-node listeners so tests can find and press rendered buttons.
+function createNode(tagName) {
+  const node = {
+    tagName,
+    style: {},
+    children: [],
+    listeners: new Map(),
+    attributes: {},
+    parentNode: null,
+    setAttribute(name, value) { node.attributes[name] = String(value); },
+    getAttribute(name) { return node.attributes[name] ?? null; },
+    appendChild(child) {
+      if (child && typeof child === "object") child.parentNode = node;
+      node.children.push(child);
+      return child;
+    },
+    removeChild(child) { node.children = node.children.filter((existing) => existing !== child); },
+    addEventListener(name, listener) { node.listeners.set(name, [...(node.listeners.get(name) ?? []), listener]); },
+    querySelector: () => null,
+  };
+  return node;
+}
+
+function findNodeById(node, id) {
+  if (!node || typeof node !== "object") return null;
+  if (node.id === id) return node;
+  for (const child of node.children ?? []) {
+    const found = findNodeById(child, id);
+    if (found) return found;
+  }
+  return null;
+}
+
+function findButton(node, label) {
+  if (!node || typeof node !== "object") return null;
+  if (node.tagName === "button" && (node.children ?? []).some((child) => child?.data === label)) return node;
+  for (const child of node.children ?? []) {
+    const found = findButton(child, label);
+    if (found) return found;
+  }
+  return null;
 }
 
 function element({ href, attributes }) {
