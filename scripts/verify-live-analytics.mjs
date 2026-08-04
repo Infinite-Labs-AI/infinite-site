@@ -96,7 +96,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`All ${PAGES.length} live pages carry one shared runtime, consent-aware mirrors, and healthy route guardrails.`);
+  console.log(`All ${PAGES.length} live pages carry default-on Infinite analytics, independent provider tags, and healthy route guardrails.`);
 }
 
 function checkPage(label, html, failures) {
@@ -118,7 +118,6 @@ function checkPage(label, html, failures) {
   }
   const apiHost = html.match(/api_host\s*:\s*(["'])([^"']+)\1/)?.[2];
   if (apiHost !== EXPECTED_POSTHOG_API_HOST) fail(`PostHog api_host is ${JSON.stringify(apiHost)}, expected ${JSON.stringify(EXPECTED_POSTHOG_API_HOST)}`);
-  if (!/capture_pageview\s*:\s*false/.test(html)) fail("PostHog automatic page-view capture is not disabled");
 
   if (/\/gtm\/gtag\/js|transport_url\s*:/.test(html)) fail("GA4 uses the forbidden /gtm or transport_url experiment");
   const gaId = html.match(/https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=([^"'&\s]+)/)?.[1];
@@ -126,13 +125,16 @@ function checkPage(label, html, failures) {
   else if (EXPECTED_GA_TAG_ID && decodeURIComponent(gaId) !== EXPECTED_GA_TAG_ID) {
     fail(`GA4 id is ${decodeURIComponent(gaId)}, expected ${EXPECTED_GA_TAG_ID}`);
   }
-  if (!/send_page_view\s*:\s*false/.test(html)) fail("GA4 automatic page-view capture is not disabled");
+  if (!/gtag\(["']config["']/.test(html)) fail("GA4 direct config call is missing");
+  if (!/document\.addEventListener\(["']click["'][\s\S]*?closest\(["']a\[href\]["']\)[\s\S]*?pathname[\s\S]*?["']\/download["'][\s\S]*?gtag\(["']event["']\s*,\s*["']app_download_clicked["'][\s\S]*?cta_location[\s\S]*?destination_path[\s\S]*?event_callback[\s\S]*?event_timeout/.test(html)) {
+    fail("GA4 delegated /download click bridge with bounded properties and delivery callback is missing");
+  }
 
   const runtimes = html.match(/data-infinite-runtime=["']managed["']/g) ?? [];
   if (runtimes.length !== 1) fail(`found ${runtimes.length} Infinite managed runtimes; expected exactly 1`);
-  const consentControllers = html.match(/data-infinite-consent-controller=["']managed["']/g) ?? [];
-  if (consentControllers.length !== 1) fail(`found ${consentControllers.length} consent controllers; expected exactly 1`);
+  if (/data-infinite-consent-controller=["']managed["']/.test(html)) fail("live bytes still contain the retired consent controller");
   if (!html.includes('"collectPath":"/infinite/events/collect"')) fail("shared runtime does not use the same-origin Infinite collect path");
+  if (!html.includes('"consent":{"mode":"not_required"}')) fail("Infinite browser collection is still consent-gated");
   if (EXPECTED_INFINITE_SITE_SOURCE_KEY && !html.includes(`"siteSourceKey":"${escapeJsonForHtmlSearch(EXPECTED_INFINITE_SITE_SOURCE_KEY)}"`)) {
     fail(`managed runtime does not contain expected production siteSourceKey ${maskIdentifier(EXPECTED_INFINITE_SITE_SOURCE_KEY)}`);
   }

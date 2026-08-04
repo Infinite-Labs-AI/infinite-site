@@ -16,25 +16,25 @@ The build imports `renderInfiniteBrowserTag` from the pinned npm package. It doe
 
 ## Browser lane
 
-The shared runtime owns one logical event and translates it at provider boundaries:
+Infinite owns the first-party browser events. Existing provider integrations stay independent:
 
 | Logical event | Infinite ledger | PostHog mirror | GA4 mirror |
 | --- | --- | --- | --- |
-| Browser page view | `site_page_view` | `$pageview` | `page_view` |
-| Meaningful managed CTA | `site_click` | `site_click` | `site_click` |
-| Same-origin `/download` click | `app_download_click` | `app_download_clicked` | `app_download_clicked` |
+| Browser page view | `site_page_view` | automatic | automatic |
+| Meaningful managed CTA | `site_click` | automatic where configured | not mirrored |
+| Same-origin `/download` click | `app_download_click` | automatic where configured | explicit `app_download_clicked` |
 
-PostHog and GA4 automatic page views are disabled. The package runtime emits the initial view only after their queue stubs exist. Optional X and Meta pixels remain supported, but initialize only after the same analytics consent grant.
+GA4 retains its direct loader and automatic page view, which explains why page views worked without custom download tracking. The site explicitly sends `app_download_clicked` because the visible link is the extensionless same-origin `/download` route and cannot be reliably classified as a file by automatic enhanced measurement.
 
 The public envelope may contain only the versioned contract fields: event id/name/time, random browser visitor and session ids, clean canonical URL, referrer host, source public key, and event-specific structural properties. It may not choose a workspace, authority, environment, ingest channel, or dispatch destination. It never includes query strings, link text, DOM text, or a private cloud tracking SDK surface.
 
-Browser delivery is the same-origin path `/infinite/events/collect`, rewritten by Vercel to `https://api.ultima.inc/api/analytics/events/collect`. The site does not expose `/tracking` or `/sdk`. No source key means the Infinite destination is dormant while consented GA4 and PostHog mirrors continue.
+Browser delivery is the same-origin path `/infinite/events/collect`, rewritten by Vercel to `https://api.ultima.inc/api/analytics/events/collect`. The site does not expose `/tracking` or `/sdk`. No source key means only the Infinite destination is dormant; GA4 and PostHog continue independently.
 
-`infinite-tag@0.3.1` maps each valid `data-download-location` marker into the bounded `cta_location` property on the same package-owned `app_download_click` event, alongside `destination_path: "/download"`. The same properties are mirrored once to PostHog and GA4. The site keeps one package-owned click listener and must not add a second download emitter.
+`infinite-tag@0.3.1` maps each valid `data-download-location` marker through its package-owned click listener into the bounded `cta_location` property on `app_download_click`, alongside `destination_path: "/download"`. A small GA4 bridge applies the same bounded properties to one `app_download_clicked` event.
 
 ## Consent and privacy signals
 
-Analytics consent is required and stored as `infinite_analytics_consent`. One change event governs Infinite, PostHog, and GA4. DNT or GPC suppresses all three regardless of a stored grant. Consent withdrawal stops future browser emission. Server-observed document and redirect requests are disclosed separately because they occur before browser code can run and are not controlled by browser consent.
+Infinite is configured with `consent.mode = "not_required"`; it does not depend on a stored consent value. Its configured DNT/GPC handling still suppresses Infinite browser events. GA4 and PostHog retain their pre-existing direct initialization. Server-observed document and redirect requests occur before browser code can run and remain separate.
 
 ## Server lane
 
@@ -50,4 +50,4 @@ Canonical fixtures are `/ -> /`, `/privacy -> /privacy/`, `/privacy/ -> /privacy
 
 ## Accuracy limits
 
-No analytics implementation captures mathematically 100% of people. Consent, DNT/GPC, blockers, network delivery, bot classification, provider processing, and Drain health affect totals. A page request is not a browser view; a download click is not a redirect, binary transfer, installation, or first app open. GA4/PostHog disagreement during the shadow month is diagnostic evidence, not a reason to blend providers.
+No analytics implementation captures mathematically 100% of people. DNT/GPC, blockers, network delivery, bot classification, provider processing, and Drain health affect totals. A page request is not a browser view; a download click is not a redirect, binary transfer, installation, or first app open. GA4/PostHog disagreement during the shadow month is diagnostic evidence, not a reason to blend providers.

@@ -99,6 +99,7 @@ assert.match(read(".gitignore"), /^node_modules\/$/m);
 
 const injector = read(".github/scripts/inject-analytics.cjs");
 assert.match(injector, /await import\("infinite-tag"\)/);
+assert.match(injector, /gtag\("event", "app_download_clicked"/);
 assert.doesNotMatch(injector, /_1BU|\/api\/events\/track|custom_app_download_redirect|appDownloadTrackingSnippet|link_text/);
 const deployPreparation = read("scripts/prepare-static-deploy.cjs");
 assert.match(deployPreparation, /execFileSync\(process\.execPath, \[path\.join\(repoRoot, "\.github\/scripts\/inject-analytics\.cjs"\)\]/);
@@ -116,15 +117,15 @@ assert.match(privacy, /Website visitor analytics/i);
 assert.match(privacy, /90 days/i);
 assert.match(privacy, /25 months/i);
 assert.match(privacy, /Do Not Track.*Global Privacy Control|Global Privacy Control.*Do Not Track/is);
-assert.match(privacy, /first-party.*(?:ledger|collection).*remain(?:s)? disabled.*approved activation/is);
-assert.match(privacy, /if approved and activated.*server.*request.*redirect/is);
+assert.match(privacy, /Infinite first-party analytics.*measure website use by default/is);
+assert.match(privacy, /Do Not Track.*Global Privacy Control.*Infinite first-party browser runtime/is);
+assert.doesNotMatch(privacy, /Browser analytics is off until|Privacy choices/);
 assert.match(privacy, /Content Security Policy.*sanitized.*document.*blocked.*directive.*disposition/is);
 assert.match(privacy, /Content Security Policy.*query strings.*script samples.*security diagnostics/is);
-assert.doesNotMatch(privacy, /On <code>infinite\.fast<\/code>, we use a first-party Infinite event ledger/i);
 assert.doesNotMatch(privacy, /We do not host, receive, store, or have access to that data\./);
 
 const dataInventory = read("docs/analytics/data-inventory.md");
-assert.match(dataInventory, /Status: prepared, not approved.*approval.*retention receipts.*pending/is);
+assert.match(dataInventory, /Status: production behavior inventory.*operational follow-ups/is);
 assert.match(dataInventory, /Content Security Policy.*document origin and path.*blocked origin and path.*directive.*disposition/is);
 assert.match(dataInventory, /Content Security Policy.*Vercel function logs.*exact platform retention receipt.*pending/is);
 
@@ -150,7 +151,7 @@ for (const eventName of ["site_page_view", "site_click", "app_download_click", "
   assert.match(siteAudit, new RegExp(eventName), `site audit must inspect generated ${eventName}`);
 }
 assert.match(siteAudit, /data-download-location/);
-assert.doesNotMatch(siteAudit, /assert\.match\(analyticsInjector, \/app_download_clicked\//);
+assert.match(siteAudit, /gtag\\\(\\\"event\\\", \\\"app_download_clicked/);
 
 const headers = vercel.headers?.find((entry) => entry.source === "/(.*)")?.headers ?? [];
 const headerValue = (key) => headers.find((header) => header.key.toLowerCase() === key.toLowerCase())?.value;
