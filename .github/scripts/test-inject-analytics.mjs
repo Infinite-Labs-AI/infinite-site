@@ -65,15 +65,13 @@ try {
     assert.equal((html.match(/www\.googletagmanager\.com\/gtag\/js/g) ?? []).length, 1, "one direct GA loader definition per page");
     assert.equal((html.match(/twq\("config"/g) ?? []).length, 1, "one optional X pixel per page");
     assert.equal((html.match(/fbq\("init"/g) ?? []).length, 1, "one optional Meta pixel per page");
-    assert.match(html, /capture_pageview:\s*false/);
-    assert.match(html, /send_page_view:\s*false/);
-    assert.match(html, /opt_out_capturing_by_default:\s*true/);
-    assert.match(html, /infinite_analytics_consent/);
-    assert.match(html, /infinite:analytics-consent-change/);
-    assert.ok((html.match(/infinite:analytics-consent-change/g) ?? []).length >= 4, "shared consent also gates optional X and Meta pixels");
-    assert.match(html, /data-infinite-consent-controller="managed"/);
-    assert.match(html, /renderControls\(true\)/, "Privacy choices opens the decision instead of silently toggling consent");
-    assert.doesNotMatch(html, /setChoice\(storedChoice\(\)/);
+    assert.doesNotMatch(html, /send_page_view:\s*false/);
+    assert.doesNotMatch(html, /data-infinite-consent-controller="managed"/);
+    assert.match(html, /"consent":\{"mode":"not_required"\}/);
+    assert.match(html, /event_callback/);
+    assert.match(html, /event_timeout:\s*1000/);
+    assert.match(html, /send_to:\s*"G-TEST1234"/);
+    assert.match(html, /setTimeout\(follow, 1000\)/);
     assert.match(html, /"collectPath":"\/infinite\/events\/collect"/);
     assert.match(html, /"siteSourceKey":"site_synthetic_test"/);
     assert.match(html, /"productionHosts":\["infinite\.fast","www\.infinite\.fast"\]/);
@@ -85,18 +83,10 @@ try {
 
   const syntheticHtml = readFileSync(indexPath, "utf8");
   const granted = executeAnalytics(syntheticHtml, { storedConsent: "denied" });
-  assert.equal(granted.infiniteBodies.length, 0, "denied consent must suppress Infinite");
-  assert.equal(granted.posthogEvents("$pageview").length, 0, "denied consent must suppress PostHog views");
-  assert.equal(granted.gaEvents("page_view").length, 0, "denied consent must suppress GA4 views");
-  assert.equal(granted.xEvents("config").length, 0, "denied consent must suppress X initialization");
-  assert.equal(granted.metaEvents("init").length, 0, "denied consent must suppress Meta initialization");
-
-  granted.setConsent(true);
-  assert.equal(granted.infiniteEvents("site_page_view").length, 1, "grant emits one Infinite page view");
-  assert.equal(granted.posthogEvents("$pageview").length, 1, "grant mirrors one PostHog page view");
-  assert.equal(granted.gaEvents("page_view").length, 1, "grant mirrors one GA4 page view");
-  assert.equal(granted.xEvents("config").length, 1, "grant initializes the configured X pixel once");
-  assert.equal(granted.metaEvents("init").length, 1, "grant initializes the configured Meta pixel once");
+  assert.equal(granted.infiniteEvents("site_page_view").length, 1, "Infinite emits without stored consent");
+  assert.equal(granted.gaConfigs().length, 1, "GA4 keeps its direct config and automatic page view");
+  assert.equal(granted.xEvents("config").length, 1, "X keeps its existing direct initialization");
+  assert.equal(granted.metaEvents("init").length, 1, "Meta keeps its existing direct initialization");
 
   granted.click(granted.cta);
   assert.equal(granted.infiniteEvents("site_click").length, 1);
@@ -105,37 +95,25 @@ try {
     cta_location: "navigation",
     destination_path: "/pricing/",
   });
-  assert.equal(granted.documentListenerCount("click"), 1, "the package must own exactly one site click listener");
+  assert.equal(granted.documentListenerCount("click"), 2, "Infinite and the explicit GA4 download bridge each bind once");
   for (const [index, location] of downloadLocations.entries()) {
-    granted.click(granted.downloads[location]);
+    const click = granted.click(granted.downloads[location]);
     const infiniteDownloads = granted.infiniteEvents("app_download_click");
-    const posthogDownloads = granted.posthogEvents("app_download_clicked");
     const gaDownloads = granted.gaEvents("app_download_clicked");
     assert.equal(infiniteDownloads.length, index + 1, `${location} must emit one Infinite download event`);
-    assert.equal(posthogDownloads.length, index + 1, `${location} must emit one PostHog download mirror`);
-    assert.equal(gaDownloads.length, index + 1, `${location} must emit one GA4 download mirror`);
+    assert.equal(gaDownloads.length, index + 1, `${location} must emit one explicit GA4 download event`);
     assert.deepEqual(infiniteDownloads[index].properties, {
       cta_location: location,
       destination_path: "/download",
     });
-    assert.equal(posthogDownloads[index][2].cta_location, location);
-    assert.equal(posthogDownloads[index][2].destination_path, "/download");
     assert.equal(gaDownloads[index][2].cta_location, location);
     assert.equal(gaDownloads[index][2].destination_path, "/download");
+    assert.equal(click.defaultPrevented, true, `${location} must wait briefly for GA4 delivery before same-tab navigation`);
   }
   assert.doesNotMatch(JSON.stringify(granted.infiniteBodies), /Download for Mac|Pricing/);
 
-  granted.setConsent(false);
-  granted.click(granted.downloads.hero);
-  assert.equal(granted.infiniteEvents("app_download_click").length, 4, "revocation stops later clicks");
-  granted.setConsent(true);
-  assert.equal(granted.xEvents("config").length, 1, "re-grant does not duplicate X initialization");
-  assert.equal(granted.metaEvents("init").length, 1, "re-grant does not duplicate Meta initialization");
-
   const dnt = executeAnalytics(syntheticHtml, { storedConsent: "granted", doNotTrack: "1" });
   assert.equal(dnt.infiniteBodies.length, 0, "DNT suppresses Infinite even with stored consent");
-  assert.equal(dnt.posthogEvents("$pageview").length, 0, "DNT suppresses PostHog even with stored consent");
-  assert.equal(dnt.gaEvents("page_view").length, 0, "DNT suppresses GA4 even with stored consent");
 
   const gpc = executeAnalytics(syntheticHtml, { storedConsent: "granted", globalPrivacyControl: true });
   assert.equal(gpc.infiniteBodies.length, 0, "GPC suppresses Infinite even with stored consent");
@@ -145,10 +123,6 @@ try {
     hostname: "branch-preview.vercel.app",
   });
   assert.equal(preview.infiniteBodies.length, 0, "unverified preview hosts suppress Infinite");
-  assert.equal(preview.posthogEvents("$pageview").length, 0, "unverified preview hosts suppress PostHog events");
-  assert.equal(preview.gaEvents("page_view").length, 0, "unverified preview hosts suppress GA4 events");
-  assert.equal(preview.xEvents("config").length, 0, "unverified preview hosts suppress X events");
-  assert.equal(preview.metaEvents("init").length, 0, "unverified preview hosts suppress Meta events");
 
   const dormantDir = mkdtempSync(join(tmpdir(), "infinite-analytics-dormant-"));
   try {
@@ -166,8 +140,7 @@ try {
     assert.doesNotMatch(dormantHtml, /"siteSourceKey":/);
     const dormant = executeAnalytics(dormantHtml, { storedConsent: "granted" });
     assert.equal(dormant.infiniteBodies.length, 0, "missing source key keeps Infinite dormant");
-    assert.equal(dormant.posthogEvents("$pageview").length, 1, "dormant Infinite keeps PostHog mirror active");
-    assert.equal(dormant.gaEvents("page_view").length, 1, "dormant Infinite keeps GA4 mirror active");
+    assert.equal(dormant.gaConfigs().length, 1, "missing Infinite source does not disable GA4");
   } finally {
     rmSync(dormantDir, { recursive: true, force: true });
   }
@@ -359,6 +332,7 @@ function executeAnalytics(html, {
 
   const posthogEvents = (name) => (window.posthog ?? []).filter((entry) => entry[0] === "capture" && entry[1] === name);
   const gaEvents = (name) => (window.dataLayer ?? []).filter((entry) => entry[0] === "event" && entry[1] === name);
+  const gaConfigs = () => (window.dataLayer ?? []).filter((entry) => entry[0] === "config");
   const xEvents = (name) => (window.twq?.queue ?? []).filter((entry) => entry[0] === name);
   const metaEvents = (name) => (window.fbq?.queue ?? []).filter((entry) => entry[0] === name);
   return {
@@ -368,13 +342,21 @@ function executeAnalytics(html, {
     infiniteEvents: (name) => infiniteBodies.filter((body) => body.eventName === name),
     posthogEvents,
     gaEvents,
+    gaConfigs,
     xEvents,
     metaEvents,
     insertedScripts,
     documentListenerCount: (name) => documentListeners.get(name)?.length ?? 0,
     setConsent: (granted) => window.setInfiniteAnalyticsConsent(granted),
     click: (target) => {
-      for (const listener of documentListeners.get("click") ?? []) listener({ target });
+      const event = {
+        target,
+        button: 0,
+        defaultPrevented: false,
+        preventDefault() { this.defaultPrevented = true; },
+      };
+      for (const listener of documentListeners.get("click") ?? []) listener(event);
+      return event;
     },
   };
 }

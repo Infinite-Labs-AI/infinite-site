@@ -31,9 +31,10 @@ try {
   assert.equal((homepage.match(/posthog\.init\s*\(/g) ?? []).length, 1);
   assert.match(homepage, /"collectPath":"\/infinite\/events\/collect"/);
   assert.doesNotMatch(homepage, /"siteSourceKey":/);
-  assert.match(homepage, /capture_pageview:\s*false/);
-  assert.match(homepage, /send_page_view:\s*false/);
-  assert.match(homepage, /data-infinite-consent-controller="managed"/);
+  assert.doesNotMatch(homepage, /send_page_view:\s*false/);
+  assert.doesNotMatch(homepage, /data-infinite-consent-controller="managed"/);
+  assert.match(homepage, /"consent":\{"mode":"not_required"\}/);
+  assert.match(homepage, /gtag\("event", "app_download_clicked"/);
   assert.doesNotMatch(homepage, /transport_url/);
   assert.match(homepage, /<style data-homepage-critical>/);
   assert.equal((homepage.match(/<style\b/g) ?? []).length, 1, "only critical CSS may block first paint");

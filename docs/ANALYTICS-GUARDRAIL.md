@@ -7,12 +7,12 @@ This guardrail checks the bytes and routes that real visitors receive from `infi
 For every maintained relative main-site path, `scripts/verify-live-analytics.mjs` requires:
 
 - the apex canonical and Open Graph URL;
-- exactly one package-owned Infinite runtime and one consent controller;
+- exactly one package-owned Infinite runtime with no consent-controller UI;
 - exactly one PostHog initialization using the expected public token and `/ingest` proxy;
-- PostHog `capture_pageview: false`;
 - one direct Google tag loader definition with the expected measurement id;
-- GA4 `send_page_view: false`, with no `/gtm` loader or `transport_url`;
+- GA4's normal direct config plus an explicit `app_download_clicked` event for `/download`, with no `/gtm` loader or `transport_url`;
 - the exact same-origin `/infinite/events/collect` runtime path;
+- Infinite browser collection configured as `not_required`, so a missing consent value cannot suppress clicks;
 - the expected production `siteSourceKey` when `EXPECTED_INFINITE_SITE_SOURCE_KEY` is configured;
 - no legacy `/tracking` or `/sdk` bytes and 404/405 responses from representative legacy route probes;
 - CSP reporting headers and a live `204` response from `/api/csp-report`;
@@ -28,7 +28,7 @@ When the separately approved synthetic configuration is enabled, the same job al
 
 A direct API-host POST does not satisfy the same-origin test. Synthetic environment is derived from the provisioned source; the browser payload has no environment field. Synthetic rows must remain excluded from production aggregates, source timestamps, and readiness.
 
-This proves the configured delivery path at the time of the check. It does not prove mathematically 100% capture. Consent, DNT/GPC, blockers, bot filtering, networks, provider processing, and Drain delivery can all affect counts.
+This proves the configured delivery path at the time of the check. It does not prove mathematically 100% capture. DNT/GPC, blockers, bot filtering, networks, provider processing, and Drain delivery can all affect counts.
 
 ## Local verification
 

@@ -28,6 +28,13 @@ for (const [route, file] of pages) {
   );
   assert.doesNotMatch(html, /https:\/\/www\.infinite\.fast/i, `${file} contains a www URL`);
   assert.doesNotMatch(html, /fonts\.(?:googleapis|gstatic)\.com/i, `${file} must use self-hosted fonts`);
+  for (const anchor of html.match(/<a\b[^>]*href=["']\/download["'][^>]*>/gi) ?? []) {
+    assert.match(
+      anchor,
+      /data-(?:download-location|analytics-cta-location)=["'][A-Za-z0-9_-]{1,64}["']/,
+      `${file} has a /download link without a bounded location marker`,
+    );
+  }
 }
 
 const sitemap = readFileSync("sitemap.xml", "utf8");
@@ -47,15 +54,16 @@ const generatedAnalytics = renderInfiniteBrowserTag({
   collectPath: "/infinite/events/collect",
   productionHosts: ["infinite.fast"],
   respectDnt: true,
-  consent: { mode: "required", storageKey: "infinite_analytics_consent" },
-  mirrors: ["posthog", "ga4"],
+  consent: { mode: "not_required" },
+  mirrors: [],
 });
 for (const event of ["site_page_view", "site_click", "app_download_click", "app_download_clicked"]) {
   assert.match(generatedAnalytics, new RegExp(event), `generated package runtime must contain ${event}`);
 }
 assert.match(generatedAnalytics, /data-download-location/, "generated package runtime must consume download placement markers");
 const analyticsInjector = readFileSync(".github/scripts/inject-analytics.cjs", "utf8");
-assert.doesNotMatch(analyticsInjector, /app_download_clicked|cta_location/);
+assert.match(analyticsInjector, /gtag\(\"event\", \"app_download_clicked\"/);
+assert.doesNotMatch(analyticsInjector, /appDownloadTrackingSnippet|link_text|textContent/);
 
 const homepage = readFileSync(pages[0][1], "utf8");
 assert.match(homepage, /Meet Infinite, your AI CMO/i);
