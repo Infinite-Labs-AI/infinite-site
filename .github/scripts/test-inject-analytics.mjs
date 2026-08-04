@@ -29,7 +29,7 @@ const page = (title) => `<!doctype html><html><head><title>${title}</title></hea
 </body></html>`;
 
 try {
-  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.3.4");
+  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.3.5");
   for (const [name, expectedHash] of Object.entries(contractHashes)) {
     const bytes = readFileSync(join(repoRoot, "node_modules/infinite-tag/contracts", name));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), expectedHash, `${name} must match the reviewed public contract`);
@@ -96,7 +96,7 @@ try {
   const granted = executeAnalytics(syntheticHtml, {});
   assert.equal(granted.infiniteEvents("site_page_view").length, 1, "Infinite emits with no stored decision");
 
-  // infinite-tag >= 0.3.4: an explicit decision governs in BOTH directions — a recorded
+  // infinite-tag >= 0.3.5: an explicit decision governs in BOTH directions — a recorded
   // denial sticks even without any privacy signal.
   const declined = executeAnalytics(syntheticHtml, { storedConsent: "denied" });
   assert.equal(declined.infiniteBodies.length, 0, "an explicit stored denial sticks");
@@ -155,7 +155,7 @@ try {
   assert.equal(gpcUndecided.gaConfigs().length, 0, "GPC suppresses GA4 while undecided");
   assert.equal(gpcUndecided.loaderSrcs().length, 0, "GPC loads no third-party libraries while undecided");
 
-  // Per the GPC spec (infinite-tag >= 0.3.4), the user's explicit site-specific choice
+  // Per the GPC spec (infinite-tag >= 0.3.5), the user's explicit site-specific choice
   // takes precedence over the global signal — this is what the consent prompt records.
   const dnt = executeAnalytics(syntheticHtml, { storedConsent: "granted", doNotTrack: "1" });
   assert.equal(dnt.infiniteEvents("site_page_view").length, 1, "a stored grant overrides DNT");
