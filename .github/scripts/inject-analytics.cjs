@@ -216,6 +216,11 @@ function googleAnalyticsSnippet(tagId) {
 // Infinite runtime collects by default (consent mode not_required), and per the GPC spec an
 // explicit site-specific decision takes precedence over the global signal — the runtime
 // (infinite-tag >= 0.3.4) records the decision when we dispatch the consent-change event.
+// Founder-specified design (2026-08-04): large centered modal with a dimmed backdrop,
+// primary "Accept all" + secondary "Manage"; Manage opens a per-category toggle (we have
+// exactly one category — first-party analytics) with "Save choices". The toggle defaults
+// OFF because the visitor's privacy signal IS their standing default; "Accept all" is the
+// explicit override, and saving with the toggle off records the denial.
 function privacyConsentPromptSnippet() {
   return `  <script>
     (function () {
@@ -225,36 +230,69 @@ function privacyConsentPromptSnippet() {
         var stored = null;
         try { stored = localStorage.getItem("infinite_analytics_consent"); } catch (_e) {}
         if (stored === "granted" || stored === "denied") return;
+        function textEl(tag, css, text) {
+          var el = document.createElement(tag);
+          if (css) el.style.cssText = css;
+          if (text) el.appendChild(document.createTextNode(text));
+          return el;
+        }
         function decide(granted) {
           window.dispatchEvent(new CustomEvent("infinite:analytics-consent-change", { detail: { granted: granted } }));
-          var card = document.getElementById("infinite-privacy-prompt");
-          if (card && card.parentNode) card.parentNode.removeChild(card);
+          var overlay = document.getElementById("infinite-privacy-prompt");
+          if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
         }
+        var BTN_PRIMARY = "display:block;width:100%;padding:14px 20px;border:0;border-radius:10px;background:#f5f6f8;color:#111318;font:inherit;font-size:16px;font-weight:600;cursor:pointer;";
+        var BTN_SECONDARY = "display:block;width:100%;padding:14px 20px;border:1px solid rgba(245,246,248,0.35);border-radius:10px;background:transparent;color:#f5f6f8;font:inherit;font-size:16px;cursor:pointer;";
         function render() {
           if (document.getElementById("infinite-privacy-prompt")) return;
+          var overlay = document.createElement("div");
+          overlay.id = "infinite-privacy-prompt";
+          overlay.style.cssText = "position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(10,11,14,0.55);backdrop-filter:blur(2px);";
           var card = document.createElement("div");
-          card.id = "infinite-privacy-prompt";
           card.setAttribute("role", "dialog");
-          card.setAttribute("aria-label", "Analytics preference");
-          card.style.cssText = "position:fixed;bottom:20px;left:20px;z-index:2147483000;max-width:320px;padding:16px;border-radius:12px;background:#111318;color:#f5f6f8;font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 8px 30px rgba(0,0,0,0.35);";
-          var text = document.createElement("p");
-          text.style.cssText = "margin:0 0 12px;";
-          text.appendChild(document.createTextNode("Your browser sends a privacy signal, so analytics is off for you. Allow privacy-friendly, first-party analytics on this site?"));
-          var row = document.createElement("div");
-          row.style.cssText = "display:flex;gap:8px;";
-          var allow = document.createElement("button");
-          allow.appendChild(document.createTextNode("Allow"));
-          allow.style.cssText = "flex:1;padding:8px 14px;border:0;border-radius:8px;background:#f5f6f8;color:#111318;font:inherit;font-weight:600;cursor:pointer;";
-          allow.addEventListener("click", function () { decide(true); });
-          var decline = document.createElement("button");
-          decline.appendChild(document.createTextNode("No thanks"));
-          decline.style.cssText = "flex:1;padding:8px 14px;border:1px solid rgba(245,246,248,0.35);border-radius:8px;background:transparent;color:#f5f6f8;font:inherit;cursor:pointer;";
-          decline.addEventListener("click", function () { decide(false); });
-          row.appendChild(allow);
-          row.appendChild(decline);
-          card.appendChild(text);
-          card.appendChild(row);
-          document.body.appendChild(card);
+          card.setAttribute("aria-modal", "true");
+          card.setAttribute("aria-label", "Privacy choices");
+          card.style.cssText = "width:100%;max-width:440px;padding:32px;border-radius:16px;background:#111318;color:#f5f6f8;font:15px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 24px 80px rgba(0,0,0,0.5);";
+
+          var main = document.createElement("div");
+          main.appendChild(textEl("h2", "margin:0 0 10px;font-size:22px;font-weight:700;line-height:1.25;", "Your privacy, your call"));
+          main.appendChild(textEl("p", "margin:0 0 20px;color:rgba(245,246,248,0.8);", "Your browser sends a privacy signal, so analytics is currently off for you. We only use privacy-friendly, first-party analytics \\u2014 no ad networks, no third-party tracking \\u2014 to understand what\\u2019s working."));
+          var mainButtons = document.createElement("div");
+          mainButtons.style.cssText = "display:flex;flex-direction:column;gap:10px;";
+          var accept = textEl("button", BTN_PRIMARY, "Accept all");
+          accept.addEventListener("click", function () { decide(true); });
+          var manage = textEl("button", BTN_SECONDARY, "Manage");
+          mainButtons.appendChild(accept);
+          mainButtons.appendChild(manage);
+          main.appendChild(mainButtons);
+
+          var manageView = document.createElement("div");
+          manageView.style.display = "none";
+          manageView.appendChild(textEl("h2", "margin:0 0 10px;font-size:22px;font-weight:700;line-height:1.25;", "Manage preferences"));
+          var rowLabel = document.createElement("label");
+          rowLabel.style.cssText = "display:flex;align-items:flex-start;gap:12px;margin:0 0 20px;padding:14px;border:1px solid rgba(245,246,248,0.18);border-radius:10px;cursor:pointer;";
+          var toggle = document.createElement("input");
+          toggle.type = "checkbox";
+          toggle.style.cssText = "margin-top:3px;width:16px;height:16px;accent-color:#f5f6f8;";
+          var labelCopy = document.createElement("span");
+          labelCopy.appendChild(textEl("strong", "display:block;font-weight:600;", "First-party analytics"));
+          labelCopy.appendChild(textEl("span", "display:block;color:rgba(245,246,248,0.7);font-size:13px;", "Page views and download clicks, collected by this site only. Never sold, never shared."));
+          rowLabel.appendChild(toggle);
+          rowLabel.appendChild(labelCopy);
+          manageView.appendChild(rowLabel);
+          var save = textEl("button", BTN_PRIMARY, "Save choices");
+          save.addEventListener("click", function () { decide(toggle.checked === true); });
+          manageView.appendChild(save);
+
+          manage.addEventListener("click", function () {
+            main.style.display = "none";
+            manageView.style.display = "block";
+          });
+
+          card.appendChild(main);
+          card.appendChild(manageView);
+          overlay.appendChild(card);
+          document.body.appendChild(overlay);
         }
         if (document.readyState === "loading") {
           document.addEventListener("DOMContentLoaded", render);
