@@ -29,7 +29,7 @@ const page = (title) => `<!doctype html><html><head><title>${title}</title></hea
 </body></html>`;
 
 try {
-  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.3.1");
+  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.3.4");
   for (const [name, expectedHash] of Object.entries(contractHashes)) {
     const bytes = readFileSync(join(repoRoot, "node_modules/infinite-tag/contracts", name));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), expectedHash, `${name} must match the reviewed public contract`);
@@ -82,8 +82,14 @@ try {
   }
 
   const syntheticHtml = readFileSync(indexPath, "utf8");
-  const granted = executeAnalytics(syntheticHtml, { storedConsent: "denied" });
-  assert.equal(granted.infiniteEvents("site_page_view").length, 1, "Infinite emits without stored consent");
+  // No stored decision: not_required collects by default.
+  const granted = executeAnalytics(syntheticHtml, {});
+  assert.equal(granted.infiniteEvents("site_page_view").length, 1, "Infinite emits with no stored decision");
+
+  // infinite-tag >= 0.3.4: an explicit decision governs in BOTH directions — a recorded
+  // denial sticks even without any privacy signal.
+  const declined = executeAnalytics(syntheticHtml, { storedConsent: "denied" });
+  assert.equal(declined.infiniteBodies.length, 0, "an explicit stored denial sticks");
   assert.equal(granted.gaConfigs().length, 1, "GA4 keeps its direct config and automatic page view");
   assert.equal(granted.xEvents("config").length, 1, "X keeps its existing direct initialization");
   assert.equal(granted.metaEvents("init").length, 1, "Meta keeps its existing direct initialization");
@@ -112,11 +118,20 @@ try {
   }
   assert.doesNotMatch(JSON.stringify(granted.infiniteBodies), /Download for Mac|Pricing/);
 
+  // The global privacy signal is the DEFAULT: it suppresses only visitors with no decision.
+  const dntUndecided = executeAnalytics(syntheticHtml, { doNotTrack: "1" });
+  assert.equal(dntUndecided.infiniteBodies.length, 0, "DNT suppresses Infinite while undecided");
+
+  const gpcUndecided = executeAnalytics(syntheticHtml, { globalPrivacyControl: true });
+  assert.equal(gpcUndecided.infiniteBodies.length, 0, "GPC suppresses Infinite while undecided");
+
+  // Per the GPC spec (infinite-tag >= 0.3.4), the user's explicit site-specific choice
+  // takes precedence over the global signal — this is what the consent prompt records.
   const dnt = executeAnalytics(syntheticHtml, { storedConsent: "granted", doNotTrack: "1" });
-  assert.equal(dnt.infiniteBodies.length, 0, "DNT suppresses Infinite even with stored consent");
+  assert.equal(dnt.infiniteEvents("site_page_view").length, 1, "a stored grant overrides DNT");
 
   const gpc = executeAnalytics(syntheticHtml, { storedConsent: "granted", globalPrivacyControl: true });
-  assert.equal(gpc.infiniteBodies.length, 0, "GPC suppresses Infinite even with stored consent");
+  assert.equal(gpc.infiniteEvents("site_page_view").length, 1, "a stored grant overrides GPC");
 
   const preview = executeAnalytics(syntheticHtml, {
     storedConsent: "granted",

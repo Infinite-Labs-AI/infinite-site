@@ -54,6 +54,7 @@ void (async () => {
     xPixelSnippet(process.env.X_PIXEL_ID),
     metaPixelSnippet(process.env.META_PIXEL_ID),
     runtime,
+    privacyConsentPromptSnippet(),
   ].filter(Boolean);
 
   const pages = findHtmlFiles(distDir);
@@ -207,6 +208,61 @@ function googleAnalyticsSnippet(tagId) {
     window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
     window.gtag("js", new Date());
     window.gtag("config", ${JSON.stringify(tagId)});
+  </script>`;
+}
+
+// Shown ONLY to visitors whose browser sends a global privacy signal (GPC or DNT) and who
+// have not yet made a site-specific choice. Everyone else never sees it: without a signal the
+// Infinite runtime collects by default (consent mode not_required), and per the GPC spec an
+// explicit site-specific decision takes precedence over the global signal — the runtime
+// (infinite-tag >= 0.3.4) records the decision when we dispatch the consent-change event.
+function privacyConsentPromptSnippet() {
+  return `  <script>
+    (function () {
+      try {
+        var signal = navigator.doNotTrack === "1" || navigator.globalPrivacyControl === true;
+        if (!signal) return;
+        var stored = null;
+        try { stored = localStorage.getItem("infinite_analytics_consent"); } catch (_e) {}
+        if (stored === "granted" || stored === "denied") return;
+        function decide(granted) {
+          window.dispatchEvent(new CustomEvent("infinite:analytics-consent-change", { detail: { granted: granted } }));
+          var card = document.getElementById("infinite-privacy-prompt");
+          if (card && card.parentNode) card.parentNode.removeChild(card);
+        }
+        function render() {
+          if (document.getElementById("infinite-privacy-prompt")) return;
+          var card = document.createElement("div");
+          card.id = "infinite-privacy-prompt";
+          card.setAttribute("role", "dialog");
+          card.setAttribute("aria-label", "Analytics preference");
+          card.style.cssText = "position:fixed;bottom:20px;left:20px;z-index:2147483000;max-width:320px;padding:16px;border-radius:12px;background:#111318;color:#f5f6f8;font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 8px 30px rgba(0,0,0,0.35);";
+          var text = document.createElement("p");
+          text.style.cssText = "margin:0 0 12px;";
+          text.appendChild(document.createTextNode("Your browser sends a privacy signal, so analytics is off for you. Allow privacy-friendly, first-party analytics on this site?"));
+          var row = document.createElement("div");
+          row.style.cssText = "display:flex;gap:8px;";
+          var allow = document.createElement("button");
+          allow.appendChild(document.createTextNode("Allow"));
+          allow.style.cssText = "flex:1;padding:8px 14px;border:0;border-radius:8px;background:#f5f6f8;color:#111318;font:inherit;font-weight:600;cursor:pointer;";
+          allow.addEventListener("click", function () { decide(true); });
+          var decline = document.createElement("button");
+          decline.appendChild(document.createTextNode("No thanks"));
+          decline.style.cssText = "flex:1;padding:8px 14px;border:1px solid rgba(245,246,248,0.35);border-radius:8px;background:transparent;color:#f5f6f8;font:inherit;cursor:pointer;";
+          decline.addEventListener("click", function () { decide(false); });
+          row.appendChild(allow);
+          row.appendChild(decline);
+          card.appendChild(text);
+          card.appendChild(row);
+          document.body.appendChild(card);
+        }
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", render);
+        } else {
+          render();
+        }
+      } catch (_error) {}
+    })();
   </script>`;
 }
 
