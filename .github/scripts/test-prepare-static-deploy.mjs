@@ -14,7 +14,7 @@ try {
       INFINITE_PRODUCTION_HOSTS: "infinite.fast,www.infinite.fast",
       INFINITE_SITE_SOURCE_ARTIFACT: JSON.stringify({
         siteSourceKey: "site_production_dormant",
-        collectPath: "/infinite/events/collect",
+        collectPath: "/infinite/ledger",
         productionHosts: ["infinite.fast", "www.infinite.fast"],
         staticProxy: "vercel",
       }),
@@ -29,7 +29,7 @@ try {
   assert.match(homepage, /https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-JE3BZS61FZ/);
   assert.equal((homepage.match(/data-infinite-runtime="managed"/g) ?? []).length, 1);
   assert.equal((homepage.match(/posthog\.init\s*\(/g) ?? []).length, 1);
-  assert.match(homepage, /"collectPath":"\/infinite\/events\/collect"/);
+  assert.match(homepage, /"collectPath":"\/infinite\/ledger"/);
   assert.doesNotMatch(homepage, /"siteSourceKey":/);
   assert.doesNotMatch(homepage, /send_page_view:\s*false/);
   assert.doesNotMatch(homepage, /data-infinite-consent-controller="managed"/);

@@ -28,7 +28,7 @@ GA4 retains its direct loader and automatic page view, which explains why page v
 
 The public envelope may contain only the versioned contract fields: event id/name/time, random browser visitor and session ids, clean canonical URL, referrer host, source public key, and event-specific structural properties. It may not choose a workspace, authority, environment, ingest channel, or dispatch destination. It never includes query strings, link text, DOM text, or a private cloud tracking SDK surface.
 
-Browser delivery is the same-origin path `/infinite/events/collect`, rewritten by Vercel to `https://api.ultima.inc/api/analytics/events/collect`. The site does not expose `/tracking` or `/sdk`. No source key means only the Infinite destination is dormant; GA4 and PostHog continue independently.
+Browser delivery is the same-origin path `/infinite/ledger`, rewritten by Vercel to `https://api.ultima.inc/api/analytics/events/collect`. The site does not expose `/tracking` or `/sdk`. No source key means only the Infinite destination is dormant; GA4 and PostHog continue independently.
 
 `infinite-tag@0.3.1` maps each valid `data-download-location` marker through its package-owned click listener into the bounded `cta_location` property on `app_download_click`, alongside `destination_path: "/download"`. A small GA4 bridge applies the same bounded properties to one `app_download_clicked` event.
 

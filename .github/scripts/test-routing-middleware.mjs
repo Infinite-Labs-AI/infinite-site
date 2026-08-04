@@ -35,7 +35,7 @@ const excluded = [
   request("https://infinite.fast/fonts/site.woff2"),
   request("https://infinite.fast/logos/infinite.svg"),
   request("https://infinite.fast/ingest/e"),
-  request("https://infinite.fast/infinite/events/collect"),
+  request("https://infinite.fast/infinite/ledger"),
   request("https://infinite.fast/api/csp-report"),
   request("https://infinite.fast/favicon-32.png"),
   request("https://infinite.fast/robots.txt"),

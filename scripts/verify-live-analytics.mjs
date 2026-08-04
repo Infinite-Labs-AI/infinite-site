@@ -133,7 +133,7 @@ function checkPage(label, html, failures) {
   const runtimes = html.match(/data-infinite-runtime=["']managed["']/g) ?? [];
   if (runtimes.length !== 1) fail(`found ${runtimes.length} Infinite managed runtimes; expected exactly 1`);
   if (/data-infinite-consent-controller=["']managed["']/.test(html)) fail("live bytes still contain the retired consent controller");
-  if (!html.includes('"collectPath":"/infinite/events/collect"')) fail("shared runtime does not use the same-origin Infinite collect path");
+  if (!html.includes('"collectPath":"/infinite/ledger"')) fail("shared runtime does not use the same-origin Infinite collect path");
   if (!html.includes('"consent":{"mode":"not_required"}')) fail("Infinite browser collection is still consent-gated");
   if (EXPECTED_INFINITE_SITE_SOURCE_KEY && !html.includes(`"siteSourceKey":"${escapeJsonForHtmlSearch(EXPECTED_INFINITE_SITE_SOURCE_KEY)}"`)) {
     fail(`managed runtime does not contain expected production siteSourceKey ${maskIdentifier(EXPECTED_INFINITE_SITE_SOURCE_KEY)}`);
@@ -259,7 +259,7 @@ async function checkSyntheticReceipts(failures) {
     siteSourceKey: SYNTHETIC_SITE_SOURCE_KEY,
   };
   try {
-    const response = await fetch(`${SITE_BASE_URL}/infinite/events/collect`, {
+    const response = await fetch(`${SITE_BASE_URL}/infinite/ledger`, {
       method: "POST",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       headers: { "content-type": "application/json", Origin: SITE_BASE_URL },

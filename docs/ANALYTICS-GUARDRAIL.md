@@ -11,7 +11,7 @@ For every maintained relative main-site path, `scripts/verify-live-analytics.mjs
 - exactly one PostHog initialization using the expected public token and `/ingest` proxy;
 - one direct Google tag loader definition with the expected measurement id;
 - GA4's normal direct config plus an explicit `app_download_clicked` event for `/download`, with no `/gtm` loader or `transport_url`;
-- the exact same-origin `/infinite/events/collect` runtime path;
+- the exact same-origin `/infinite/ledger` runtime path;
 - Infinite browser collection configured as `not_required`, so a missing consent value cannot suppress clicks;
 - the expected production `siteSourceKey` when `EXPECTED_INFINITE_SITE_SOURCE_KEY` is configured;
 - no legacy `/tracking` or `/sdk` bytes and 404/405 responses from representative legacy route probes;
@@ -21,7 +21,7 @@ For every maintained relative main-site path, `scripts/verify-live-analytics.mjs
 
 When the separately approved synthetic configuration is enabled, the same job also:
 
-1. generates a UUID and posts `site_page_view` through `https://infinite.fast/infinite/events/collect` with the dedicated synthetic source key and apex `Origin`;
+1. generates a UUID and posts `site_page_view` through `https://infinite.fast/infinite/ledger` with the dedicated synthetic source key and apex `Origin`;
 2. requires `202`, polls the authenticated diagnostic route, and requires a matching `environment=synthetic` receipt;
 3. submits an HMAC-signed mixed Drain batch shaped like Vercel Log Drain JSON, containing valid document/redirect records plus schema-valid `HEAD`, asset, bot/prefetch, wrong-project, and wrong-host records; and
 4. requires only the valid synthetic document and redirect receipts.

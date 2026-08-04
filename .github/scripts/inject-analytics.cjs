@@ -41,7 +41,7 @@ void (async () => {
   const ga4 = googleAnalyticsSnippet(process.env.GOOGLE_ANALYTICS_TAG_ID);
   const runtime = renderInfiniteBrowserTag({
     ...(siteSourceKey ? { siteSourceKey } : {}),
-    collectPath: "/infinite/events/collect",
+    collectPath: "/infinite/ledger",
     productionHosts,
     respectDnt: true,
     consent: { mode: "not_required" },
@@ -107,8 +107,10 @@ function parseSourceArtifact(value) {
   if (!Array.isArray(artifact.productionHosts) || artifact.productionHosts.length === 0) {
     throw new Error("INFINITE_SITE_SOURCE_ARTIFACT requires non-empty productionHosts.");
   }
-  if (artifact.collectPath !== "/infinite/events/collect") {
-    throw new Error("INFINITE_SITE_SOURCE_ARTIFACT collectPath must be /infinite/events/collect.");
+  // The provisioned artifact env may still carry the pre-rename path; both bind the same
+  // server route. The rendered runtime always uses the NEW path.
+  if (artifact.collectPath !== "/infinite/ledger" && artifact.collectPath !== "/infinite/events/collect") {
+    throw new Error("INFINITE_SITE_SOURCE_ARTIFACT collectPath must be /infinite/ledger.");
   }
   if (artifact.staticProxy !== "vercel") {
     throw new Error("INFINITE_SITE_SOURCE_ARTIFACT staticProxy must be vercel.");
