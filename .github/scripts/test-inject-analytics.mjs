@@ -18,7 +18,7 @@ const downloadLocations = ["navigation", "hero", "pricing", "final-cta"];
 
 const sourceArtifact = (siteSourceKey, productionHosts) => JSON.stringify({
   siteSourceKey,
-  collectPath: "/infinite/events/collect",
+  collectPath: "/infinite/ledger",
   productionHosts,
   staticProxy: "vercel",
 });
@@ -72,7 +72,7 @@ try {
     assert.match(html, /event_timeout:\s*1000/);
     assert.match(html, /send_to:\s*"G-TEST1234"/);
     assert.match(html, /setTimeout\(follow, 1000\)/);
-    assert.match(html, /"collectPath":"\/infinite\/events\/collect"/);
+    assert.match(html, /"collectPath":"\/infinite\/ledger"/);
     assert.match(html, /"siteSourceKey":"site_synthetic_test"/);
     assert.match(html, /"productionHosts":\["infinite\.fast","www\.infinite\.fast"\]/);
     assert.doesNotMatch(html, /appDownloadTrackingSnippet|link_text|textContent/);

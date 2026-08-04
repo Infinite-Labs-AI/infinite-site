@@ -35,7 +35,7 @@ Export or inspect the saved Drain after configuration and retain a redacted snap
 
 Before activation, use a dedicated source whose immutable server-owned ingest environment is `synthetic`.
 
-1. POST a browser `site_page_view` through `https://infinite.fast/infinite/events/collect` with `Origin: https://infinite.fast`; require `202` and a matching authenticated receipt by event UUID. A direct API-host POST does not prove the Vercel rewrite.
+1. POST a browser `site_page_view` through `https://infinite.fast/infinite/ledger` with `Origin: https://infinite.fast`; require `202` and a matching authenticated receipt by event UUID. A direct API-host POST does not prove the Vercel rewrite.
 2. Submit one signed mixed Drain batch containing a valid document marker, a valid `/download` redirect, `HEAD`, asset, prefetch/bot, wrong-project, and wrong-host records. Require only the valid synthetic document and redirect receipts.
 3. Confirm every receipt is `environment=synthetic`, excluded from production aggregates, unable to set the production source's first-receipt timestamp, and unable to advance readiness.
 4. Probe the native `/download` redirect with a bot-classified guardrail user agent so the live check does not create a production redirect metric.

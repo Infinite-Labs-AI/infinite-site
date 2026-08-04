@@ -51,7 +51,7 @@ assert.match(robots, /Sitemap:\s+https:\/\/infinite\.fast\/sitemap\.xml/);
 
 const generatedAnalytics = renderInfiniteBrowserTag({
   siteSourceKey: "site_audit_fixture",
-  collectPath: "/infinite/events/collect",
+  collectPath: "/infinite/ledger",
   productionHosts: ["infinite.fast"],
   respectDnt: true,
   consent: { mode: "not_required" },

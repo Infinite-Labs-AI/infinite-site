@@ -45,7 +45,7 @@ const server = createServer(async (request, response) => {
     response.end("not found");
     return;
   }
-  if (url.pathname === "/infinite/events/collect" && request.method === "POST") {
+  if (url.pathname === "/infinite/ledger" && request.method === "POST") {
     collectRequests += 1;
     observedCollectOrigin = request.headers.origin;
     const payload = JSON.parse(await body(request));
@@ -120,7 +120,7 @@ const server = createServer(async (request, response) => {
     <meta property="og:url" content="${canonical}">
     <script>posthog.init("phc_test", { api_host: "/ingest" });</script>
     <script>var ga = "https://www.googletagmanager.com/gtag/js?id=G-TEST"; gtag("config", "G-TEST"); document.addEventListener("click", function (event) { var anchor = event.target.closest("a[href]"); var destination = new URL(anchor.href); if (destination.pathname === "/download") gtag("event", "app_download_clicked", { cta_location: "hero", destination_path: "/download", event_callback: function () {}, event_timeout: 1000 }); });</script>
-    <script data-infinite-runtime="managed">var runtimeConfig = {${runtimeSiteSourceKey ? `"siteSourceKey":"${runtimeSiteSourceKey}",` : ""}"collectPath":"/infinite/events/collect","consent":{"mode":"not_required"}};</script>
+    <script data-infinite-runtime="managed">var runtimeConfig = {${runtimeSiteSourceKey ? `"siteSourceKey":"${runtimeSiteSourceKey}",` : ""}"collectPath":"/infinite/ledger","consent":{"mode":"not_required"}};</script>
   </head><body></body></html>`);
 });
 

@@ -67,9 +67,9 @@ assert.equal(
   "GA4 must not use the unproven /gtm relative transport proxy",
 );
 assert.deepEqual(
-  rewrites.find((rewrite) => rewrite.source === "/infinite/events/collect"),
+  rewrites.find((rewrite) => rewrite.source === "/infinite/ledger"),
   {
-    source: "/infinite/events/collect",
+    source: "/infinite/ledger",
     destination: "https://api.ultima.inc/api/analytics/events/collect",
   },
   "Infinite browser events must use the exact same-origin public collect rewrite",
