@@ -82,18 +82,18 @@ assert.equal(packageJson.private, true);
 assert.equal(packageJson.type, "module");
 assert.deepEqual(packageJson.devDependencies, {
   "@vercel/functions": "3.7.6",
-  "infinite-tag": "0.3.4",
+  "infinite-tag": "0.3.5",
 });
 const packageLock = JSON.parse(read("package-lock.json"));
-assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.3.4");
-assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.3.4");
+assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.3.5");
+assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.3.5");
 assert.equal(
   packageLock.packages["node_modules/infinite-tag"].resolved,
-  "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.3.4.tgz",
+  "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.3.5.tgz",
 );
 assert.equal(
   packageLock.packages["node_modules/infinite-tag"].integrity,
-  "sha512-JaDY6INsyw6U1H0VITiWcZ6e7nxP/H2Iooy1Z7IScVyaYbO9VFqGZwSBYfQNhXe/+eUEBxCCflWtA/SVZD2x1Q==",
+  "sha512-O67P+0iAK7J1EjQVz3W4B2beInlsEP1psvsmzXLGKVYTgTOxI0NQj+gRevhHyNyEJM4eKlWIL+n1wi+zyIdp/w==",
 );
 assert.match(read(".gitignore"), /^node_modules\/$/m);
 
