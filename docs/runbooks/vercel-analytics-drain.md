@@ -1,6 +1,6 @@
 # Vercel analytics Drain runbook
 
-Status: prepared but disabled. This repository change does not create a site source, configure or activate a Drain, change Vercel variables, deploy, or create a production receipt. Activation is prohibited until the Task 14 privacy gate and coordinated Task 15 release are explicitly approved.
+Status: **ACTIVE in production since 2026-08-02** (drain `Infinite first-party analytics - infinite.fast production`, sources `["edge","redirect"]`, environment production, endpoint `/api/analytics/events/vercel-drain`). Live-verified 2026-08-04: `app_download_redirect` and `site_document_request` rows flow end-to-end; the document lane is gated by the middleware's `KNOWN_DOCUMENT_PATHS` manifest (404s/scanners excluded, CI-enforced). The activation-gating language below is retained as the historical procedure that was followed.
 
 Gate receipt status: Founder/counsel approval is pending, and processor and platform retention receipts are pending.
 
