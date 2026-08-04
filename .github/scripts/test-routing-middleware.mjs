@@ -3,10 +3,22 @@ import assert from "node:assert/strict";
 process.env.INFINITE_PRODUCTION_HOSTS = "infinite.fast,www.infinite.fast";
 process.env.VERCEL_ENV = "production";
 
-const { default: middleware, config } = await import("../../middleware.js");
+const { default: middleware, config, KNOWN_DOCUMENT_PATHS } = await import("../../middleware.js");
 
 assert.equal(config.runtime, "edge");
 assert.deepEqual(config.matcher, ["/((?!api/|assets/|fonts/|logos/|ingest/|infinite/).*)"]);
+
+// The manifest is the single source of truth for what counts as a real document.
+// test-prepare-static-deploy.mjs asserts it matches the built dist page set exactly.
+assert.ok(KNOWN_DOCUMENT_PATHS instanceof Set && KNOWN_DOCUMENT_PATHS.size > 0, "middleware must export the document manifest");
+assert.ok(KNOWN_DOCUMENT_PATHS.has("/"), "the homepage must be a known document");
+for (const path of KNOWN_DOCUMENT_PATHS) {
+  assert.deepEqual(
+    run(request(`https://infinite.fast${path}`)),
+    [marker(path)],
+    `manifest path ${path} must emit one marker for a browser document navigation`,
+  );
+}
 
 const canonicalFixtures = [
   ["https://infinite.fast/", "/"],
@@ -49,6 +61,15 @@ const excluded = [
   request("https://infinite.fast/privacy", { headers: { "user-agent": "curl/8.0" } }),
   request("https://preview-branch.vercel.app/privacy"),
   request("https://attacker.example/privacy"),
+  // Paths that do not exist must never count as pageviews, even with perfectly
+  // browser-shaped headers — the middleware logs before routing and production drain
+  // records carry no usable status, so the manifest is the only 404/scanner filter.
+  request("https://infinite.fast/definitely-not-a-real-page-xyz"),
+  request("https://infinite.fast/wp-admin/"),
+  request("https://infinite.fast/wp-admin/setup-config.php"),
+  request("https://infinite.fast/compare/infinite-vs-nonexistent/"),
+  request("https://infinite.fast/privacy/anything-nested/"),
+  request("https://infinite.fast/index.html"),
 ];
 
 for (const fixture of excluded) assert.deepEqual(run(fixture), [], `${fixture.method} ${fixture.url} must not emit`);

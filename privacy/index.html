@@ -336,13 +336,23 @@
         <ul>
           <li><strong>Browser events:</strong> Infinite receives page views, structural CTA clicks, and clicks on the same-origin download route. Google Analytics and PostHog receive page views and interaction events under their configured terms. Infinite's public event envelope does not contain query strings, link text, DOM text, workspace identity, source authority, or environment choice.</li>
           <li><strong>Browser storage:</strong> Infinite uses a random visitor identifier in local storage and a random session identifier in session storage. PostHog, Google Analytics, and configured campaign pixels may use their own cookies or browser storage under their published terms.</li>
-          <li><strong>Privacy signals:</strong> when the browser exposes Do Not Track or Global Privacy Control, the Infinite first-party browser runtime suppresses its browser events. Other providers apply their own controls and may also be blocked by browser settings or extensions.</li>
+          <li><strong>Privacy signals:</strong> when the browser exposes Do Not Track or Global Privacy Control, the Infinite first-party browser runtime suppresses its browser events, and Google Analytics, PostHog, and any configured campaign pixels do not initialize unless you grant analytics through the on-site prompt. A saved denial keeps all of them off. Providers may additionally be blocked by browser settings or extensions.</li>
           <li><strong>Server observations:</strong> server collection uses Vercel production document-request and <code>/download</code> redirect logs. This request/redirect collection is not controlled by browser settings because the server necessarily receives a request in order to serve or redirect it. Known bots and previews are filtered, and this lane remains separate from browser views.</li>
           <li><strong>Purpose:</strong> site reliability, aggregate audience measurement, conversion analysis, and comparison of the three browser providers during the shadow period.</li>
           <li><strong>Accuracy:</strong> no analytics system captures mathematically 100% of people. Browser blocking, privacy signals, bots, network delivery, and provider processing can produce different totals.</li>
         </ul>
 
         <p>Raw website ledger events are retained for <strong>90 days</strong> and daily first-party aggregates for <strong>25 months</strong>. Provider-side Google Analytics and PostHog data follows the retention configured for those services and their processor terms. Current website processors include Vercel for hosting and Drain delivery, our database/cloud infrastructure providers for the first-party ledger, PostHog, and Google Analytics. X and Meta are additional processors only when their optional pixels are configured.</p>
+
+        <p>You can review or change a saved analytics decision for this website at any time:</p>
+
+        <p><button type="button" id="manage-analytics-preferences" style="padding:10px 18px;border:1px solid var(--line-strong);border-radius:8px;background:rgba(240,246,252,0.06);color:var(--text);font:inherit;font-size:14px;cursor:pointer;">Manage analytics preferences</button></p>
+
+        <script>
+          document.getElementById("manage-analytics-preferences").addEventListener("click", function () {
+            if (typeof window.infinitePrivacyChoices === "function") window.infinitePrivacyChoices();
+          });
+        </script>
 
         <h2>6. Hosted features and AI sub-processors</h2>
 

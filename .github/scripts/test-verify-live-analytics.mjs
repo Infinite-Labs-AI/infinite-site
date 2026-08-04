@@ -118,8 +118,10 @@ const server = createServer(async (request, response) => {
   response.end(`<!doctype html><html><head>
     <link rel="canonical" href="${canonical}">
     <meta property="og:url" content="${canonical}">
-    <script>posthog.init("phc_test", { api_host: "/ingest" });</script>
-    <script>var ga = "https://www.googletagmanager.com/gtag/js?id=G-TEST"; gtag("config", "G-TEST"); document.addEventListener("click", function (event) { var anchor = event.target.closest("a[href]"); var destination = new URL(anchor.href); if (destination.pathname === "/download") gtag("event", "app_download_clicked", { cta_location: "hero", destination_path: "/download", event_callback: function () {}, event_timeout: 1000 }); });</script>
+    <script>window.__infiniteConsentGate = function (start) { start(); };</script>
+    <script>window.__infiniteConsentGate(function () { posthog.init("phc_test", { api_host: "/ingest" }); });</script>
+    <script>var ga = "https://www.googletagmanager.com/gtag/js?id=G-TEST"; gtag("config", "G-TEST"); document.addEventListener("click", function (event) { var anchor = event.target.closest("a[href]"); var destination = new URL(anchor.href); if (destination.pathname !== "/download") return; if (typeof window.gtag !== "function") return; gtag("event", "app_download_clicked", { cta_location: "hero", destination_path: "/download", event_callback: function () {}, event_timeout: 1000 }); });</script>
+    <script>window.infinitePrivacyChoices = function () {};</script>
     <script data-infinite-runtime="managed">var runtimeConfig = {${runtimeSiteSourceKey ? `"siteSourceKey":"${runtimeSiteSourceKey}",` : ""}"collectPath":"/infinite/ledger","consent":{"mode":"not_required"}};</script>
   </head><body></body></html>`);
 });
