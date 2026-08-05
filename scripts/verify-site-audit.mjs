@@ -3,15 +3,32 @@ import { readFileSync } from "node:fs";
 import { renderInfiniteBrowserTag } from "infinite-tag";
 
 const origin = "https://infinite.fast";
+const toolRoutes = [
+  "/tools/high-intent-lead-finder-template/",
+  "/tools/seo-geo-brief-generator/",
+  "/tools/landing-page-ab-test-ideas-generator/",
+  "/tools/founder-content-ideas-generator/",
+  "/tools/meta-tag-generator/",
+  "/tools/product-title-generator/",
+  "/tools/break-even-roas-calculator/",
+  "/tools/profit-margin-calculator/",
+  "/tools/creative-brief-builder/",
+  "/tools/marketing-planner-template/",
+  "/tools/seo-content-roi-calculator/",
+  "/tools/competitor-alternative-brief-generator/",
+  "/tools/landing-page-conversion-scorecard/",
+  "/tools/content-cluster-generator/",
+  "/tools/customer-acquisition-bottleneck-finder/",
+  "/tools/internal-linking-map-generator/",
+  "/tools/founder-linkedin-bio-generator/",
+  "/tools/go-to-market-plan-generator/",
+];
 const pages = [
   ["/", "_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html"],
   ["/privacy/", "privacy/index.html"],
   ["/terms/", "terms/index.html"],
   ["/tools/", "tools/index.html"],
-  ["/tools/high-intent-lead-finder-template/", "tools/high-intent-lead-finder-template/index.html"],
-  ["/tools/seo-geo-brief-generator/", "tools/seo-geo-brief-generator/index.html"],
-  ["/tools/landing-page-ab-test-ideas-generator/", "tools/landing-page-ab-test-ideas-generator/index.html"],
-  ["/tools/founder-content-ideas-generator/", "tools/founder-content-ideas-generator/index.html"],
+  ...toolRoutes.map((route) => [route, `${route.slice(1)}index.html`]),
   ["/compare/", "compare/index.html"],
   ["/compare/infinite-vs-okara/", "compare/infinite-vs-okara/index.html"],
   ["/compare/infinite-vs-ploy/", "compare/infinite-vs-ploy/index.html"],
@@ -70,7 +87,7 @@ assert.match(homepage, /Meet Infinite, your AI CMO/i);
 assert.match(homepage, /Find leads, automate SEO, A\/B test landing pages, and uncover trending content\./i);
 assert.match(homepage, /review-first/i);
 
-const toolFiles = pages.slice(4, 8).map(([, file]) => file);
+const toolFiles = toolRoutes.map((route) => `${route.slice(1)}index.html`);
 for (const file of toolFiles) {
   const html = readFileSync(file, "utf8");
   assert.ok((html.match(/<h2\b/gi) || []).length >= 3, `${file} needs at least three H2 sections`);
@@ -85,7 +102,11 @@ for (const event of ["tool_started", "tool_generated", "result_copied", "downloa
   assert.match(toolScript, new RegExp(event), `tool analytics must emit ${event}`);
 }
 
-const comparisonFiles = pages.slice(9).map(([, file]) => file);
+const comparisonFiles = [
+  "compare/infinite-vs-okara/index.html",
+  "compare/infinite-vs-ploy/index.html",
+  "compare/infinite-vs-blaze/index.html",
+];
 for (const file of comparisonFiles) {
   const html = readFileSync(file, "utf8");
   assert.ok((html.match(/<h2\b/gi) || []).length >= 4, `${file} needs at least four H2 sections`);
