@@ -556,45 +556,6 @@ html[data-scheme="wrangle"] .wrangle-product-wrap::after {
   pointer-events: none;
 }
 
-html[data-scheme="wrangle"] .wrangle-orbit {
-  position: absolute;
-  z-index: 0;
-  top: 0;
-  left: 50%;
-  width: 340px;
-  height: 90px;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-html[data-scheme="wrangle"] .wrangle-orbit span {
-  position: absolute;
-  bottom: 0;
-  width: 118px;
-  height: 78px;
-  border: 1px dashed rgba(255, 255, 255, 0.78);
-  border-bottom: 0;
-  border-radius: 999px 999px 0 0;
-  animation: wrangle-orbit 4s ease-in-out infinite;
-}
-
-html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(1) {
-  left: 20px;
-  transform: rotate(-18deg);
-}
-
-html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(2) {
-  left: 112px;
-  height: 96px;
-  animation-delay: 0.6s;
-}
-
-html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(3) {
-  right: 20px;
-  transform: rotate(18deg);
-  animation-delay: 1.2s;
-}
-
 html[data-scheme="wrangle"] .wrangle-product {
   position: relative;
   z-index: 1;
@@ -1124,31 +1085,6 @@ html[data-scheme="wrangle"] .wrangle-proof-icon {
   html[data-scheme="wrangle"] .wrangle-product-wrap::after {
     background-size: 32px 32px;
     mask-image: linear-gradient(to bottom, #000 0%, transparent 84%);
-  }
-
-  html[data-scheme="wrangle"] .wrangle-orbit {
-    top: -8px;
-    width: 230px;
-    height: 66px;
-    opacity: 0.74;
-  }
-
-  html[data-scheme="wrangle"] .wrangle-orbit span {
-    width: 82px;
-    height: 54px;
-  }
-
-  html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(1) {
-    left: 14px;
-  }
-
-  html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(2) {
-    left: 74px;
-    height: 66px;
-  }
-
-  html[data-scheme="wrangle"] .wrangle-orbit span:nth-child(3) {
-    right: 14px;
   }
 
   html[data-scheme="wrangle"] .wrangle-product {
@@ -2897,18 +2833,6 @@ html[data-scheme="wrangle"] .lp-fan-badge strong {
   }
   50% {
     box-shadow: 0 0 0 7px rgba(35, 197, 109, 0);
-  }
-}
-
-@keyframes wrangle-orbit {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: translateY(6px) scale(0.98);
-  }
-  50% {
-    opacity: 0.95;
-    transform: translateY(0) scale(1);
   }
 }
 
