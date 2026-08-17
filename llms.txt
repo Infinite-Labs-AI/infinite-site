@@ -4,6 +4,7 @@ Infinite is an AI CMO for founders. It helps create growth systems with agents f
 
 Canonical site: https://infinite.fast/
 Blog: https://blog.infinite.fast/
+Agents: https://infinite.fast/agents/
 Tools: https://infinite.fast/tools/
 Comparisons: https://infinite.fast/compare/
 Download: https://infinite.fast/download
