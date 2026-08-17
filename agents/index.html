@@ -28,11 +28,39 @@
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      "name": "GTM Agents",
-      "url": "https://infinite.fast/agents/",
-      "description": "A directory of local-first go-to-market agents from Infinite.",
-      "publisher": { "@type": "Organization", "name": "Infinite", "url": "https://infinite.fast/" }
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          "@id": "https://infinite.fast/agents/#page",
+          "name": "GTM Agents",
+          "url": "https://infinite.fast/agents/",
+          "description": "A directory of local-first go-to-market agents from Infinite. Each one runs in your own browser, on your own IP, with your own AI keys, and ships as open source.",
+          "isPartOf": { "@type": "WebSite", "name": "Infinite", "url": "https://infinite.fast/" },
+          "publisher": { "@type": "Organization", "name": "Infinite", "url": "https://infinite.fast/" },
+          "mainEntity": { "@id": "https://infinite.fast/agents/#press-agent" }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://infinite.fast/" },
+            { "@type": "ListItem", "position": 2, "name": "Agents", "item": "https://infinite.fast/agents/" }
+          ]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://infinite.fast/agents/#press-agent",
+          "name": "Press Agent",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "macOS",
+          "description": "Get more media opportunities and improve your Domain Rating. It searches AI/tech/media opportunities, ranks them based on relevance, and pitches journalists for you.",
+          "url": "https://infinite.fast/agents/#press-agent",
+          "downloadUrl": "https://www.npmjs.com/package/infinite-press-agent",
+          "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-press-agent",
+          "license": "https://opensource.org/licenses/MIT",
+          "author": { "@type": "Organization", "name": "Infinite Labs", "url": "https://github.com/Infinite-Labs-AI" },
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        }
+      ]
     }
   </script>
 </head>
