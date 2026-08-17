@@ -58,13 +58,38 @@ jobs:
         run: npm ci
 
       - name: Verify local analytics contracts
+        # RUN ALL, THEN FAIL. This was a bare `bash -e` chain, so the FIRST failing script
+        # aborted the step and the remaining checks never executed. A stale doc-wording
+        # assertion in test-static-remediation.mjs therefore silently suppressed every
+        # downstream analytics check for ~2 weeks (2026-08-03 → 08-17) — the alarm built
+        # because "analytics died silently for a month" was itself dead, and nobody could
+        # see it because the log stopped at the first error. Now each script runs and
+        # reports independently; the step fails at the end if ANY of them failed.
         run: |
-          node .github/scripts/test-inject-analytics.mjs
-          node .github/scripts/test-routing-middleware.mjs
-          node .github/scripts/test-static-remediation.mjs
-          node .github/scripts/test-prepare-static-deploy.mjs
-          node .github/scripts/test-csp-report.mjs
-          node .github/scripts/test-verify-live-analytics.mjs
+          set +e
+          failed=""
+          for t in \
+            test-inject-analytics.mjs \
+            test-routing-middleware.mjs \
+            test-static-remediation.mjs \
+            test-prepare-static-deploy.mjs \
+            test-csp-report.mjs \
+            test-verify-live-analytics.mjs
+          do
+            echo "::group::$t"
+            node ".github/scripts/$t"
+            rc=$?
+            echo "::endgroup::"
+            if [ $rc -ne 0 ]; then
+              failed="$failed $t"
+              echo "::error title=Analytics contract failed::$t exited $rc"
+            fi
+          done
+          if [ -n "$failed" ]; then
+            echo "FAILED:$failed"
+            exit 1
+          fi
+          echo "All analytics contract checks passed."
 
       - name: Require a clean reviewed checkout after local verification
         run: |

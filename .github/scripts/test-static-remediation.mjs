@@ -37,6 +37,7 @@ assert.doesNotMatch(sitemap, /https:\/\/www\.infinite\.fast/);
 
 const expectedLastmodByPath = new Map([
   ["/", "2026-07-22"],
+  ["/agents/", "2026-08-17"],
   ["/tools/", "2026-07-22"],
   ["/tools/high-intent-lead-finder-template/", "2026-07-22"],
   ["/tools/seo-geo-brief-generator/", "2026-07-22"],
@@ -145,7 +146,13 @@ const guardrail = read("docs/ANALYTICS-GUARDRAIL.md");
 assert.match(guardrail, /same-origin.*synthetic.*receipt/is);
 assert.match(guardrail, /does not prove.*100%|not.*100% capture/is);
 const drainRunbook = read("docs/runbooks/vercel-analytics-drain.md");
-assert.match(drainRunbook, /disabled.*Task 14.*Task 15/is);
+// The drain went ACTIVE in production 2026-08-02 (site PR #22). This assertion used to pin the
+// pre-activation "disabled pending Task 14/15" wording; that went stale the day the runbook was
+// updated and silently red-lined this whole suite for ~2 weeks. Pin the CURRENT operational truth
+// instead — the runbook must keep declaring live status, not drift back to a gating narrative.
+assert.match(drainRunbook, /Status:\s*\*\*ACTIVE in production since 2026-08-02\*\*/i);
+assert.match(drainRunbook, /site_document_request.*KNOWN_DOCUMENT_PATHS/is);
+// The historical activation procedure is deliberately retained below the status line.
 assert.match(drainRunbook, /Founder\/counsel approval.*pending.*retention receipts.*pending/is);
 const ledgerContract = read("docs/analytics/first-party-ledger-contract.md");
 assert.match(ledgerContract, /95af1293de230506f107ec526f53e132a81de87c/);
