@@ -15,6 +15,7 @@ const PRODUCTION_HOSTS = new Set(
 // HTML page set disagree — update BOTH together when adding or removing a page.
 export const KNOWN_DOCUMENT_PATHS = new Set([
   "/",
+  "/agents/",
   "/compare/",
   "/compare/infinite-vs-blaze/",
   "/compare/infinite-vs-okara/",

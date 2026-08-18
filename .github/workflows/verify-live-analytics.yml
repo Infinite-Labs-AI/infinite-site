@@ -7,18 +7,38 @@
 #  PUBLIC production pages and synthetic end-to-end routes — independent of how
 #  the site is built — and goes RED when the shared runtime or a route breaks.
 #
-#  It runs in three situations:
-#    1. push          — right after main changes. Vercel deploys independently,
-#                       so we sleep ~3 min before reading the live bytes.
-#    2. schedule      — once a day, to catch silent drift that no deploy caused
-#                       (cache expiry, provider changes, a deploy from elsewhere).
+#  TOPOLOGY (split 2026-08-18): two INDEPENDENT jobs, because a local-contract
+#  failure must never hide the production-live truth. The previous single-job
+#  shape skipped the live-route step whenever a local script failed — a stale
+#  doc-wording assertion therefore suppressed every live production check for
+#  ~2 weeks (2026-08-03 → 08-17) while main looked "merely" red:
+#
+#    • local-contracts  — the six repo-local contract scripts, one matrix job
+#                         each (fail-fast: false) so every result is visible
+#                         at a glance. Also runs on pull_request, so a PR shows
+#                         its own contract reds before merge.
+#    • production-live  — live public bytes/routes + synthetic receipts. It has
+#                         NO `needs:` on local-contracts and runs even when they
+#                         are red: a red local contract and a red live route are
+#                         separate incidents, never one opaque job. Not run on
+#                         pull_request (prod does not serve PR code).
+#
+#  Triggers:
+#    1. push             — right after main changes. production-live waits for
+#                          the Vercel production deployment of this exact SHA
+#                          (scripts/wait-for-production-deploy.mjs) instead of
+#                          a blind fixed sleep.
+#    2. schedule         — once a day, to catch silent drift that no deploy
+#                          caused (cache expiry, provider changes, a deploy
+#                          from elsewhere).
 #    3. workflow_dispatch — run it by hand from the Actions tab anytime.
+#    4. pull_request     — local-contracts only.
 #
 #  See docs/ANALYTICS-GUARDRAIL.md for what to do when it fires.
 #
 #  NOTE: push and schedule triggers only fire when THIS file lives on the
-#  repository's default branch (main). On a feature branch it will only be
-#  runnable via workflow_dispatch until merged.
+#  repository's default branch (main). On a feature branch, pull_request covers
+#  the local contracts and workflow_dispatch covers the rest until merged.
 # =============================================================================
 
 name: Verify Live Analytics
@@ -27,6 +47,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
   schedule:
     # Daily at 09:17 UTC. Odd minute to dodge the top-of-hour cron stampede.
     - cron: "17 9 * * *"
@@ -36,14 +57,61 @@ permissions:
   contents: read
 
 concurrency:
-  # Don't let scheduled + post-deploy runs pile up; let any in-flight run finish.
-  group: verify-live-analytics
+  # One group per event+ref: PR runs never queue behind main/scheduled runs,
+  # while scheduled + post-deploy runs still don't pile up on each other.
+  # Let any in-flight run finish; never cancel a live verification midway.
+  group: verify-live-analytics-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  verify:
-    name: Verify analytics build and live receipts
+  local-contracts:
+    name: "Local contract: ${{ matrix.contract }}"
     runs-on: ubuntu-latest
+    strategy:
+      # RUN ALL, REPORT ALL. This check began as a bare `bash -e` chain (the
+      # FIRST failing script aborted the step and hid the rest), was repaired
+      # into a run-all shell loop, and is now a fail-fast:false matrix: every
+      # contract runs in its own job, so one stale assertion can never again
+      # suppress or obscure any other contract's result.
+      fail-fast: false
+      matrix:
+        contract:
+          - test-inject-analytics.mjs
+          - test-routing-middleware.mjs
+          - test-static-remediation.mjs
+          - test-prepare-static-deploy.mjs
+          - test-csp-report.mjs
+          - test-verify-live-analytics.mjs
+    steps:
+      - name: Checkout (for the contract script under test)
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install reviewed analytics dependencies
+        run: npm ci
+
+      - name: Run ${{ matrix.contract }}
+        run: node ".github/scripts/${{ matrix.contract }}"
+
+      - name: Require a clean reviewed checkout after local verification
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+  production-live:
+    name: Verify live production analytics
+    runs-on: ubuntu-latest
+    # Deliberately NOT on pull_request — this job reads the LIVE production
+    # site, which does not serve PR code. And deliberately NO
+    # `needs: local-contracts` — the live production truth must be reported
+    # even when a local contract is red (that exact dependency skip is how the
+    # dead alarm stayed invisible; see the header).
+    if: ${{ github.event_name != 'pull_request' }}
     steps:
       - name: Checkout (for the verifier script + page list)
         uses: actions/checkout@v4
@@ -57,27 +125,27 @@ jobs:
       - name: Install reviewed analytics dependencies
         run: npm ci
 
-      - name: Verify local analytics contracts
-        run: |
-          node .github/scripts/test-inject-analytics.mjs
-          node .github/scripts/test-routing-middleware.mjs
-          node .github/scripts/test-static-remediation.mjs
-          node .github/scripts/test-prepare-static-deploy.mjs
-          node .github/scripts/test-csp-report.mjs
-          node .github/scripts/test-verify-live-analytics.mjs
-
-      - name: Require a clean reviewed checkout after local verification
-        run: |
-          git diff --exit-code
-          test -z "$(git status --porcelain --untracked-files=all)"
-
-      # Vercel builds independently on every push to main. Give that build time
-      # to go live before we read the live bytes. Skipped for schedule/manual
-      # runs, where the site is already settled.
-      - name: Wait for the live deploy to settle (push only)
+      # Vercel builds independently on every push to main. Instead of a blind
+      # fixed sleep, poll for the production deployment whose git SHA equals
+      # this run's commit and require it READY (bounded retries + timeout, and
+      # a hard fail when that deploy terminally failed — live bytes would be
+      # stale). Without a VERCEL_TOKEN secret the script warns loudly and
+      # falls back to the bounded legacy settle wait. Skipped for schedule/
+      # manual runs, where the site is already settled.
+      - name: Wait for the production deploy of this commit (push only)
         if: ${{ github.event_name == 'push' }}
-        run: sleep 180
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+        run: node scripts/wait-for-production-deploy.mjs
 
+      # TODO(pass-2 after source ownership repair): the synthetic-receipt
+      # configuration below (SYNTHETIC_SITE_SOURCE_KEY, ANALYTICS_RECEIPT_*,
+      # SYNTHETIC_DRAIN_*) still targets the Local-workspace sources. That
+      # re-point is DELIBERATELY deferred to guardrail pass 2, after the site
+      # source ownership repair moves collection to the Infinite Site
+      # workspace. Do not re-point it before that repair lands.
       - name: Verify live analytics bytes and routes
         env:
           # Expected values come from repo variables (Settings -> Secrets and
