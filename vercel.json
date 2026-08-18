@@ -94,12 +94,5 @@
       "source": "/ingest/:path(.*)",
       "destination": "https://eu.i.posthog.com/:path"
     }
-  ],
-  "redirects": [
-    {
-      "source": "/download",
-      "destination": "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg",
-      "permanent": false
-    }
   ]
 }
