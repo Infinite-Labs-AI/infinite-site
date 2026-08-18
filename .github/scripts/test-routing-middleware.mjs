@@ -14,7 +14,7 @@ assert.ok(KNOWN_DOCUMENT_PATHS instanceof Set && KNOWN_DOCUMENT_PATHS.size > 0, 
 assert.ok(KNOWN_DOCUMENT_PATHS.has("/"), "the homepage must be a known document");
 for (const path of KNOWN_DOCUMENT_PATHS) {
   assert.deepEqual(
-    run(request(`https://infinite.fast${path}`)),
+    await run(request(`https://infinite.fast${path}`)),
     [marker(path)],
     `manifest path ${path} must emit one marker for a browser document navigation`,
   );
@@ -28,12 +28,12 @@ const canonicalFixtures = [
 ];
 
 for (const [url, expectedPath] of canonicalFixtures) {
-  assert.deepEqual(run(request(url)), [marker(expectedPath)], `${url} should emit one normalized marker`);
+  assert.deepEqual(await run(request(url)), [marker(expectedPath)], `${url} should emit one normalized marker`);
 }
 
-assert.deepEqual(run(request("https://www.infinite.fast/compare")), [marker("/compare/")], "verified www host is counted until redirect-only status is proven");
+assert.deepEqual(await run(request("https://www.infinite.fast/compare")), [marker("/compare/")], "verified www host is counted until redirect-only status is proven");
 assert.deepEqual(
-  run(request("https://infinite.fast/tools", { headers: { "user-agent": "Mozilla/5.0", accept: "text/html" } })),
+  await run(request("https://infinite.fast/tools", { headers: { "user-agent": "Mozilla/5.0", accept: "text/html" } })),
   [marker("/tools/")],
   "browser navigation fallback works when sec-fetch-dest is absent",
 );
@@ -70,10 +70,10 @@ const excluded = [
   request("https://infinite.fast/index.html"),
 ];
 
-for (const fixture of excluded) assert.deepEqual(run(fixture), [], `${fixture.method} ${fixture.url} must not emit`);
+for (const fixture of excluded) assert.deepEqual(await run(fixture), [], `${fixture.method} ${fixture.url} must not emit`);
 
 process.env.VERCEL_ENV = "preview";
-assert.deepEqual(run(request("https://infinite.fast/privacy")), [], "preview environment must not emit");
+assert.deepEqual(await run(request("https://infinite.fast/privacy")), [], "preview environment must not emit");
 process.env.VERCEL_ENV = "production";
 
 // ── Download-attempt marker contract (INFINITE_DOWNLOAD_ATTEMPT_V1) ─────────────────────────
@@ -201,6 +201,32 @@ try {
   const emptyId = await runAsync(request("https://infinite.fast/download?gclid="));
   assert.equal(parseAttempt(emptyId.logs[0]).hasGclid, false, "an empty gclid param is not a click-ID presence");
 
+  // 3c) The DOCUMENT marker's visit fingerprint (the honest server-rate denominator): with the
+  //     key configured, a document navigation carries a hex-64 visitKey computed with the SAME
+  //     HMAC as the attempt marker — the same visitor in the same 30-min bucket produces
+  //     visitKey === attemptKey, which is exactly what makes attempts ÷ visits one grain.
+  const docNav = await runAsync(
+    request("https://infinite.fast/privacy", { headers: { "x-forwarded-for": "203.0.113.7" } }),
+  );
+  const docPayload = JSON.parse(docNav.logs[0].slice("INFINITE_DOCUMENT_REQUEST_V1 ".length));
+  assert.equal(docPayload.path, "/privacy/");
+  assert.match(docPayload.visitKey, /^[a-f0-9]{64}$/, "the document marker must carry a hex-64 visit fingerprint");
+  assert.ok(!docNav.logs[0].includes("203.0.113.7"), "the document marker must never carry the raw client IP");
+  assert.ok(!docNav.logs[0].includes("Mozilla"), "the document marker must never carry the raw user agent");
+  assert.equal(
+    docPayload.visitKey,
+    attempt.attemptKey,
+    "same visitor + bucket must produce visitKey === attemptKey (the same-lane join for the attempt rate)",
+  );
+  // Fingerprint failure fails OPEN: the pageview marker still emits, bare — the completeness
+  // lane never pays for the rate lane.
+  Date.now = () => {
+    throw new Error("visit fingerprint boom");
+  };
+  const docBare = await runAsync(request("https://infinite.fast/privacy"));
+  assert.deepEqual(docBare.logs, [marker("/privacy/")], "a fingerprint failure must still emit the bare document marker");
+  Date.now = () => 1_755_513_000_000;
+
   // 4) Coarse UA families: cli beats bot for curl (both regexes match), and the 307 is served to
   //    every family — delivery never depends on classification (the drain decides what counts).
   const curl = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "curl/8.0" } }));
@@ -256,17 +282,9 @@ function request(url, { method = "GET", headers = {} } = {}) {
   });
 }
 
-function run(req) {
-  const logs = [];
-  const originalLog = console.log;
-  console.log = (...args) => logs.push(args.join(" "));
-  try {
-    const response = middleware(req);
-    assert.ok(response instanceof Response, "middleware must continue with a Vercel Response");
-  } finally {
-    console.log = originalLog;
-  }
-  return logs;
+/** Document paths are async now (the visitKey fingerprint) — await and return logs only. */
+async function run(req) {
+  return (await runAsync(req)).logs;
 }
 
 /** The /download path is async (one Web Crypto HMAC before the marker log) — await it and return

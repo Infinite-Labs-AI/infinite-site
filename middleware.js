@@ -188,6 +188,24 @@ async function downloadResponse(request) {
   return Response.redirect(RELEASE_URL, 307);
 }
 
+/** The document marker, now carrying the SAME 30-min HMAC fingerprint the attempt marker uses
+ *  (`visitKey`) — this is what makes an honest server-lane download rate possible: attempts ÷
+ *  distinct visit keys is deduped-over-deduped at ONE grain with ONE bot gate, where the deleted
+ *  redirect/document "rate" was raw-retries over a scanner-polluted raw count. Fail-open: a
+ *  fingerprint failure (or missing key) costs the visitKey, NEVER the pageview marker — the
+ *  completeness lane always emits. Bounded hex-64; no raw IP/UA ever. */
+async function documentMarkerThenNext(request, path) {
+  let visitKey;
+  try {
+    const secret = process.env.INFINITE_ATTEMPT_FINGERPRINT_KEY;
+    if (secret) visitKey = await attemptKey(secret, request);
+  } catch {
+    // Fail open — same rule as the attempt marker.
+  }
+  console.log(`INFINITE_DOCUMENT_REQUEST_V1 ${JSON.stringify({ path, ...(visitKey ? { visitKey } : {}) })}`);
+  return next();
+}
+
 export default function middleware(request) {
   const path = normalizedPath(request.url);
   if (path === "/download") {
@@ -200,9 +218,7 @@ export default function middleware(request) {
     if (isProductionDownloadGet(request)) return downloadResponse(request);
     return next();
   }
-  if (isProductionDocumentNavigation(request, path)) {
-    console.log(`INFINITE_DOCUMENT_REQUEST_V1 ${JSON.stringify({ path })}`);
-  }
+  if (isProductionDocumentNavigation(request, path)) return documentMarkerThenNext(request, path);
   return next();
 }
 
