@@ -77,31 +77,50 @@ assert.deepEqual(run(request("https://infinite.fast/privacy")), [], "preview env
 process.env.VERCEL_ENV = "production";
 
 // ── Download-attempt marker contract (INFINITE_DOWNLOAD_ATTEMPT_V1) ─────────────────────────
-// /download is handled on its own async path: the marker is computed (one HMAC), logged, and the
-// middleware ALWAYS passes through to the native vercel.json redirect — analytics can never block
-// delivery. Without the fingerprint key the lane fails OPEN: no marker, one diagnostic per isolate.
+// LIVE-TEST FINDING (2026-08-18): Vercel executes the vercel.json /download redirect BEFORE edge
+// middleware on this static deployment, so the middleware now SERVES the 307 itself for
+// production GET /download — marker first (fail-open), then Response.redirect. vercel.json keeps
+// the same redirect as the fail-open backstop for every request shape the middleware passes
+// through (non-production, foreign host, HEAD/POST) or any middleware outage.
 
-// 1) Fail-open without INFINITE_ATTEMPT_FINGERPRINT_KEY: first call logs ONE shape diagnostic,
-//    later calls log nothing, and the response is always an ordinary passthrough.
+const RELEASE_URL =
+  "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
+
+function assertServedRedirect(response) {
+  assert.equal(response.status, 307, "production GET /download must be answered by the middleware with a 307");
+  assert.equal(response.headers.get("location"), RELEASE_URL, "the middleware 307 must target the exact vercel.json backstop destination");
+}
+
+function assertPassthrough(response) {
+  assert.equal(response.headers.get("location"), null, "a passthrough must not redirect (the vercel.json backstop owns it)");
+  assert.notEqual(response.status, 307, "a passthrough must not be the served 307");
+}
+
+// 1) Fail-open without INFINITE_ATTEMPT_FINGERPRINT_KEY: the 307 STILL returns from middleware;
+//    first call logs ONE shape diagnostic, later calls log nothing.
 delete process.env.INFINITE_ATTEMPT_FINGERPRINT_KEY;
-assert.deepEqual(
-  await runAsync(request("https://infinite.fast/download")),
-  ['INFINITE_DOWNLOAD_ATTEMPT_DIAG {"reason":"missing_fingerprint_key"}'],
-  "missing fingerprint key must fail open with exactly one diagnostic",
-);
-assert.deepEqual(
-  await runAsync(request("https://infinite.fast/download")),
-  [],
-  "the missing-key diagnostic must log once per isolate, never per request",
-);
+{
+  const first = await runAsync(request("https://infinite.fast/download"));
+  assertServedRedirect(first.response);
+  assert.deepEqual(
+    first.logs,
+    ['INFINITE_DOWNLOAD_ATTEMPT_DIAG {"reason":"missing_fingerprint_key"}'],
+    "missing fingerprint key must fail open with exactly one diagnostic",
+  );
+  const second = await runAsync(request("https://infinite.fast/download"));
+  assertServedRedirect(second.response);
+  assert.deepEqual(second.logs, [], "the missing-key diagnostic must log once per isolate, never per request");
+}
 
-// 2) With the key: a browser GET /download emits exactly one bounded attempt marker.
+// 2) With the key: a browser GET /download gets the served 307 AND exactly one bounded marker.
 process.env.INFINITE_ATTEMPT_FINGERPRINT_KEY = "contract-test-fingerprint-key";
 const originalNow = Date.now;
 Date.now = () => 1_755_513_000_000; // pin the 30-minute bucket so attemptKey is deterministic
 
 try {
-  const [attemptLine] = await runAsync(request("https://infinite.fast/download", { headers: { "x-forwarded-for": "203.0.113.7" } }));
+  const served = await runAsync(request("https://infinite.fast/download", { headers: { "x-forwarded-for": "203.0.113.7" } }));
+  assertServedRedirect(served.response);
+  const [attemptLine] = served.logs;
   const attempt = parseAttempt(attemptLine);
   assert.match(attempt.attemptKey, /^[a-f0-9]{64}$/, "attemptKey must be an HMAC-SHA256 hex digest");
   assert.equal(attempt.uaFamily, "browser");
@@ -116,54 +135,76 @@ try {
 
   // Deterministic within one fingerprint bucket: same IP + UA → the same attemptKey (this is the
   // dedupe key — the drain derives the ledger event id from it).
-  const [repeatLine] = await runAsync(request("https://infinite.fast/download", { headers: { "x-forwarded-for": "203.0.113.7" } }));
-  assert.equal(parseAttempt(repeatLine).attemptKey, attempt.attemptKey, "same browser + bucket must produce the same attemptKey");
+  const repeat = await runAsync(request("https://infinite.fast/download", { headers: { "x-forwarded-for": "203.0.113.7" } }));
+  assertServedRedirect(repeat.response);
+  assert.equal(parseAttempt(repeat.logs[0]).attemptKey, attempt.attemptKey, "same browser + bucket must produce the same attemptKey");
 
   // A different browser (UA) in the same bucket is a different attempt.
-  const [otherUaLine] = await runAsync(
+  const otherUa = await runAsync(
     request("https://infinite.fast/download", {
       headers: { "x-forwarded-for": "203.0.113.7", "user-agent": "Mozilla/5.0 (Windows NT 10.0)" },
     }),
   );
-  assert.notEqual(parseAttempt(otherUaLine).attemptKey, attempt.attemptKey, "a different UA must produce a different attemptKey");
+  assert.notEqual(parseAttempt(otherUa.logs[0]).attemptKey, attempt.attemptKey, "a different UA must produce a different attemptKey");
 
   // A later 30-minute bucket is a different attempt.
   Date.now = () => 1_755_513_000_000 + 30 * 60 * 1000;
-  const [laterLine] = await runAsync(request("https://infinite.fast/download", { headers: { "x-forwarded-for": "203.0.113.7" } }));
-  assert.notEqual(parseAttempt(laterLine).attemptKey, attempt.attemptKey, "a later bucket must produce a different attemptKey");
+  const later = await runAsync(request("https://infinite.fast/download", { headers: { "x-forwarded-for": "203.0.113.7" } }));
+  assert.notEqual(parseAttempt(later.logs[0]).attemptKey, attempt.attemptKey, "a later bucket must produce a different attemptKey");
   Date.now = () => 1_755_513_000_000;
 
   // 3) Bounded context: normalized UTM tokens + referrer host ride along; free-text UTMs are
-  //    dropped to null (never stored), and /download/ canonicalizes onto the same path.
-  const [utmLine] = await runAsync(
+  //    dropped to null (never stored), and /download/ canonicalizes onto the same served path.
+  const utm = await runAsync(
     request("https://infinite.fast/download/?utm_source=Newsletter&utm_medium=email&utm_campaign=launch-week&junk=1", {
       headers: { "x-forwarded-for": "203.0.113.7", referer: "https://blog.infinite.fast/some-post/" },
     }),
   );
-  const utmAttempt = parseAttempt(utmLine);
+  assertServedRedirect(utm.response);
+  const utmAttempt = parseAttempt(utm.logs[0]);
   assert.equal(utmAttempt.utmSource, "newsletter");
   assert.equal(utmAttempt.utmMedium, "email");
   assert.equal(utmAttempt.utmCampaign, "launch-week");
   assert.equal(utmAttempt.referrerHost, "blog.infinite.fast");
-  const [freeTextLine] = await runAsync(
+  const freeText = await runAsync(
     request("https://infinite.fast/download?utm_source=free%20text%20with%20spaces!"),
   );
-  assert.equal(parseAttempt(freeTextLine).utmSource, null, "free-text UTM values must drop to null, never ship");
+  assert.equal(parseAttempt(freeText.logs[0]).utmSource, null, "free-text UTM values must drop to null, never ship");
 
-  // 4) Coarse UA families: cli beats bot for curl (both regexes match), empty UA is unknown —
-  //    the marker still logs (the drain flags non-browser families; rollups exclude them).
-  const [curlLine] = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "curl/8.0" } }));
-  assert.equal(parseAttempt(curlLine).uaFamily, "cli");
-  const [botLine] = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "Googlebot/2.1" } }));
-  assert.equal(parseAttempt(botLine).uaFamily, "bot");
+  // 4) Coarse UA families: cli beats bot for curl (both regexes match), and the 307 is served to
+  //    every family — delivery never depends on classification (the drain decides what counts).
+  const curl = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "curl/8.0" } }));
+  assertServedRedirect(curl.response);
+  assert.equal(parseAttempt(curl.logs[0]).uaFamily, "cli");
+  const bot = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "Googlebot/2.1" } }));
+  assert.equal(parseAttempt(bot.logs[0]).uaFamily, "bot");
 
-  // 5) Non-qualifying /download requests emit nothing: wrong method, preview env, foreign host.
-  assert.deepEqual(await runAsync(request("https://infinite.fast/download", { method: "HEAD" })), [], "HEAD must not emit");
-  assert.deepEqual(await runAsync(request("https://infinite.fast/download", { method: "POST" })), [], "POST must not emit");
+  // 5) A marker failure must NOT cost the redirect: force the marker path to throw (Date.now is
+  //    inside the fingerprint computation) — the 307 still returns, with no marker logged.
+  Date.now = () => {
+    throw new Error("marker boom");
+  };
+  const broken = await runAsync(request("https://infinite.fast/download"));
+  assertServedRedirect(broken.response);
+  assert.deepEqual(broken.logs, [], "a throwing marker path must stay silent and still serve the 307");
+  Date.now = () => 1_755_513_000_000;
+
+  // 6) Non-qualifying /download requests PASS THROUGH to the vercel.json backstop and emit
+  //    nothing: wrong method, preview env, foreign host.
+  const head = await runAsync(request("https://infinite.fast/download", { method: "HEAD" }));
+  assertPassthrough(head.response);
+  assert.deepEqual(head.logs, [], "HEAD must not emit");
+  const post = await runAsync(request("https://infinite.fast/download", { method: "POST" }));
+  assertPassthrough(post.response);
+  assert.deepEqual(post.logs, [], "POST must not emit");
   process.env.VERCEL_ENV = "preview";
-  assert.deepEqual(await runAsync(request("https://infinite.fast/download")), [], "preview env must not emit an attempt");
+  const preview = await runAsync(request("https://infinite.fast/download"));
+  assertPassthrough(preview.response);
+  assert.deepEqual(preview.logs, [], "preview env must not emit an attempt");
   process.env.VERCEL_ENV = "production";
-  assert.deepEqual(await runAsync(request("https://attacker.example/download")), [], "foreign host must not emit an attempt");
+  const foreign = await runAsync(request("https://attacker.example/download"));
+  assertPassthrough(foreign.response);
+  assert.deepEqual(foreign.logs, [], "foreign host must not emit an attempt");
 } finally {
   Date.now = originalNow;
 }
@@ -198,19 +239,20 @@ function run(req) {
   return logs;
 }
 
-/** The /download path is async (one Web Crypto HMAC before the marker log) — await it, and still
- *  require the ordinary passthrough Response so the redirect is provably never blocked. */
+/** The /download path is async (one Web Crypto HMAC before the marker log) — await it and return
+ *  BOTH the logs and the Response, so callers can assert served-307 vs backstop-passthrough. */
 async function runAsync(req) {
   const logs = [];
   const originalLog = console.log;
+  let response;
   console.log = (...args) => logs.push(args.join(" "));
   try {
-    const response = await middleware(req);
-    assert.ok(response instanceof Response, "middleware must continue with a Vercel Response");
+    response = await middleware(req);
+    assert.ok(response instanceof Response, "middleware must always produce a Response");
   } finally {
     console.log = originalLog;
   }
-  return logs;
+  return { logs, response };
 }
 
 function marker(path) {
