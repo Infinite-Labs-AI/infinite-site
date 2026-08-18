@@ -153,8 +153,12 @@ async function logDownloadAttempt(request) {
   console.log(`INFINITE_DOWNLOAD_ATTEMPT_V1 ${JSON.stringify(marker)}`);
 }
 
-// The exact destination vercel.json's /download redirect uses — the two MUST stay identical.
-// vercel.json's entry is KEPT as the FAIL-OPEN BACKSTOP: it is unreachable while this middleware
+// The public release destination for /download. The middleware OWNS this path: the old
+// vercel.json redirect was REMOVED 2026-08-18 because config redirects PREEMPT edge middleware
+// on this deployment (proven live twice — zero middleware invocations for /download while the
+// entry existed). Fail-open now lives INSIDE downloadResponse (any marker failure still returns
+// this 307), and the guardrail live-checks the 307 on every main push + daily. This comment used
+// to describe the entry as a backstop; a "backstop" that runs FIRST is not a backstop.
 // answers /download first, and it is exactly what keeps delivery alive if the middleware is ever
 // absent, crashing, or skipped (non-production hosts, preview deploys, HEAD/POST all pass through
 // to it today).
