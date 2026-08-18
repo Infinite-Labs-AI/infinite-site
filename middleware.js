@@ -1,6 +1,9 @@
 import { next } from "@vercel/functions";
 
 const BOT_UA = /bot|crawler|spider|preview|headless|lighthouse|curl|wget/i;
+// CLI/tooling agents (mirrors the drain's learned list, 2026-08-04): classified before BOT_UA
+// because curl/wget appear in both — a curl download attempt is "cli", not "bot".
+const CLI_UA = /curl|wget|python-requests|python-urllib|go-http-client|httpie|okhttp|axios|node-fetch|libwww|java\//i;
 const PRODUCTION_HOSTS = new Set(
   (process.env.INFINITE_PRODUCTION_HOSTS ?? "")
     .split(",")
@@ -57,8 +60,111 @@ function isPrefetch(request) {
   );
 }
 
+// ── Download-attempt marker (2026-08-18 audit, server-owned attempt boundary) ─────────────
+// The ONLY server-owned download signal used to be the raw Vercel redirect log: request rows,
+// retries included, with no dedupe key. This marker adds a deduplicatable ATTEMPT observation
+// at the owned /download boundary WITHOUT touching delivery: the vercel.json redirect keeps
+// serving (the middleware logs before routing and always passes through), analytics storage is
+// never consulted, and any failure here fails OPEN to the ordinary redirect.
+//
+// attemptKey = HMAC-SHA256(clientIP | userAgent | 30-min UTC bucket) under
+// INFINITE_ATTEMPT_FINGERPRINT_KEY — a bounded, non-reversible fingerprint. The drain derives a
+// DETERMINISTIC ledger event id from it, so N redirect requests from one browser in one bucket
+// collapse into ONE attempt row structurally (the ledger's (workspace_id, event_id) uniqueness).
+// The marker carries NO raw IP and NO raw UA — only the HMAC and a coarse UA family.
+// An attempt is a server-observed request bucket — NOT a person, NOT a completed transfer.
+
+const ATTEMPT_BUCKET_MS = 30 * 60 * 1000;
+const ATTEMPT_ASSET_CHANNEL = "mac_arm64_dmg"; // the one asset /download serves today
+const ATTEMPT_TOKEN = /^[a-z0-9][a-z0-9._-]{0,63}$/;
+let attemptDiagnosticLogged = false;
+
+function uaFamily(userAgent) {
+  if (!userAgent) return "unknown";
+  if (CLI_UA.test(userAgent)) return "cli";
+  if (BOT_UA.test(userAgent)) return "bot";
+  if (/Mozilla\//.test(userAgent)) return "browser";
+  return "unknown";
+}
+
+/** Normalized bounded UTM token, or null — never free text (ledger plan P39). */
+function normalizedUtm(url, name) {
+  const raw = url.searchParams.get(name);
+  if (!raw) return null;
+  const value = raw.trim().toLowerCase();
+  return ATTEMPT_TOKEN.test(value) ? value : null;
+}
+
+function referrerHost(request) {
+  const referer = request.headers.get("referer");
+  if (!referer) return null;
+  try {
+    const host = new URL(referer).hostname.toLowerCase().replace(/\.$/, "");
+    return host && host.length <= 253 ? host : null;
+  } catch {
+    return null;
+  }
+}
+
+async function attemptKey(secret, request) {
+  const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
+  const userAgent = request.headers.get("user-agent") ?? "";
+  const bucket = Math.floor(Date.now() / ATTEMPT_BUCKET_MS);
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    cryptoKey,
+    new TextEncoder().encode(`${ip}|${userAgent}|${bucket}`),
+  );
+  return [...new Uint8Array(signature)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function logDownloadAttempt(request) {
+  const url = new URL(request.url);
+  const host = url.hostname.toLowerCase().replace(/\.$/, "");
+  if (process.env.VERCEL_ENV !== "production" || !PRODUCTION_HOSTS.has(host)) return;
+  if (request.method !== "GET") return;
+  const secret = process.env.INFINITE_ATTEMPT_FINGERPRINT_KEY;
+  if (!secret) {
+    // Fail-open with ONE shape diagnostic per isolate: the redirect must never wait on config,
+    // but a silently-dead lane is the exact failure mode the drain work taught us to surface.
+    if (!attemptDiagnosticLogged) {
+      attemptDiagnosticLogged = true;
+      console.log('INFINITE_DOWNLOAD_ATTEMPT_DIAG {"reason":"missing_fingerprint_key"}');
+    }
+    return;
+  }
+  const marker = {
+    attemptKey: await attemptKey(secret, request),
+    uaFamily: uaFamily(request.headers.get("user-agent")),
+    utmSource: normalizedUtm(url, "utm_source"),
+    utmMedium: normalizedUtm(url, "utm_medium"),
+    utmCampaign: normalizedUtm(url, "utm_campaign"),
+    referrerHost: referrerHost(request),
+    assetChannel: ATTEMPT_ASSET_CHANNEL,
+    schemaVersion: 1,
+  };
+  console.log(`INFINITE_DOWNLOAD_ATTEMPT_V1 ${JSON.stringify(marker)}`);
+}
+
+async function downloadAttemptThenNext(request) {
+  try {
+    await logDownloadAttempt(request);
+  } catch {
+    // Fail open: the attempt marker must never delay or break the download redirect.
+  }
+  return next();
+}
+
 export default function middleware(request) {
   const path = normalizedPath(request.url);
+  if (path === "/download") return downloadAttemptThenNext(request);
   if (isProductionDocumentNavigation(request, path)) {
     console.log(`INFINITE_DOCUMENT_REQUEST_V1 ${JSON.stringify({ path })}`);
   }
