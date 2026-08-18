@@ -75,6 +75,37 @@ try {
   assert.match(homepage, /window\.infinitePrivacyChoices/);
   assert.match(homepage, /var hosts = \["infinite\.fast","www\.infinite\.fast"\]/);
 
+  // ── Download-CTA placement coverage (audit report-05 finding 8) ──────────────────────────
+  // Every /download CTA in the BUILT output must carry a placement marker
+  // (data-download-location or data-analytics-cta-location), or "which button produces
+  // attempts" is unanswerable for that CTA — the runtime emits app_download_click with no
+  // cta_location and the CTA rollup can't attribute it. Enumerating the built dist covers
+  // static pages AND client-rendered templates alike (assets/seo-tools.js renders its
+  // "Get Infinite" button from a JS template string, which is exactly how the markerless
+  // CTA shipped unnoticed). A future markerless CTA fails HERE, not in production data.
+  const PLACEMENT_ATTR = /data-(?:download-location|analytics-cta-location)="[A-Za-z0-9_-]{1,64}"/;
+  let htmlDownloadCtas = 0;
+  let assetDownloadCtas = 0;
+  for (const file of walkFiles(distDir)) {
+    const isHtml = file.endsWith(".html");
+    const isAssetJs = file.endsWith(".js");
+    if (!isHtml && !isAssetJs) continue;
+    const body = readFileSync(file, "utf8");
+    for (const anchor of body.match(/<a\b[^>]*href="\/download"[^>]*>/g) ?? []) {
+      if (isHtml) htmlDownloadCtas++;
+      else assetDownloadCtas++;
+      assert.match(
+        anchor,
+        PLACEMENT_ATTR,
+        `${file.slice(distDir.length)}: /download CTA without a placement marker — add data-download-location="<token>" so the CTA rollup can attribute its clicks: ${anchor}`,
+      );
+    }
+  }
+  // Non-vacuous: the enumeration must actually SEE the known CTA populations, or a pattern
+  // drift (attribute rename, template refactor) would silently disable this whole check.
+  assert.ok(htmlDownloadCtas >= 3, `expected the built pages to carry several /download CTAs, found ${htmlDownloadCtas}`);
+  assert.ok(assetDownloadCtas >= 1, `expected at least one client-rendered /download CTA in built assets (seo-tools.js), found ${assetDownloadCtas}`);
+
   // The middleware document manifest must exactly match the deployed HTML page set —
   // adding (or removing) a page without updating middleware.js breaks CI here, not
   // the production pageview lane.
@@ -86,6 +117,16 @@ try {
   );
 } finally {
   rmSync(distDir, { recursive: true, force: true });
+}
+
+function walkFiles(dir) {
+  const files = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...walkFiles(full));
+    else files.push(full);
+  }
+  return files;
 }
 
 function htmlDocumentPaths(dir, prefix = "/") {

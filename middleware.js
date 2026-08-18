@@ -95,6 +95,14 @@ function normalizedUtm(url, name) {
   return ATTEMPT_TOKEN.test(value) ? value : null;
 }
 
+/** Click-ID PRESENCE only (audit aggregate-attribution ruling + P39): a boolean saying a
+ *  non-empty gclid/fbclid/msclkid rode the request. The RAW VALUE never enters the marker —
+ *  raw click IDs are high-cardinality user-level identifiers we deliberately do not store. */
+function hasClickId(url, name) {
+  const value = url.searchParams.get(name);
+  return typeof value === "string" && value.length > 0;
+}
+
 function referrerHost(request) {
   const referer = request.headers.get("referer");
   if (!referer) return null;
@@ -147,6 +155,9 @@ async function logDownloadAttempt(request) {
     utmMedium: normalizedUtm(url, "utm_medium"),
     utmCampaign: normalizedUtm(url, "utm_campaign"),
     referrerHost: referrerHost(request),
+    hasGclid: hasClickId(url, "gclid"),
+    hasFbclid: hasClickId(url, "fbclid"),
+    hasMsclkid: hasClickId(url, "msclkid"),
     assetChannel: ATTEMPT_ASSET_CHANNEL,
     schemaVersion: 1,
   };
@@ -159,9 +170,6 @@ async function logDownloadAttempt(request) {
 // entry existed). Fail-open now lives INSIDE downloadResponse (any marker failure still returns
 // this 307), and the guardrail live-checks the 307 on every main push + daily. This comment used
 // to describe the entry as a backstop; a "backstop" that runs FIRST is not a backstop.
-// answers /download first, and it is exactly what keeps delivery alive if the middleware is ever
-// absent, crashing, or skipped (non-production hosts, preview deploys, HEAD/POST all pass through
-// to it today).
 const RELEASE_URL =
   "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
 
@@ -183,13 +191,12 @@ async function downloadResponse(request) {
 export default function middleware(request) {
   const path = normalizedPath(request.url);
   if (path === "/download") {
-    // LIVE-TEST FINDING (2026-08-18): on this static deployment Vercel executes the vercel.json
-    // /download redirect BEFORE edge middleware — middleware never ran for /download in
-    // production, so the attempt marker never fired (document markers flowed; /download showed
-    // zero middleware invocations in `vercel logs`). The middleware therefore SERVES the 307
+    // LIVE-TEST FINDING (2026-08-18): on this static deployment a vercel.json /download redirect
+    // executes BEFORE edge middleware — middleware never ran for /download in production, so the
+    // attempt marker never fired. The middleware therefore OWNS this path and SERVES the 307
     // itself for production GETs (marker, then redirect — the deliberate P13 trade: ~ms of edge
-    // latency, with the vercel.json redirect kept as the fail-open delivery backstop). Every
-    // other /download request shape passes through to that backstop unchanged.
+    // latency, fail-open inside downloadResponse). The old vercel.json entry was REMOVED (#26);
+    // non-production/non-GET/foreign-host requests pass through to ordinary routing (404).
     if (isProductionDownloadGet(request)) return downloadResponse(request);
     return next();
   }

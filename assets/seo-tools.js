@@ -202,7 +202,7 @@
       '<div class="seo-result-cta">',
       "<h3>Turn this into an operating loop.</h3>",
       "<p>Infinite helps founders turn signals into reviewed pages, content, outreach, and conversion tests without claiming the work shipped itself.</p>",
-      '<a class="seo-button" href="/download">Get Infinite</a>',
+      '<a class="seo-button" href="/download" data-download-location="tools">Get Infinite</a>',
       "</div>",
     ].join("");
   }

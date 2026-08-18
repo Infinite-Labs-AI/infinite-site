@@ -171,6 +171,36 @@ try {
   );
   assert.equal(parseAttempt(freeText.logs[0]).utmSource, null, "free-text UTM values must drop to null, never ship");
 
+  // 3b) Click-ID PRESENCE flags (audit aggregate-attribution ruling + P39): booleans only —
+  //     the raw click-ID value must never enter the marker. Empty params read as absent.
+  assert.deepEqual(
+    [utmAttempt.hasGclid, utmAttempt.hasFbclid, utmAttempt.hasMsclkid],
+    [false, false, false],
+    "requests without click IDs must carry three false presence flags",
+  );
+  const gclid = await runAsync(
+    request("https://infinite.fast/download?gclid=EAIaIQobChMI_secret_value_123"),
+  );
+  const gclidAttempt = parseAttempt(gclid.logs[0]);
+  assert.deepEqual(
+    [gclidAttempt.hasGclid, gclidAttempt.hasFbclid, gclidAttempt.hasMsclkid],
+    [true, false, false],
+    "a gclid-bearing request must flag ONLY hasGclid",
+  );
+  assert.ok(!gclid.logs[0].includes("EAIaIQobChMI_secret_value_123"), "the raw gclid value must never enter the marker");
+  const bothIds = await runAsync(
+    request("https://infinite.fast/download?fbclid=IwAR_raw_fb_value&msclkid=abc123raw"),
+  );
+  const bothAttempt = parseAttempt(bothIds.logs[0]);
+  assert.deepEqual(
+    [bothAttempt.hasGclid, bothAttempt.hasFbclid, bothAttempt.hasMsclkid],
+    [false, true, true],
+    "fbclid + msclkid must flag their own presence bits",
+  );
+  assert.ok(!bothIds.logs[0].includes("IwAR_raw_fb_value") && !bothIds.logs[0].includes("abc123raw"), "raw fbclid/msclkid values must never enter the marker");
+  const emptyId = await runAsync(request("https://infinite.fast/download?gclid="));
+  assert.equal(parseAttempt(emptyId.logs[0]).hasGclid, false, "an empty gclid param is not a click-ID presence");
+
   // 4) Coarse UA families: cli beats bot for curl (both regexes match), and the 307 is served to
   //    every family — delivery never depends on classification (the drain decides what counts).
   const curl = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "curl/8.0" } }));
