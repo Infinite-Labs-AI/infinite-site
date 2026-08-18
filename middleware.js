@@ -153,18 +153,42 @@ async function logDownloadAttempt(request) {
   console.log(`INFINITE_DOWNLOAD_ATTEMPT_V1 ${JSON.stringify(marker)}`);
 }
 
-async function downloadAttemptThenNext(request) {
+// The exact destination vercel.json's /download redirect uses — the two MUST stay identical.
+// vercel.json's entry is KEPT as the FAIL-OPEN BACKSTOP: it is unreachable while this middleware
+// answers /download first, and it is exactly what keeps delivery alive if the middleware is ever
+// absent, crashing, or skipped (non-production hosts, preview deploys, HEAD/POST all pass through
+// to it today).
+const RELEASE_URL =
+  "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
+
+function isProductionDownloadGet(request) {
+  const host = new URL(request.url).hostname.toLowerCase().replace(/\.$/, "");
+  return process.env.VERCEL_ENV === "production" && PRODUCTION_HOSTS.has(host) && request.method === "GET";
+}
+
+async function downloadResponse(request) {
   try {
     await logDownloadAttempt(request);
   } catch {
-    // Fail open: the attempt marker must never delay or break the download redirect.
+    // Fail open: the attempt marker must never delay or break the download redirect. The 307
+    // below returns regardless — a marker failure costs evidence, never delivery.
   }
-  return next();
+  return Response.redirect(RELEASE_URL, 307);
 }
 
 export default function middleware(request) {
   const path = normalizedPath(request.url);
-  if (path === "/download") return downloadAttemptThenNext(request);
+  if (path === "/download") {
+    // LIVE-TEST FINDING (2026-08-18): on this static deployment Vercel executes the vercel.json
+    // /download redirect BEFORE edge middleware — middleware never ran for /download in
+    // production, so the attempt marker never fired (document markers flowed; /download showed
+    // zero middleware invocations in `vercel logs`). The middleware therefore SERVES the 307
+    // itself for production GETs (marker, then redirect — the deliberate P13 trade: ~ms of edge
+    // latency, with the vercel.json redirect kept as the fail-open delivery backstop). Every
+    // other /download request shape passes through to that backstop unchanged.
+    if (isProductionDownloadGet(request)) return downloadResponse(request);
+    return next();
+  }
   if (isProductionDocumentNavigation(request, path)) {
     console.log(`INFINITE_DOCUMENT_REQUEST_V1 ${JSON.stringify({ path })}`);
   }
