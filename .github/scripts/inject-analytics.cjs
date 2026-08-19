@@ -227,28 +227,29 @@ function posthogSnippet({ apiHost, uiHost, projectToken }) {
         }),
         (e.__SV = 1));
     })(document, window.posthog || []);
+    var NO_REPLAY_PATHS = ["/startup-launch-videos"];
+    var NO_REPLAY_HERE = location.pathname;
+    if (NO_REPLAY_HERE.length > 1 && NO_REPLAY_HERE.charAt(NO_REPLAY_HERE.length - 1) === "/") {
+      NO_REPLAY_HERE = NO_REPLAY_HERE.slice(0, -1);
+    }
     posthog.init(${JSON.stringify(projectToken)}, {
       api_host: ${JSON.stringify(apiHost)},${uiHostLine}
       defaults: "2026-01-30",
-      // Session replay and heatmaps are OFF on this site, deliberately.
+      // Session replay is OFF on the Launch Video Leaderboard, and ONLY there.
       //
-      // The project has them enabled server-side (sampleRate null = 100% of sessions, empty URL
-      // blocklist), so every visitor was loading rrweb, taking a full DOM snapshot of a ~1,900-node
-      // page, and running a document-wide MutationObserver. Heatmaps adds a capture-phase
-      // mousemove listener on the document, and the scroll manager adds capture-phase scroll and
-      // scrollend listeners. That is two document-level mousemove listeners and two scroll
-      // listeners nobody here wrote, on a page whose main interaction is scrolling a long table and
-      // hovering its rows — which is exactly the reported symptom.
+      // That page is a ~50-row table people scroll and hover. rrweb snapshots the ~1,900-node DOM,
+      // installs a document-wide MutationObserver, and has to serialise ~1,800 element removals and
+      // additions every time someone sorts or pages it. Replay is not worth that on a page whose
+      // only interaction is browsing a ranking.
       //
-      // It costs most on the leaderboard, where sorting or paging swaps ~1,800 elements at once and
-      // rrweb has to serialise every removal and addition as a mutation batch.
+      // Every other page keeps replay. Heatmaps and performance capture are untouched everywhere —
+      // an earlier revision disabled all three site-wide, which was not the intent.
       //
-      // This is a MARKETING site: GA4 owns traffic here and PostHog owns in-app product analytics,
-      // so nothing downstream depends on replay of these pages. Turning these three off does not
-      // affect pageviews, events or funnels.
-      disable_session_recording: true,
-      capture_heatmaps: false,
-      capture_performance: false,
+      // Add a path to NO_REPLAY_PATHS to exclude another page; a trailing slash is ignored.
+      // NOTE: no regex literal here on purpose. This snippet is built inside a JS template literal,
+      // where a backslash is an escape sequence — writing /\/+$/ emits //+$/, which is a line
+      // comment, and silently truncates the rest of the line.
+      disable_session_recording: NO_REPLAY_PATHS.indexOf(NO_REPLAY_HERE) !== -1,
     });
     posthog.register({ platform: "website" });
     });
