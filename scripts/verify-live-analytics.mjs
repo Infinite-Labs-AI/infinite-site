@@ -279,6 +279,13 @@ async function checkSyntheticReceipts(failures) {
 
   const documentId = `guardrail-edge-${randomUUID()}`;
   const redirectId = `guardrail-redirect-${randomUUID()}`;
+  // The Googlebot document record is COUNTED AND FLAGGED by the drain since 1bu-1 #2827 (2026-08-18):
+  // a real ledger row with is_bot + agent_class, never dropped — this check proves the flag lands.
+  const botDocumentId = `guardrail-bot-${randomUUID()}`;
+  // A REAL browser UA for the browser-shaped records. A bare "Mozilla/5.0" is bot-shaped to the
+  // maintained isbot list the drain now runs (no real browser sends it) — it would be flagged, and the
+  // redirect record dropped, exactly as a scanner's would.
+  const BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
   const timestamp = Date.now();
   const deploymentId = `dpl_${randomUUID().replaceAll("-", "")}`;
   const region = "iad1";
@@ -295,7 +302,7 @@ async function checkSyntheticReceipts(failures) {
     ...(destination ? { destination } : {}),
     ...(proxy ? { proxy: { timestamp, region, ...proxy } } : {}),
   });
-  const proxy = ({ method = "GET", host = SYNTHETIC_PRODUCTION_HOST, path = "/", statusCode = 200, userAgent = ["Mozilla/5.0"] } = {}) => ({
+  const proxy = ({ method = "GET", host = SYNTHETIC_PRODUCTION_HOST, path = "/", statusCode = 200, userAgent = [BROWSER_UA] } = {}) => ({
     method,
     host,
     path,
@@ -327,10 +334,10 @@ async function checkSyntheticReceipts(failures) {
       proxy: proxy({ path: "/assets/app.js" }),
     }),
     vercelRecord({
-      id: `bot-${randomUUID()}`,
+      id: botDocumentId,
       source: "edge",
       message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
-      proxy: proxy({ userAgent: ["Googlebot"] }),
+      proxy: proxy({ userAgent: ["Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"] }),
     }),
     vercelRecord({
       id: `project-${randomUUID()}`,
@@ -357,19 +364,26 @@ async function checkSyntheticReceipts(failures) {
       body: raw,
     });
     const result = await response.json().catch(() => ({}));
-    if (response.status !== 202 || result.accepted !== 2) {
+    // THREE accepted: the human document, the redirect, and the Googlebot document (counted and
+    // FLAGGED, not dropped). Everything else in the batch is isolated (HEAD, prefetch, asset path,
+    // wrong project, wrong host).
+    if (response.status !== 202 || result.accepted !== 3) {
       throw new Error(`Drain returned ${response.status} with accepted=${JSON.stringify(result.accepted)}`);
     }
-    await requireReceipt(`vercel:${documentId}`, "site_document_request");
+    await requireReceipt(`vercel:${documentId}`, "site_document_request", { isBot: false });
     await requireReceipt(`vercel:${redirectId}`, "app_download_redirect");
-    console.log("  PASS  signed synthetic Drain receipt (mixed batch isolated)");
+    // The flag lands: the Googlebot row is received AND classed bot / search_crawler.
+    await requireReceipt(`vercel:${botDocumentId}`, "site_document_request", { isBot: true, agentClass: "bot", agentSubclass: "search_crawler" });
+    console.log("  PASS  signed synthetic Drain receipt (mixed batch isolated; Googlebot row counted and flagged)");
   } catch (error) {
     failures.push(`[receipts] signed synthetic Drain check failed: ${error.message}`);
     console.log("  FAIL  signed synthetic Drain receipt");
   }
 }
 
-async function requireReceipt(eventId, eventName) {
+/** `expectAgent` (optional): the receipt's agent-class fields the row must carry — the drain's
+ *  count-and-flag proof (1bu-1 #2827). Each named key must match exactly. */
+async function requireReceipt(eventId, eventName, expectAgent = null) {
   const receiptUrl = new URL(ANALYTICS_RECEIPT_URL);
   receiptUrl.searchParams.set("eventId", eventId);
   let last = "not received";
@@ -382,6 +396,11 @@ async function requireReceipt(eventId, eventName) {
     if (response.ok && payload.received === true) {
       if (payload.eventId !== eventId || payload.eventName !== eventName || payload.environment !== "synthetic") {
         throw new Error(`receipt mismatch for ${eventId}`);
+      }
+      for (const [key, value] of Object.entries(expectAgent ?? {})) {
+        if (payload[key] !== value) {
+          throw new Error(`receipt for ${eventId}: ${key}=${JSON.stringify(payload[key])}, expected ${JSON.stringify(value)}`);
+        }
       }
       return;
     }

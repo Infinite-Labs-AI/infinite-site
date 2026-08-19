@@ -81,17 +81,25 @@ const server = createServer(async (request, response) => {
         assert.equal(typeof record.proxy.region, "string", "Drain proxy region must be a string");
       }
     }
+    // Mirrors the real drain since 1bu-1 #2827 (count-and-flag): a bot-shaped DOCUMENT record is
+    // ACCEPTED as a flagged row (is_bot + agent class), while a bot-shaped REDIRECT is still dropped.
+    const isBotUa = (record) => /bot/i.test(record.proxy?.userAgent?.[0] ?? "");
     const accepted = records.filter((record) => ["edge", "redirect"].includes(record.source)
       && record.projectId === "prj_synthetic"
       && record.proxy?.host === "infinite.fast"
       && record.proxy?.method === "GET"
-      && !/bot/i.test(record.proxy?.userAgent?.[0] ?? "")
-      && (record.source === "redirect" || record.message === 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}'));
+      && ((record.source === "redirect" && !isBotUa(record))
+        || (record.source === "edge" && record.message === 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}')));
     for (const record of accepted) {
+      const flagged = record.source === "edge" && isBotUa(record);
       received.set(`vercel:${record.id}`, {
         eventId: `vercel:${record.id}`,
         eventName: record.source === "edge" ? "site_document_request" : "app_download_redirect",
         environment: "synthetic",
+        isBot: record.source === "edge" ? flagged : null,
+        agentClass: flagged ? "bot" : record.source === "edge" ? "human" : null,
+        agentSubclass: flagged ? "search_crawler" : null,
+        agentVerified: flagged ? "unknown" : null,
       });
     }
     response.writeHead(202, { "content-type": "application/json" });
@@ -190,7 +198,8 @@ try {
   assert.equal(observedCollectOrigin, baseUrl);
   assert.equal(collectRequests, 1);
   assert.equal(drainRequests, 1);
-  assert.equal(receiptRequests, 3);
+  // browser page view + human document + redirect + the FLAGGED Googlebot document (count-and-flag).
+  assert.equal(receiptRequests, 4);
   assert.equal(forbiddenProbeRequests, 16, "each verification run must probe forbidden tracking and sdk routes");
   assert.match(observedDownloadUa ?? "", /bot/i, "redirect probe must be bot-classified and excluded from production counts");
 } finally {
