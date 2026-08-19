@@ -72,6 +72,39 @@ const excluded = [
 
 for (const fixture of excluded) assert.deepEqual(await run(fixture), [], `${fixture.method} ${fixture.url} must not emit`);
 
+// ── CI guardrail contract (scripts/verify-live-analytics.mjs) ────────────────────────────────
+// The live guardrail probes production on every push to main and once a day. Those runs are
+// CHECKS, not visits: a guardrail that inflates the very numbers it verifies is worthless. Every
+// live probe therefore declares `Purpose: prefetch`, and the whole exclusion rests on one property
+// of this file — the prefetch test runs BEFORE the user-agent fallback, so a probe emits nothing
+// even when its headers are perfectly browser-shaped. That property is pinned here, because the
+// guardrail script cannot pin the middleware from the other side. Previously the only thing
+// keeping CI out of production's human rows was the probe user agent lacking `Mozilla/` — an
+// accident anyone "making the probes realistic" would have silently undone.
+{
+  const guardrailProbeUa = "infinite-analytics-guardrail/2.0 (+verify-live-analytics)";
+  for (const path of KNOWN_DOCUMENT_PATHS) {
+    assert.deepEqual(
+      await run(request(`https://infinite.fast${path}`, { headers: { purpose: "prefetch", "user-agent": guardrailProbeUa } })),
+      [],
+      `a prefetch-declared guardrail probe of ${path} must not emit a document marker`,
+    );
+    // The same path with the guardrail's UA but NO declaration still emits nothing today (no
+    // `Mozilla/`) — and would emit the moment the UA changed. That is exactly why the header, not
+    // the UA, is the contract.
+    assert.deepEqual(
+      await run(request(`https://infinite.fast${path}`, { headers: { purpose: "prefetch", "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" } })),
+      [],
+      `a prefetch-declared probe of ${path} must not emit even with a fully browser-shaped user agent`,
+    );
+  }
+  assert.deepEqual(
+    await run(request("https://infinite.fast/", { headers: { "sec-purpose": "prefetch;anonymous-client-ip" } })),
+    [],
+    "the Sec-Purpose spelling (with parameters) must be honoured too",
+  );
+}
+
 process.env.VERCEL_ENV = "preview";
 assert.deepEqual(await run(request("https://infinite.fast/privacy")), [], "preview environment must not emit");
 process.env.VERCEL_ENV = "production";
@@ -234,6 +267,23 @@ try {
   assert.equal(parseAttempt(curl.logs[0]).uaFamily, "cli");
   const bot = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "Googlebot/2.1" } }));
   assert.equal(parseAttempt(bot.logs[0]).uaFamily, "bot");
+
+  // The CI guardrail's OWN /download probe. This branch never calls isPrefetch() — it serves the
+  // 307 and logs a marker for every production GET — so the guardrail's exclusion here is its
+  // BOT-SHAPED user agent alone: the drain keeps `uaFamily: "browser"` markers only. If someone
+  // renames that user agent and drops the "bot" substring, CI starts writing Downloads. This
+  // assertion is the tripwire; keep it and scripts/verify-live-analytics.mjs in step.
+  const guardrailProbe = await runAsync(
+    request("https://infinite.fast/download", {
+      headers: { "user-agent": "infinite-analytics-guardrail-bot/2.0", purpose: "prefetch" },
+    }),
+  );
+  assertServedRedirect(guardrailProbe.response);
+  assert.equal(
+    parseAttempt(guardrailProbe.logs[0]).uaFamily,
+    "bot",
+    "the CI guardrail's /download probe must classify as bot so the drain drops its attempt marker",
+  );
 
   // 5) A marker failure must NOT cost the redirect: force the marker path to throw (Date.now is
   //    inside the fingerprint computation) — the 307 still returns, with no marker logged.
