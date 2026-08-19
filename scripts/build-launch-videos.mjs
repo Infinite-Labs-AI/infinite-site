@@ -106,13 +106,18 @@ function sanitizeRows(rows) {
 }
 
 function leaderboardHtml(payload) {
-  const rows = sanitizeRows(payload.rows);
+  // Orchid joins the ranking on its reported figure rather than being pinned above it — see
+  // orchidRow() for why nothing about it is invented.
+  const rows = [...sanitizeRows(payload.rows), LB.orchidRow()];
   const view = LB.resolve(rows, { sortKey: "views", page: 1, query: "" });
-  const totalViews = rows.reduce((sum, r) => sum + (r.views || 0), 0);
-  // Orchid's reported ~32M is added because it IS the biggest launch of the period, even though its
-  // post is gone and its numbers cannot be re-verified — which is why it sits above the ranking.
-  const combined = totalViews + 32_000_000;
-  const averageViews = rows.length ? Math.round(totalViews / rows.length) : 0;
+  // Orchid is inside `rows` now, so its reported views are already counted once — adding them again
+  // would double-count. The average is over the verified set only, which is what "average" can
+  // honestly mean when one row has no engagement data at all.
+  const combined = rows.reduce((sum, r) => sum + (r.views || 0), 0);
+  const verified = payload.rows;
+  const averageViews = verified.length
+    ? Math.round(verified.reduce((sum, r) => sum + (r.views || 0), 0) / verified.length)
+    : 0;
   const asOf = payload.as_of;
 
   const heroStats = [

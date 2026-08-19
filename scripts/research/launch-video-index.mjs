@@ -431,6 +431,9 @@ figure.chart figcaption b{color:var(--ink);font-weight:500}
 .tw-ck::before{content:"";position:absolute;left:4px;top:4.5px;width:6px;height:3px;
   border-left:1.6px solid #fff;border-bottom:1.6px solid #fff;transform:rotate(-45deg)}
 .tw-un{font-family:var(--mono);font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-inline{margin:0 0 26px;padding:16px 18px;border-left:3px solid var(--acc);background:var(--acc-soft);
+  border-radius:0 10px 10px 0;font-size:16.5px;line-height:1.62;color:var(--body)}
+.note-inline b{color:var(--ink)}
 .tw-vm{margin-left:auto;text-align:right;font-family:var(--disp);font-weight:800;font-size:15.5px;
   line-height:1;letter-spacing:-0.01em;flex:none}
 .tw-vm em{display:block;font-family:var(--mono);font-weight:400;font-style:normal;font-size:9px;
@@ -1259,34 +1262,48 @@ const PLAYBOOK_HTML = `<div class="prog"><i id="progbar"></i></div>
     <a class="ref" href="/startup-launch-videos/">the Startup Launch Video Leaderboard</a>. A snapshot of the top of the views ranking,
     refreshed today:</p>
 
+  <p class="note-inline"><b>One caveat on the top row.</b> 1X&rsquo;s NEO film is the most-viewed startup
+    launch we have found, by a distance &mdash; but it sits <em>outside</em> the 194-video corpus every
+    statistic in this study is computed from, so none of the numbers above move because of it. It is
+    also the exception that proves &sect;6: at <b>9 minutes 53 seconds</b> it is more than eleven times
+    the 52-second median, and it still did 69 million views. Length is not the lever; being worth
+    watching is. A humanoid robot folding laundry in someone&rsquo;s actual kitchen buys attention that
+    a 40-second SaaS demo cannot, and almost nobody reading this has that footage available.</p>
+
   <div class="xwrap wide">
+    <a class="xp" href="https://x.com/1x_tech/status/1983233494575952138" target="_blank" rel="noopener noreferrer">
+      <span class="xp-thumb vid" style="background-image:url(${VBASE}/neo-1x.jpg)"></span>
+      <span class="top"><span class="rank">1</span><span class="who3">1X &mdash; NEO<span>@1x_tech &middot; outside the study corpus</span></span></span>
+      <span class="txt">A humanoid robot doing chores in a real home, shot like a product film rather than a demo reel &mdash; and run for nearly ten minutes.</span>
+      <span class="stats"><span class="stat"><b>69.19M</b>views</span><span class="stat"><b>68,159</b>likes</span><span class="stat"><b>27,132</b>bookmarks</span></span>
+    </a>
     <a class="xp pulled" href="https://www.fastcompany.com/91581882/orchid-ai-assistant-launches-gets-backlash-for-relationship-ad" target="_blank" rel="noopener noreferrer">
       <span class="xp-thumb removed">Post removed</span>
-      <span class="top"><span class="rank">1</span><span class="who3">Orchid<span>@orchid_hq &middot; deleted days after launch</span></span></span>
-      <span class="txt">The biggest launch film of the period &mdash; an AI booking an anniversary dinner &mdash; then Orchid pulled it once the reception turned. Why it&rsquo;s gone is the whole lesson (&sect;10).</span>
+      <span class="top"><span class="rank">2</span><span class="who3">Orchid<span>@orchid_hq &middot; deleted days after launch</span></span></span>
+      <span class="txt">An AI booking an anniversary dinner &mdash; then Orchid pulled it once the reception turned. Why it&rsquo;s gone is the whole lesson (&sect;10).</span>
       <span class="stats"><span class="stat"><b>~32M</b>reported views</span><span class="stat"><b>&mdash;</b>post removed</span></span>
     </a>
     <a class="xp" href="https://x.com/askOkara/status/2033562024651968657" target="_blank" rel="noopener noreferrer">
       <span class="xp-thumb vid" style="background-image:url(${VBASE}/okara-ai-cmo.jpg)"></span>
-      <span class="top"><span class="rank">2</span><span class="who3">Okara &mdash; AI CMO<span>@askOkara</span></span></span>
-      <span class="txt">The most-viewed launch we can still verify &mdash; the AI-CMO reveal.</span>
+      <span class="top"><span class="rank">3</span><span class="who3">Okara &mdash; AI CMO<span>@askOkara</span></span></span>
+      <span class="txt">The most-viewed launch inside the studied corpus &mdash; the AI-CMO reveal.</span>
       <span class="stats"><span class="stat"><b>14.05M</b>views</span><span class="stat"><b>2,357</b>reposts</span><span class="stat"><b>1,602</b>replies</span></span>
     </a>
     <a class="xp" href="https://x.com/reactorworld/status/2060015607928819876" target="_blank" rel="noopener noreferrer">
       <span class="xp-thumb vid" style="background-image:url(${VBASE}/reactor.jpg)"></span>
-      <span class="top"><span class="rank">3</span><span class="who3">Reactor<span>@reactorworld</span></span></span>
+      <span class="top"><span class="rank">4</span><span class="who3">Reactor<span>@reactorworld</span></span></span>
       <span class="txt">Came out of stealth with a $59M raise &mdash; and the reach to match.</span>
       <span class="stats"><span class="stat"><b>12.74M</b>views</span></span>
     </a>
     <a class="xp" href="https://x.com/slateauto/status/1915591929200340998" target="_blank" rel="noopener noreferrer">
       <span class="xp-thumb vid" style="background-image:url(${VBASE}/slate-auto.jpg)"></span>
-      <span class="top"><span class="rank">4</span><span class="who3">Slate Auto<span>@slateauto</span></span></span>
+      <span class="top"><span class="rank">5</span><span class="who3">Slate Auto<span>@slateauto</span></span></span>
       <span class="txt">A hardware startup reveal that broke out of tech-Twitter.</span>
       <span class="stats"><span class="stat"><b>10.76M</b>views</span></span>
     </a>
     <a class="xp" href="https://x.com/dflieb/status/2005674455474000324" target="_blank" rel="noopener noreferrer">
       <span class="xp-thumb vid" style="background-image:url(${VBASE}/stickerbox.jpg)"></span>
-      <span class="top"><span class="rank">5</span><span class="who3">Stickerbox<span>@dflieb</span></span></span>
+      <span class="top"><span class="rank">6</span><span class="who3">Stickerbox<span>@dflieb</span></span></span>
       <span class="txt">A consumer app launch that far overshot its follower count.</span>
       <span class="stats"><span class="stat"><b>5.49M</b>views</span></span>
     </a>
