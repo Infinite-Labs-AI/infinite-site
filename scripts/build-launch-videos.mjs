@@ -68,7 +68,22 @@ const AUTHOR = "River Tamoor Baig";
 const PUBLISHED_ISO = "2026-08-17T00:00:00.000Z";
 const REFRESHED_HUMAN = "17 August 2026";
 
-const head = ({ title, description, canonical, image, type = "website", extraLd = [] }) => `<!DOCTYPE html>
+/** `ogTitle`/`ogDescription` let a page speak differently to a social card than to Google. The SEO
+ *  title/description are keyword-led and long; a card gets ~70 chars of title and ~110 of body before
+ *  X truncates, so the two jobs are not the same sentence. They default to the SEO copy. */
+const head = ({
+  title,
+  description,
+  canonical,
+  image,
+  imageAlt,
+  imageWidth,
+  imageHeight,
+  ogTitle = title,
+  ogDescription = description,
+  type = "website",
+  extraLd = [],
+}) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -80,14 +95,20 @@ const head = ({ title, description, canonical, image, type = "website", extraLd 
 <link rel="canonical" href="${canonical}">
 <meta property="og:type" content="${type}">
 <meta property="og:site_name" content="Infinite">
-<meta property="og:title" content="${esc(title)}">
-<meta property="og:description" content="${esc(description)}">
+<meta property="og:title" content="${esc(ogTitle)}">
+<meta property="og:description" content="${esc(ogDescription)}">
 <meta property="og:url" content="${canonical}">
-<meta property="og:image" content="${image}">
+<meta property="og:image" content="${image}">${
+  imageWidth && imageHeight
+    ? `\n<meta property="og:image:width" content="${imageWidth}">\n<meta property="og:image:height" content="${imageHeight}">`
+    : ""
+}${imageAlt ? `\n<meta property="og:image:alt" content="${esc(imageAlt)}">` : ""}
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${esc(title)}">
-<meta name="twitter:description" content="${esc(description)}">
-<meta name="twitter:image" content="${image}">
+<meta name="twitter:title" content="${esc(ogTitle)}">
+<meta name="twitter:description" content="${esc(ogDescription)}">
+<meta name="twitter:image" content="${image}">${
+  imageAlt ? `\n<meta name="twitter:image:alt" content="${esc(imageAlt)}">` : ""
+}
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -95,6 +116,10 @@ ${extraLd.map((d) => `<script type="application/ld+json">${jsonLd(d)}</script>`)
 `;
 
 const ORG = { "@type": "Organization", name: "Infinite", "@id": `${ORIGIN}#org`, url: ORIGIN };
+
+/** Full precision with thousands separators. The card copy leans on the median being an exact,
+ *  unrounded number — "1,743" lands because it is not a rounded marketing figure. */
+const withCommas = (n) => new Intl.NumberFormat("en-US").format(n);
 
 function compact(n) {
   if (n >= 1_000_000) return `${Math.round(n / 1_000_000)}M`;
@@ -134,6 +159,15 @@ function leaderboardHtml(payload) {
   const verified = payload.rows;
   const averageViews = verified.length
     ? Math.round(verified.reduce((sum, r) => sum + (r.views || 0), 0) / verified.length)
+    : 0;
+  // The average is carried by a handful of monster launches, so on its own it flatters the field.
+  // The median is the honest number and the reason anyone shares this page — it goes in the card
+  // copy, computed over the same verified set as the average so the two are comparable.
+  const sortedViews = verified.map((r) => r.views || 0).sort((a, b) => a - b);
+  const medianViews = sortedViews.length
+    ? sortedViews.length % 2
+      ? sortedViews[(sortedViews.length - 1) / 2]
+      : Math.round((sortedViews[sortedViews.length / 2 - 1] + sortedViews[sortedViews.length / 2]) / 2)
     : 0;
   const asOf = payload.as_of;
 
@@ -278,7 +312,17 @@ ${footerHtml(`Live data, refreshed ${esc(asOf)}`)}
     title: "Startup Launch Video Leaderboard: the most-viewed launches on X (2026)",
     description: payload.description,
     canonical: LEADERBOARD_URL,
-    image: `${ASSETS_ABS}/breaker-1.jpg`,
+    // A real 1200x630 card of the hero — headline, subtitle and the three live stat tiles. The
+    // breaker strip that used to sit here is 2000x298, so X letterboxed it into an anonymous band
+    // of cropped faces with no title on it.
+    image: `${ASSETS_ABS}/og-leaderboard-v1.jpg`,
+    imageWidth: 1200,
+    imageHeight: 630,
+    imageAlt: "The Startup Launch Video Leaderboard — every startup launch video on X, ranked",
+    ogTitle: `${rows.length} startup launch videos on X, ranked by views`,
+    ogDescription: `The average got ${compact(averageViews)} views. The median got ${withCommas(
+      medianViews,
+    )}. Every launch ranked, refreshed every 48h — submit yours.`,
     extraLd: [dataset, itemList, webPage],
   })}<style>${FONT_CSS}${LEADERBOARD_CSS}${NAV_CSS}${FOOTER_CSS}</style>
 </head>
