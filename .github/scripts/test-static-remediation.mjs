@@ -47,6 +47,11 @@ const expectedLastmodByPath = new Map([
   ["/compare/infinite-vs-okara/", "2026-07-22"],
   ["/compare/infinite-vs-ploy/", "2026-07-22"],
   ["/compare/infinite-vs-blaze/", "2026-07-22"],
+  ["/research/", "2026-08-19"],
+  // Served by the vercel.json proxy from the 1bu-1 app, but they are infinite.fast URLs and belong
+  // in the apex sitemap — the crawler never sees the origin behind the rewrite.
+  ["/research/launch-videos", "2026-08-19"],
+  ["/startup-launch-videos", "2026-08-19"],
   ["/privacy/", "2026-08-02"],
   ["/terms/", "2026-07-22"],
 ]);

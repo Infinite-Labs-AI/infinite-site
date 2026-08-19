@@ -24,12 +24,24 @@ export const KNOWN_DOCUMENT_PATHS = new Set([
   "/compare/infinite-vs-okara/",
   "/compare/infinite-vs-ploy/",
   "/privacy/",
+  "/research/",
   "/terms/",
   "/tools/",
   "/tools/founder-content-ideas-generator/",
   "/tools/high-intent-lead-finder-template/",
   "/tools/landing-page-ab-test-ideas-generator/",
   "/tools/seo-geo-brief-generator/",
+]);
+
+// Document pages this host SERVES BY PROXY: vercel.json rewrites them to the 1bu-1 app, which
+// renders the Supabase-backed leaderboard and the study beside it. They are genuine navigations on
+// infinite.fast and must be counted, but they are deliberately kept OUT of KNOWN_DOCUMENT_PATHS
+// because test-prepare-static-deploy.mjs pins that set to the built dist HTML page set exactly —
+// listing a proxied page there would fail CI forever. Separate list, same guarantee: an unknown
+// path still cannot fake a pageview. Add the rewrite and this entry together.
+export const PROXIED_DOCUMENT_PATHS = new Set([
+  "/startup-launch-videos/",
+  "/research/launch-videos/",
 ]);
 
 function normalizedPath(rawUrl) {
@@ -45,7 +57,7 @@ function isProductionDocumentNavigation(request, path) {
   const host = url.hostname.toLowerCase().replace(/\.$/, "");
   if (process.env.VERCEL_ENV !== "production" || !PRODUCTION_HOSTS.has(host)) return false;
   if (request.method !== "GET") return false;
-  if (!KNOWN_DOCUMENT_PATHS.has(path)) return false;
+  if (!KNOWN_DOCUMENT_PATHS.has(path) && !PROXIED_DOCUMENT_PATHS.has(path)) return false;
   if (isPrefetch(request)) return false;
   const destination = request.headers.get("sec-fetch-dest");
   const userAgent = request.headers.get("user-agent") ?? "";

@@ -44,7 +44,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://static.ads-twitter.com https://connect.facebook.net; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://static.ads-twitter.com https://analytics.twitter.com https://www.facebook.com https://api.github.com https://api.npmjs.org; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src 'self' https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; report-uri /api/csp-report; report-to csp-endpoint"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://static.ads-twitter.com https://connect.facebook.net; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://static.ads-twitter.com https://analytics.twitter.com https://www.facebook.com https://api.github.com https://api.npmjs.org; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' https://wdxjduorvpayxixpmskf.supabase.co; frame-src 'self' https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; report-uri /api/csp-report; report-to csp-endpoint"
         },
         {
           "key": "Reporting-Endpoints",
@@ -74,6 +74,22 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/startup-launch-videos",
+      "destination": "https://app.ultima.inc/startup-launch-videos"
+    },
+    {
+      "source": "/startup-launch-videos/:path*",
+      "destination": "https://app.ultima.inc/startup-launch-videos/:path*"
+    },
+    {
+      "source": "/research/launch-videos",
+      "destination": "https://app.ultima.inc/research/launch-videos"
+    },
+    {
+      "source": "/_next/:path*",
+      "destination": "https://app.ultima.inc/_next/:path*"
+    },
     {
       "source": "/infinite/ledger",
       "destination": "https://api.ultima.inc/api/analytics/events/collect"

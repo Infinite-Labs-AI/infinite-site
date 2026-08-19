@@ -44,6 +44,7 @@ const deployEntries = [
   "agents",
   "compare",
   "privacy",
+  "research",
   "terms",
   "tools",
   "assets",

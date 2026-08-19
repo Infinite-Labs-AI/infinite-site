@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 process.env.INFINITE_PRODUCTION_HOSTS = "infinite.fast,www.infinite.fast";
 process.env.VERCEL_ENV = "production";
 
-const { default: middleware, config, KNOWN_DOCUMENT_PATHS } = await import("../../middleware.js");
+const { default: middleware, config, KNOWN_DOCUMENT_PATHS, PROXIED_DOCUMENT_PATHS } = await import("../../middleware.js");
 
 assert.equal(config.runtime, "edge");
 assert.deepEqual(config.matcher, ["/((?!api/|assets/|fonts/|logos/|ingest/|infinite/).*)"]);
@@ -17,6 +17,25 @@ for (const path of KNOWN_DOCUMENT_PATHS) {
     await run(request(`https://infinite.fast${path}`)),
     [marker(path)],
     `manifest path ${path} must emit one marker for a browser document navigation`,
+  );
+}
+
+// Pages served by the vercel.json proxy are counted from their own list, because the dist-parity
+// guardrail forbids putting a page that is not in dist into KNOWN_DOCUMENT_PATHS.
+assert.ok(PROXIED_DOCUMENT_PATHS instanceof Set && PROXIED_DOCUMENT_PATHS.size > 0, "middleware must export the proxied-document manifest");
+for (const path of PROXIED_DOCUMENT_PATHS) {
+  assert.ok(!KNOWN_DOCUMENT_PATHS.has(path), `${path} is proxied, so it must NOT be in the dist-parity manifest`);
+  assert.deepEqual(
+    await run(request(`https://infinite.fast${path}`)),
+    [marker(path)],
+    `proxied path ${path} must emit one marker for a browser document navigation`,
+  );
+  // The canonical URL has no trailing slash; normalizedPath() adds one, so the real URL must land
+  // on the same marker as the manifest entry.
+  assert.deepEqual(
+    await run(request(`https://infinite.fast${path.replace(/\/$/, "")}`)),
+    [marker(path)],
+    `proxied path ${path} must count when visited without its trailing slash`,
   );
 }
 
