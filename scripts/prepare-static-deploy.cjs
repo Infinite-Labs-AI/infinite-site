@@ -44,6 +44,7 @@ const deployEntries = [
   "agents",
   "compare",
   "privacy",
+  "research",
   "terms",
   "tools",
   "assets",
@@ -107,6 +108,15 @@ for (const [index, tag] of homepageStylesheetTags.entries()) {
 }
 
 fs.writeFileSync(path.join(distDir, "index.html"), homepageHtml);
+
+// The two launch-video pages are generated from the public dataset rather than written by hand.
+// Runs BEFORE inject-analytics so the generated HTML gets the same analytics + apex-URL treatment
+// as every other page, and as a child process because this file is CJS and the builder is ESM.
+execFileSync(process.execPath, [path.join(repoRoot, "scripts/build-launch-videos.mjs"), distDir], {
+  cwd: repoRoot,
+  env: process.env,
+  stdio: "inherit",
+});
 
 execFileSync(process.execPath, [path.join(repoRoot, ".github/scripts/inject-analytics.cjs")], {
   cwd: repoRoot,

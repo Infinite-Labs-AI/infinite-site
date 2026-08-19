@@ -3,8 +3,14 @@ import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
+import { serveDatasetFixture } from "./fixtures/launch-videos-dataset.mjs";
+
 const repoRoot = new URL("../..", import.meta.url).pathname;
 const distDir = join(repoRoot, "dist");
+
+// The deploy build generates the launch-video pages from the public dataset. Point it at a local
+// fixture so this contract tests OUR build, not the app's uptime.
+const dataset = await serveDatasetFixture();
 
 try {
   execFileSync("node", [join(repoRoot, "scripts/prepare-static-deploy.cjs")], {
@@ -19,6 +25,7 @@ try {
         staticProxy: "vercel",
       }),
       VERCEL_ENV: "production",
+      LAUNCH_VIDEOS_DATASET_URL: dataset.url,
     },
     stdio: "pipe",
   });
@@ -116,6 +123,7 @@ try {
     "middleware.js KNOWN_DOCUMENT_PATHS must exactly match the built dist HTML page set — update the manifest whenever a document page is added or removed",
   );
 } finally {
+  dataset.close();
   rmSync(distDir, { recursive: true, force: true });
 }
 

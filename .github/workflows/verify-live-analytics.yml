@@ -80,6 +80,7 @@ jobs:
           - test-routing-middleware.mjs
           - test-static-remediation.mjs
           - test-prepare-static-deploy.mjs
+          - test-launch-video-pages.mjs
           - test-csp-report.mjs
           - test-verify-live-analytics.mjs
     steps:
