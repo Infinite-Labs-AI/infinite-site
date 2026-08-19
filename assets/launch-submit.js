@@ -13,9 +13,11 @@
 (function () {
   "use strict";
 
-  // SAME-ORIGIN on purpose. The page's CSP is connect-src 'self', and the API route emits no CORS
-  // headers, so a direct cross-origin POST is blocked twice over — silently, at the preflight, with
-  // nothing in the UI to explain it. vercel.json rewrites this path to the API.
+  // SAME-ORIGIN on purpose, and the rewrite that backs it is in vercel.json next to /infinite/ledger.
+  // A direct cross-origin POST to api.ultima.inc is blocked twice over: this page's CSP is
+  // connect-src 'self' and does not list that host, and the API route emits no CORS headers at all.
+  // Both failures happen at the preflight, silently, with nothing in the UI to explain them — so if
+  // you ever point this at an absolute URL again, you must fix both.
   var ENDPOINT = "/api/launch-videos/submit";
   var overlay = null;
 
