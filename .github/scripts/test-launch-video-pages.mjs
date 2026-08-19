@@ -53,9 +53,23 @@ try {
   //    run JavaScript still has to read every ranked startup. ──
   const bodyRows = board.split("<tbody>")[1].split("</tbody>")[0];
   const dataRows = [...bodyRows.matchAll(/<tr[ >]/g)].length;
-  assert.equal(dataRows, 51, "page one must server-render the pinned row plus 50 ranked launches");
+  assert.equal(dataRows, 50, "page one must server-render a full page of ranked launches");
   assert.match(bodyRows, /Startup 1</, "the top-ranked startup must appear in the static markup");
-  assert.match(bodyRows, /Orchid/, "the pinned, unverifiable #1 must be rendered above the ranking");
+
+  // Orchid RANKS on its reported figure rather than being pinned above the table. It used to be
+  // hardcoded at #1, which left the board showing a #1 with fewer views than the row beneath it
+  // once a bigger verified launch was added.
+  assert.match(bodyRows, /Orchid/, "Orchid must appear in the ranking");
+  const orchidRow = bodyRows.match(/<tr[^>]*>(?:(?!<\/tr>).)*?Orchid(?:(?!<\/tr>).)*?<\/tr>/s)[0];
+  assert.match(orchidRow, /~32M/, "Orchid must show its REPORTED view count, marked as such");
+  assert.match(orchidRow, /Post removed/, "Orchid must say why it has no live metrics");
+  // The deleted post's engagement cannot be recovered, and this dataset is published as
+  // hand-verified under CC BY. A dash is the honest cell; a zero or an invented number is not.
+  assert.equal(
+    (orchidRow.match(/&mdash;/g) ?? []).length >= 4, true,
+    "Orchid's unrecoverable metrics must render as dashes, never as zeros or invented figures",
+  );
+  assert.doesNotMatch(orchidRow, /class="llb-v">0</, "an unknown metric must never render as 0");
 
   // Dofollow links to each startup's own site are what a founder is paid in for submitting.
   assert.match(bodyRows, /<a class="llb-nmlink" href="https:\/\/startup1\.example"/);

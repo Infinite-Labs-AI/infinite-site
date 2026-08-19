@@ -24,6 +24,18 @@
     { key: "bookmarks", label: "Bookmarks" },
   ];
 
+  /**
+   * Orchid ranks on its REPORTED view count, with every other metric blank.
+   *
+   * It used to be pinned above the table as "#1, post removed", on the premise that it was the
+   * biggest launch of the period. A verified 69M-view launch has since been added, so that pin left
+   * the board showing a #1 with fewer views than the row beneath it — which reads as broken.
+   *
+   * It now sorts like everything else on `views`, so it lands wherever 32M actually puts it. The
+   * other metrics are NULL, not invented: the post was deleted, those numbers cannot be recovered,
+   * and this dataset is published as hand-verified under CC BY. A dash is the honest cell, and
+   * `unverified` is what makes the row say so on its face.
+   */
   var ORCHID = {
     startup: "Orchid",
     handle: "orchid_hq",
@@ -32,6 +44,24 @@
     reportedViews: "~32M",
     url: "https://www.fastcompany.com/91581882/orchid-ai-assistant-launches-gets-backlash-for-relationship-ad",
   };
+
+  /** Orchid as a sortable row: a real reported number for views, nothing invented for the rest. */
+  function orchidRow() {
+    return {
+      startup: ORCHID.startup,
+      startup_handle: ORCHID.handle,
+      startup_avatar: ORCHID.avatar,
+      startup_url: null,
+      tweet_url: null,
+      views: 32000000,
+      viewsDisplay: ORCHID.reportedViews,
+      likes: null, reposts: null, replies: null, bookmarks: null,
+      movement: null,
+      founders: [],
+      unverified: true,
+      sourceUrl: ORCHID.url,
+    };
+  }
 
   function esc(value) {
     return String(value == null ? "" : value)
@@ -125,9 +155,6 @@
       start: start,
       max: max,
       visible: sorted.slice(start, start + PAGE),
-      // The pinned row belongs to the unfiltered first page only. It is not part of `sorted`, so it
-      // must never shift the rank numbers on any later page.
-      showOrchid: !String(query).trim() && current === 1,
     };
   }
 
@@ -163,19 +190,28 @@
     // A row whose launch URL is not plainly http(s) renders as a dash, exactly like the pinned
     // Orchid row whose post was removed. Better a missing link than a clickable script URL.
     var watchHref = safeHref(r.tweet_url);
+    var founderCell = r.unverified
+      ? '<td class="llb-nm2"><a class="llb-pill" href="' + esc(r.sourceUrl) +
+        '" target="_blank" rel="noopener noreferrer">Post removed</a></td>'
+      : null;
     var cells = METRIC_COLUMNS.map(function (c) {
       var on = c.key === sortKey;
-      var v = r[c.key] || 0;
+      var raw = r[c.key];
+      // null is "we do not have this", which is not the same as zero and must not render as one.
+      if (raw == null) {
+        return '<td class="llb-num' + (on ? " is-on" : "") + '"><span class="llb-v">&mdash;</span></td>';
+      }
+      var display = c.key === "views" && r.viewsDisplay ? r.viewsDisplay : fmt(raw);
       var bar = on
-        ? '<span class="llb-cellbar" style="width:' + Math.max(2, Math.round((v / max) * 68)) + 'px"></span>'
+        ? '<span class="llb-cellbar" style="width:' + Math.max(2, Math.round((raw / max) * 68)) + 'px"></span>'
         : "";
-      return '<td class="llb-num' + (on ? " is-on" : "") + '"><span class="llb-v">' + fmt(v) + "</span>" + bar + "</td>";
+      return '<td class="llb-num' + (on ? " is-on" : "") + '"><span class="llb-v">' + display + "</span>" + bar + "</td>";
     }).join("");
     return (
       "<tr>" +
       '<td class="llb-rk"><span class="rkb' + (rank <= 3 ? " rk" + rank : "") + '">' + rank + "</span>" + move + "</td>" +
       '<td class="llb-nm">' + account(r.startup, r.startup_handle, r.startup_avatar, r.startup_url) + "</td>" +
-      '<td class="llb-nm2">' + founders + "</td>" +
+      (founderCell || '<td class="llb-nm2">' + founders + "</td>") +
       (watchHref
         ? '<td class="llb-vid"><a class="llb-vidlink" href="' + esc(watchHref) +
           '" target="_blank" rel="noopener noreferrer" aria-label="Watch ' + esc(r.startup) +
@@ -188,24 +224,10 @@
     );
   }
 
-  function orchidRowHtml(sortKey) {
-    var cells = METRIC_COLUMNS.map(function (c) {
-      return '<td class="llb-num' + (c.key === sortKey ? " is-on" : "") + '"><span class="llb-v">' +
-        (c.key === "views" ? ORCHID.reportedViews : "—") + "</span></td>";
-    }).join("");
-    return (
-      '<tr class="llb-pinned"><td class="llb-rk"><span class="rkb rk1">1</span></td>' +
-      '<td class="llb-nm">' + account(ORCHID.startup, ORCHID.handle, ORCHID.avatar, null) + "</td>" +
-      '<td class="llb-nm2"><a class="llb-pill" href="' + esc(ORCHID.url) +
-        '" target="_blank" rel="noopener noreferrer">Post removed</a></td>' +
-      '<td class="llb-vid"><span class="llb-vid-none">&mdash;</span></td>' + cells + "</tr>"
-    );
-  }
-
   function bodyHtml(view) {
-    var out = view.showOrchid ? orchidRowHtml(view.sortKey) : "";
+    var out = "";
     for (var i = 0; i < view.visible.length; i += 1) {
-      out += rowHtml(view.visible[i], view.start + i + (view.showOrchid ? 2 : 1), view.sortKey, view.max);
+      out += rowHtml(view.visible[i], view.start + i + 1, view.sortKey, view.max);
     }
     return out;
   }
@@ -248,6 +270,7 @@
     safeHref: safeHref,
     METRIC_COLUMNS: METRIC_COLUMNS,
     ORCHID: ORCHID,
+    orchidRow: orchidRow,
     esc: esc,
     fmt: fmt,
     resolve: resolve,
