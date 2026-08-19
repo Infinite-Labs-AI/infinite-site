@@ -27,6 +27,10 @@ const EXPECTED_POSTHOG_TOKEN = firstNonEmpty(
 const EXPECTED_POSTHOG_API_HOST = firstNonEmpty(process.env.EXPECTED_POSTHOG_API_HOST, "/ingest");
 const EXPECTED_GA_TAG_ID = firstNonEmpty(process.env.EXPECTED_GA_TAG_ID, "G-JE3BZS61FZ");
 const EXPECTED_INFINITE_SITE_SOURCE_KEY = firstNonEmpty(process.env.EXPECTED_INFINITE_SITE_SOURCE_KEY);
+/** Site half of the two-keyed browser->desktop handoff (Wave 2). Set to "1" only after the site's
+ *  `INFINITE_HANDOFF_ENABLED` is flipped in production. Both directions are enforced: off means the
+ *  live bytes must be ABSENT, on means every page must carry the whole flow. */
+const EXPECTED_HANDOFF_ENABLED = process.env.EXPECTED_HANDOFF_ENABLED === "1";
 const REQUIRE_SYNTHETIC_RECEIPTS = process.env.REQUIRE_SYNTHETIC_RECEIPTS === "1";
 const SYNTHETIC_SITE_SOURCE_KEY = firstNonEmpty(process.env.SYNTHETIC_SITE_SOURCE_KEY);
 const ANALYTICS_RECEIPT_URL = firstNonEmpty(process.env.ANALYTICS_RECEIPT_URL);
@@ -41,6 +45,15 @@ const FETCH_ATTEMPTS = 3;
 const FETCH_TIMEOUT_MS = 20_000;
 const DOWNLOAD_DESTINATION = "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
 const FORBIDDEN_ROUTE_PATHS = ["/tracking", "/tracking/events", "/sdk", "/sdk/infinite.js"];
+const HANDOFF_PATH = "/infinite/handoff";
+/** The four bytes that make the browser-led handoff real on a page. Each is checked in BOTH
+ *  directions against `EXPECTED_HANDOFF_ENABLED`, so a half-deploy is red either way. */
+const HANDOFF_PAGE_BYTES = [
+  ["consent-qualified context accessor", /window\.__infiniteHandoffContext/],
+  ["same-origin claim POST", /navigator\.sendBeacon\("\/infinite\/handoff"/],
+  ["Open Infinite launch URL", /infinite:\/\/handoff\/v1/],
+  ["retained Open Infinite card", /infinite-handoff-card/],
+];
 
 async function main() {
   console.log("Live analytics guardrail");
@@ -51,6 +64,7 @@ async function main() {
   console.log(`  expect GA tag id  : ${EXPECTED_GA_TAG_ID || "(any G-* tag)"}`);
   console.log(`  expect source key : ${EXPECTED_INFINITE_SITE_SOURCE_KEY ? maskIdentifier(EXPECTED_INFINITE_SITE_SOURCE_KEY) : "(not asserted)"}`);
   console.log(`  synthetic receipts: ${REQUIRE_SYNTHETIC_RECEIPTS ? "required" : "disabled"}`);
+  console.log(`  handoff bytes     : ${EXPECTED_HANDOFF_ENABLED ? "required" : "must be absent"}`);
   console.log("");
 
   /** @type {string[]} */
@@ -83,6 +97,7 @@ async function main() {
   await checkDownloadRedirect(failures);
   await checkCspReport(failures);
   await checkForbiddenRoutes(failures);
+  await checkHandoffEndpoint(failures);
   await checkSyntheticReceipts(failures);
 
   console.log("");
@@ -144,6 +159,12 @@ function checkPage(label, html, failures) {
   }
   if (/app\.ultima\.inc|\/api\/events\/track|custom_app_download_redirect|\/tracking(?:\/|["'?#\s])|\/sdk(?:\/|["'?#\s])/.test(html)) {
     fail("live bytes contain a forbidden legacy/private tracker surface");
+  }
+
+  for (const [what, pattern] of HANDOFF_PAGE_BYTES) {
+    const present = pattern.test(html);
+    if (EXPECTED_HANDOFF_ENABLED && !present) fail(`handoff ${what} is missing while EXPECTED_HANDOFF_ENABLED=1`);
+    if (!EXPECTED_HANDOFF_ENABLED && present) fail(`handoff ${what} is live while the site handoff flag is off`);
   }
 }
 
@@ -239,6 +260,46 @@ async function checkForbiddenRoutes(failures) {
       failures.push(`[forbidden-route] ${path} probe failed: ${error.message}`);
       console.log(`  FAIL  forbidden route ${path}`);
     }
+  }
+}
+
+/** Health-only probe of the same-origin claim rewrite.
+ *
+ *  This deliberately sends OPTIONS and never POST: a claim is a real attribution row with a real
+ *  48-hour lifetime, and a guardrail that mints one on every push would be manufacturing the very
+ *  cohort it exists to verify. OPTIONS proves the rewrite resolves and the cloud route is deployed
+ *  and reachable without creating anything.
+ *
+ *  Either header spelling is accepted for the advertised methods — the cloud route answers a
+ *  browser preflight (`Access-Control-Allow-Methods`) while a bare OPTIONS may answer with `Allow`
+ *  — but 204 plus BOTH `POST` and `OPTIONS` is required, so a 404/405 rewrite or a route that
+ *  forgot its preflight is still red. Nothing here logs a claim id, secret, or source key: none is
+ *  ever generated. */
+async function checkHandoffEndpoint(failures) {
+  if (!EXPECTED_HANDOFF_ENABLED) {
+    console.log("  SKIP  handoff endpoint (EXPECTED_HANDOFF_ENABLED is not 1)");
+    return;
+  }
+  try {
+    const response = await fetch(`${SITE_BASE_URL}${HANDOFF_PATH}`, {
+      method: "OPTIONS",
+      redirect: "manual",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: probeHeaders("infinite-analytics-guardrail/2.0"),
+    });
+    const advertised = [
+      response.headers.get("access-control-allow-methods"),
+      response.headers.get("allow"),
+    ].filter(Boolean).join(", ").toUpperCase();
+    if (response.status !== 204 || !advertised.includes("POST") || !advertised.includes("OPTIONS")) {
+      failures.push(`[handoff] expected 204 advertising POST, OPTIONS from ${HANDOFF_PATH}, received ${response.status} advertising ${JSON.stringify(advertised)}`);
+      console.log(`  FAIL  ${HANDOFF_PATH} (${response.status})`);
+      return;
+    }
+    console.log(`  PASS  ${HANDOFF_PATH} 204 (POST, OPTIONS; no claim issued)`);
+  } catch (error) {
+    failures.push(`[handoff] ${HANDOFF_PATH} check failed: ${error.message}`);
+    console.log(`  FAIL  ${HANDOFF_PATH} check`);
   }
 }
 

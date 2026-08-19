@@ -32,6 +32,51 @@ Browser delivery is the same-origin path `/infinite/ledger`, rewritten by Vercel
 
 `infinite-tag@0.3.1` maps each valid `data-download-location` marker through its package-owned click listener into the bounded `cta_location` property on `app_download_click`, alongside `destination_path: "/download"`. A small GA4 bridge applies the same bounded properties to one `app_download_clicked` event.
 
+## Browser-led desktop handoff (Wave 2, dormant)
+
+A SEPARATE lane from everything above. It is emitted only when the site build has a verified source
+key **and** `INFINITE_HANDOFF_ENABLED=1`; the shipped default is off, and a dormant build carries
+zero handoff bytes (pinned by `.github/scripts/test-inject-analytics.mjs` in both directions, and by
+`scripts/verify-live-analytics.mjs` against the live bytes via `EXPECTED_HANDOFF_ENABLED`).
+
+When enabled, a click on a same-origin `/download` anchor asks `window.__infiniteHandoffContext()`
+for a consent-qualified context. That accessor is the consent gate: under DNT/GPC or a saved denial
+it returns `null`, and the click then proceeds as an ordinary direct download with nothing minted,
+nothing sent, and nothing rendered. With a context, the browser mints a claim id (UUID v4) and a
+claim secret (32 random bytes, base64url, 43 characters), posts exactly
+
+```text
+{ siteSourceKey, claimId, claimSecret, anonymousId, sessionId, occurredAt, url }
+```
+
+to the same-origin path `/infinite/handoff`, which Vercel rewrites to
+`https://api.ultima.inc/api/analytics/attribution/handoff/claim`. Delivery is `navigator.sendBeacon`,
+falling back to one same-origin `keepalive` fetch only when the browser refuses the beacon. The
+server stores only `sha256(secret)`; the raw secret exists in the browser URL and nowhere else.
+
+The DMG opens in a NEW tab and the original page is retained with one card offering
+`infinite://handoff/v1?claim_id=...&secret=...`. The custom scheme is never auto-opened: the user's
+explicit click is the one browser-to-app transition. A later valid `/download` click replaces the
+card's claim instead of stacking a card.
+
+Two properties are load-bearing and easy to undo by accident:
+
+- The handler binds in the **capture** phase. The GA4 download bridge is a bubble listener that
+  cancels an ordinary same-tab click and re-navigates this tab; capture is what lets the handoff set
+  `target="_blank"` before the bridge reads it, so the bridge stands down and the retained page —
+  the only place the "Open Infinite" button exists — survives.
+- The handler never calls `preventDefault()`. Every failure path (no accessor, no context, no
+  crypto, refused beacon, thrown error) falls through to the anchor's own navigation, so the
+  download always happens.
+
+`app_download_click` and the server-side `/download` attempt are unchanged; a claim is labelled
+`Attributed handoff start` and is never counted as a download, an installation, or a person.
+
+**Package pin:** the accessor ships in `infinite-tag@0.6.0`, which is not published yet. The site
+still pins `0.3.5`; the flow is written against the documented accessor shape and is inert without
+it (`typeof window.__infiniteHandoffContext !== "function"` is just another no-context path). Pin
+`>= 0.6.0` and record its tarball receipt before flipping `INFINITE_HANDOFF_ENABLED`.
+
 ## Consent and privacy signals
 
 Infinite is configured with `consent.mode = "not_required"`; it does not depend on a stored consent value. Its configured DNT/GPC handling still suppresses Infinite browser events. GA4 and PostHog retain their pre-existing direct initialization. Server-observed document and redirect requests occur before browser code can run and remain separate.
