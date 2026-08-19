@@ -16,10 +16,18 @@ let drainRequests = 0;
 let receiptRequests = 0;
 let forbiddenProbeRequests = 0;
 let runtimeSiteSourceKey = "";
+/** Every request the verifier makes, so the "a guardrail run is not a visit" contract can be
+ *  asserted at the end: `{ method, pathname, purpose }`. */
+const observedProbes = [];
+/** The two lanes whose rows are DELIBERATELY written (synthetic source key, synthetic environment),
+ *  plus the 1bu-1-side endpoints that are not the site at all. Everything else is a live probe and
+ *  must declare `Purpose: prefetch`. */
+const COUNTED_OR_OFFSITE = new Set(["/infinite/ledger", "/synthetic-drain", "/receipt"]);
 
 const server = createServer(async (request, response) => {
   const origin = `http://127.0.0.1:${server.address().port}`;
   const url = new URL(request.url, origin);
+  observedProbes.push({ method: request.method, pathname: url.pathname, purpose: request.headers.purpose });
 
   if (url.pathname === "/ingest/static/array.js") {
     response.writeHead(200, { "content-type": "application/javascript" });
@@ -81,17 +89,25 @@ const server = createServer(async (request, response) => {
         assert.equal(typeof record.proxy.region, "string", "Drain proxy region must be a string");
       }
     }
+    // Mirrors the real drain since 1bu-1 #2827 (count-and-flag): a bot-shaped DOCUMENT record is
+    // ACCEPTED as a flagged row (is_bot + agent class), while a bot-shaped REDIRECT is still dropped.
+    const isBotUa = (record) => /bot/i.test(record.proxy?.userAgent?.[0] ?? "");
     const accepted = records.filter((record) => ["edge", "redirect"].includes(record.source)
       && record.projectId === "prj_synthetic"
       && record.proxy?.host === "infinite.fast"
       && record.proxy?.method === "GET"
-      && !/bot/i.test(record.proxy?.userAgent?.[0] ?? "")
-      && (record.source === "redirect" || record.message === 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}'));
+      && ((record.source === "redirect" && !isBotUa(record))
+        || (record.source === "edge" && record.message === 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}')));
     for (const record of accepted) {
+      const flagged = record.source === "edge" && isBotUa(record);
       received.set(`vercel:${record.id}`, {
         eventId: `vercel:${record.id}`,
         eventName: record.source === "edge" ? "site_document_request" : "app_download_redirect",
         environment: "synthetic",
+        isBot: record.source === "edge" ? flagged : null,
+        agentClass: flagged ? "bot" : record.source === "edge" ? "human" : null,
+        agentSubclass: flagged ? "search_crawler" : null,
+        agentVerified: flagged ? "unknown" : null,
       });
     }
     response.writeHead(202, { "content-type": "application/json" });
@@ -190,9 +206,36 @@ try {
   assert.equal(observedCollectOrigin, baseUrl);
   assert.equal(collectRequests, 1);
   assert.equal(drainRequests, 1);
-  assert.equal(receiptRequests, 3);
+  // browser page view + human document + redirect + the FLAGGED Googlebot document (count-and-flag).
+  assert.equal(receiptRequests, 4);
   assert.equal(forbiddenProbeRequests, 16, "each verification run must probe forbidden tracking and sdk routes");
   assert.match(observedDownloadUa ?? "", /bot/i, "redirect probe must be bot-classified and excluded from production counts");
+
+  // ── A guardrail run is not a visit ───────────────────────────────────────────────────────────
+  // Every LIVE probe must carry `Purpose: prefetch`, which middleware.js `isPrefetch()` reads and
+  // `isProductionDocumentNavigation()` rejects on — so no probe can emit a document marker, a
+  // visitKey, or a server visit, no matter how browser-shaped its user agent becomes. Before this,
+  // the only thing keeping CI out of production's human rows was our UA lacking `Mozilla/`.
+  const liveProbes = observedProbes.filter((probe) => !COUNTED_OR_OFFSITE.has(probe.pathname));
+  assert.ok(liveProbes.length > 0, "the verifier must actually probe the live site");
+  for (const probe of liveProbes) {
+    assert.equal(
+      probe.purpose,
+      "prefetch",
+      `live probe ${probe.method} ${probe.pathname} must send "Purpose: prefetch" — it would otherwise be counted as a production document request`,
+    );
+  }
+  for (const pathname of ["/", "/tools/", "/ingest/static/array.js", "/download", "/api/csp-report", "/sdk/infinite.js"]) {
+    assert.ok(
+      liveProbes.some((probe) => probe.pathname === pathname),
+      `expected a live probe for ${pathname} in the prefetch-declared set`,
+    );
+  }
+  // The counted lane is the contrast that makes the rule meaningful: the synthetic collect POST
+  // deliberately does NOT declare itself a prefetch, because that row is supposed to exist.
+  const collectProbes = observedProbes.filter((probe) => probe.pathname === "/infinite/ledger");
+  assert.equal(collectProbes.length, 1, "exactly one synthetic collect POST per enabled run");
+  assert.equal(collectProbes[0].purpose, undefined, "the synthetic collect POST is meant to be recorded and must not claim to be a prefetch");
 } finally {
   server.close();
 }

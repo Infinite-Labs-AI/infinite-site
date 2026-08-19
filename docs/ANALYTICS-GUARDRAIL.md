@@ -19,6 +19,16 @@ For every maintained relative main-site path, `scripts/verify-live-analytics.mjs
 - a live PostHog proxy library response; and
 - the native `/download` 307/308 target. The redirect probe uses a bot-classified user agent so it is excluded from production redirect metrics.
 
+## What it must never do: count itself
+
+A guardrail that inflates the numbers it verifies is worthless. This job hits live production on every push to `main` and once a day, so **every live probe declares `Purpose: prefetch`**. `middleware.js` `isPrefetch()` reads `purpose` / `sec-purpose`, and `isProductionDocumentNavigation()` rejects a prefetch *before* it consults the user agent — so no probe can emit `INFINITE_DOCUMENT_REQUEST_V1`, produce a `visitKey`, or become a server visit, however browser-shaped its headers get. Previously the only thing keeping CI out of production's human rows was the probe user agent lacking `Mozilla/`; that was an accident, and anyone making the probes "more realistic" would have undone it silently.
+
+`/download` is the exception that needs its own guard: the middleware **owns** that path, serves the 307 itself and logs an attempt marker for every production GET without ever consulting `isPrefetch()`. Its exclusion is the bot-shaped user agent — `infinite-analytics-guardrail-bot/2.0` classifies as `uaFamily: "bot"`, and the drain keeps browser-family markers only. Do not drop `bot` from that string.
+
+Both properties are pinned by tests: `test-verify-live-analytics.mjs` asserts every live probe sends the header (and that the deliberately-counted synthetic collect POST does not), and `test-routing-middleware.mjs` asserts the middleware rejects a prefetch even with a full Chrome user agent and classifies the guardrail's `/download` probe as a bot.
+
+The records this guardrail *does* want written are the signed synthetic Drain batch and the same-origin synthetic collect POST. Those carry realistic user agents on purpose, land on a synthetic-environment source, and stay out of every production aggregate.
+
 When the separately approved synthetic configuration is enabled, the same job also:
 
 1. generates a UUID and posts `site_page_view` through `https://infinite.fast/infinite/ledger` with the dedicated synthetic source key and apex `Origin`;

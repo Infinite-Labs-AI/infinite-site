@@ -65,7 +65,7 @@ async function main() {
   for (const page of PAGES) {
     const url = `${SITE_BASE_URL}${page}`;
     const result = await fetchTextWithRetry(url, {
-      headers: browserHeaders("infinite-analytics-guardrail/2.0 (+verify-live-analytics)"),
+      headers: probeHeaders("infinite-analytics-guardrail/2.0 (+verify-live-analytics)"),
     });
     if (!result.ok) {
       failures.push(`[${page}] could not fetch ${url} — ${result.detail}`);
@@ -159,7 +159,7 @@ function checkSecurityHeaders(headers, failures) {
 async function checkPosthogProxy(failures) {
   if (!EXPECTED_POSTHOG_API_HOST.startsWith("/")) return;
   const path = `${EXPECTED_POSTHOG_API_HOST}/static/array.js`;
-  const result = await fetchTextWithRetry(`${SITE_BASE_URL}${path}`, { headers: browserHeaders("infinite-analytics-guardrail/2.0") });
+  const result = await fetchTextWithRetry(`${SITE_BASE_URL}${path}`, { headers: probeHeaders("infinite-analytics-guardrail/2.0") });
   if (!result.ok || !/posthog/i.test(result.text)) {
     failures.push(`[proxy] ${path} is unavailable or not the PostHog library (${result.detail})`);
     console.log(`  FAIL  proxy ${path}`);
@@ -170,10 +170,19 @@ async function checkPosthogProxy(failures) {
 
 async function checkDownloadRedirect(failures) {
   try {
+    // /download is the ONE probe the middleware always observes: its branch serves the 307 itself
+    // and logs `INFINITE_DOWNLOAD_ATTEMPT_V1` for every production GET — it never calls
+    // `isPrefetch()` (middleware.js `isProductionDownloadGet` = production + host + GET). So the
+    // load-bearing exclusion here is the BOT-SHAPED USER AGENT, not the header: the middleware
+    // files this request as `uaFamily: "bot"` and the drain keeps browser-family markers only, so
+    // a guardrail run can never become a Download. DO NOT drop "bot" from this user agent — that
+    // literal substring is what keeps CI out of the download numbers.
+    // `Purpose: prefetch` rides along as the same declaration of intent every other probe makes,
+    // and holds the line if /download ever grows a prefetch gate.
     const response = await fetch(`${SITE_BASE_URL}/download`, {
       redirect: "manual",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: browserHeaders("infinite-analytics-guardrail-bot/2.0"),
+      headers: probeHeaders("infinite-analytics-guardrail-bot/2.0"),
     });
     const location = response.headers.get("location");
     if (![307, 308].includes(response.status) || location !== DOWNLOAD_DESTINATION) {
@@ -193,7 +202,10 @@ async function checkCspReport(failures) {
     const response = await fetch(`${SITE_BASE_URL}/api/csp-report`, {
       method: "POST",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: { "content-type": "application/csp-report" },
+      // POSTs can never become document markers, but the rule is uniform on purpose: EVERY live
+      // request this script sends at the site declares itself uncounted, so "did we add a probe
+      // that forgot to?" is one grep, not a per-route argument.
+      headers: { "content-type": "application/csp-report", ...probeHeaders("infinite-analytics-guardrail/2.0") },
       body: JSON.stringify({ "csp-report": { "document-uri": `${SITE_BASE_URL}/guardrail?redacted=1`, "violated-directive": "script-src", "blocked-uri": "inline" } }),
     });
     if (response.status !== 204) {
@@ -215,7 +227,7 @@ async function checkForbiddenRoutes(failures) {
         method: path.endsWith(".js") ? "GET" : "POST",
         redirect: "manual",
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-        headers: browserHeaders("infinite-analytics-guardrail/2.0"),
+        headers: probeHeaders("infinite-analytics-guardrail/2.0"),
       });
       if (![404, 405].includes(response.status)) {
         failures.push(`[forbidden-route] ${path} returned ${response.status}, expected 404/405`);
@@ -263,6 +275,9 @@ async function checkSyntheticReceipts(failures) {
     siteSourceKey: SYNTHETIC_SITE_SOURCE_KEY,
   };
   try {
+    // DELIBERATELY NOT `probeHeaders` — this row is MEANT to be recorded. It carries the dedicated
+    // synthetic source key, so it lands on a synthetic-environment source (never a production
+    // aggregate) and its receipt is what proves the collect path is alive.
     const response = await fetch(`${SITE_BASE_URL}/infinite/ledger`, {
       method: "POST",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -279,6 +294,17 @@ async function checkSyntheticReceipts(failures) {
 
   const documentId = `guardrail-edge-${randomUUID()}`;
   const redirectId = `guardrail-redirect-${randomUUID()}`;
+  // The Googlebot document record is COUNTED AND FLAGGED by the drain since 1bu-1 #2827 (2026-08-18):
+  // a real ledger row with is_bot + agent_class, never dropped — this check proves the flag lands.
+  const botDocumentId = `guardrail-bot-${randomUUID()}`;
+  // These user agents are FIELDS INSIDE A SIGNED SYNTHETIC PAYLOAD, not headers on a live request:
+  // they describe records the drain must count, and the synthetic key confines them to a
+  // synthetic-environment source. They are the deliberate counterpart to `probeHeaders` and must
+  // keep their realistic shape.
+  // A REAL browser UA for the browser-shaped records. A bare "Mozilla/5.0" is bot-shaped to the
+  // maintained isbot list the drain now runs (no real browser sends it) — it would be flagged, and the
+  // redirect record dropped, exactly as a scanner's would.
+  const BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
   const timestamp = Date.now();
   const deploymentId = `dpl_${randomUUID().replaceAll("-", "")}`;
   const region = "iad1";
@@ -295,7 +321,7 @@ async function checkSyntheticReceipts(failures) {
     ...(destination ? { destination } : {}),
     ...(proxy ? { proxy: { timestamp, region, ...proxy } } : {}),
   });
-  const proxy = ({ method = "GET", host = SYNTHETIC_PRODUCTION_HOST, path = "/", statusCode = 200, userAgent = ["Mozilla/5.0"] } = {}) => ({
+  const proxy = ({ method = "GET", host = SYNTHETIC_PRODUCTION_HOST, path = "/", statusCode = 200, userAgent = [BROWSER_UA] } = {}) => ({
     method,
     host,
     path,
@@ -327,10 +353,10 @@ async function checkSyntheticReceipts(failures) {
       proxy: proxy({ path: "/assets/app.js" }),
     }),
     vercelRecord({
-      id: `bot-${randomUUID()}`,
+      id: botDocumentId,
       source: "edge",
       message: 'INFINITE_DOCUMENT_REQUEST_V1 {"path":"/"}',
-      proxy: proxy({ userAgent: ["Googlebot"] }),
+      proxy: proxy({ userAgent: ["Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"] }),
     }),
     vercelRecord({
       id: `project-${randomUUID()}`,
@@ -357,19 +383,26 @@ async function checkSyntheticReceipts(failures) {
       body: raw,
     });
     const result = await response.json().catch(() => ({}));
-    if (response.status !== 202 || result.accepted !== 2) {
+    // THREE accepted: the human document, the redirect, and the Googlebot document (counted and
+    // FLAGGED, not dropped). Everything else in the batch is isolated (HEAD, prefetch, asset path,
+    // wrong project, wrong host).
+    if (response.status !== 202 || result.accepted !== 3) {
       throw new Error(`Drain returned ${response.status} with accepted=${JSON.stringify(result.accepted)}`);
     }
-    await requireReceipt(`vercel:${documentId}`, "site_document_request");
+    await requireReceipt(`vercel:${documentId}`, "site_document_request", { isBot: false });
     await requireReceipt(`vercel:${redirectId}`, "app_download_redirect");
-    console.log("  PASS  signed synthetic Drain receipt (mixed batch isolated)");
+    // The flag lands: the Googlebot row is received AND classed bot / search_crawler.
+    await requireReceipt(`vercel:${botDocumentId}`, "site_document_request", { isBot: true, agentClass: "bot", agentSubclass: "search_crawler" });
+    console.log("  PASS  signed synthetic Drain receipt (mixed batch isolated; Googlebot row counted and flagged)");
   } catch (error) {
     failures.push(`[receipts] signed synthetic Drain check failed: ${error.message}`);
     console.log("  FAIL  signed synthetic Drain receipt");
   }
 }
 
-async function requireReceipt(eventId, eventName) {
+/** `expectAgent` (optional): the receipt's agent-class fields the row must carry — the drain's
+ *  count-and-flag proof (1bu-1 #2827). Each named key must match exactly. */
+async function requireReceipt(eventId, eventName, expectAgent = null) {
   const receiptUrl = new URL(ANALYTICS_RECEIPT_URL);
   receiptUrl.searchParams.set("eventId", eventId);
   let last = "not received";
@@ -382,6 +415,11 @@ async function requireReceipt(eventId, eventName) {
     if (response.ok && payload.received === true) {
       if (payload.eventId !== eventId || payload.eventName !== eventName || payload.environment !== "synthetic") {
         throw new Error(`receipt mismatch for ${eventId}`);
+      }
+      for (const [key, value] of Object.entries(expectAgent ?? {})) {
+        if (payload[key] !== value) {
+          throw new Error(`receipt for ${eventId}: ${key}=${JSON.stringify(payload[key])}, expected ${JSON.stringify(value)}`);
+        }
       }
       return;
     }
@@ -408,8 +446,26 @@ async function fetchTextWithRetry(url, init = {}) {
   return { ok: false, status: 0, text: "", headers: new Headers(), detail };
 }
 
-function browserHeaders(userAgent) {
-  return { "Cache-Control": "no-cache", Pragma: "no-cache", "User-Agent": userAgent };
+/** Headers for every LIVE probe this guardrail fires at production.
+ *
+ *  `Purpose: prefetch` is the load-bearing part. A guardrail run is not a visit, and a check that
+ *  inflates the very numbers it checks is not a check: `middleware.js` `isPrefetch()` reads the
+ *  `purpose` / `sec-purpose` headers, and `isProductionDocumentNavigation()` returns false for a
+ *  prefetch before it ever looks at the user agent (middleware.js:49, :57-60). A probe carrying
+ *  this header therefore CANNOT emit `INFINITE_DOCUMENT_REQUEST_V1` — no document request, no
+ *  `visitKey`, no server visit — whatever user agent we send.
+ *
+ *  Until now that exclusion rested on nothing but our user agent lacking `Mozilla/`, which the
+ *  sec-fetch-dest-less fallback happens to reject. That is an accident, not an intent: anyone
+ *  making these probes "more browser-realistic" would silently have started writing production
+ *  HUMAN rows on every push and every daily run. The header states the intent and survives a
+ *  browser-shaped UA.
+ *
+ *  The records this guardrail DOES want counted never come through here: they are the signed
+ *  synthetic Drain batch and the same-origin synthetic collect POST in `checkSyntheticReceipts`,
+ *  which land on a synthetic-environment source and whose receipts we assert. */
+function probeHeaders(userAgent) {
+  return { "Cache-Control": "no-cache", Pragma: "no-cache", "User-Agent": userAgent, Purpose: "prefetch" };
 }
 
 function firstNonEmpty(...values) {
