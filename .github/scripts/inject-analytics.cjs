@@ -230,6 +230,25 @@ function posthogSnippet({ apiHost, uiHost, projectToken }) {
     posthog.init(${JSON.stringify(projectToken)}, {
       api_host: ${JSON.stringify(apiHost)},${uiHostLine}
       defaults: "2026-01-30",
+      // Session replay and heatmaps are OFF on this site, deliberately.
+      //
+      // The project has them enabled server-side (sampleRate null = 100% of sessions, empty URL
+      // blocklist), so every visitor was loading rrweb, taking a full DOM snapshot of a ~1,900-node
+      // page, and running a document-wide MutationObserver. Heatmaps adds a capture-phase
+      // mousemove listener on the document, and the scroll manager adds capture-phase scroll and
+      // scrollend listeners. That is two document-level mousemove listeners and two scroll
+      // listeners nobody here wrote, on a page whose main interaction is scrolling a long table and
+      // hovering its rows — which is exactly the reported symptom.
+      //
+      // It costs most on the leaderboard, where sorting or paging swaps ~1,800 elements at once and
+      // rrweb has to serialise every removal and addition as a mutation batch.
+      //
+      // This is a MARKETING site: GA4 owns traffic here and PostHog owns in-app product analytics,
+      // so nothing downstream depends on replay of these pages. Turning these three off does not
+      // affect pageviews, events or funnels.
+      disable_session_recording: true,
+      capture_heatmaps: false,
+      capture_performance: false,
     });
     posthog.register({ platform: "website" });
     });
