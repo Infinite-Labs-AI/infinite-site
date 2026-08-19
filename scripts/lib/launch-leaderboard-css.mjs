@@ -125,6 +125,7 @@ export const LEADERBOARD_CSS = `
 .llb-table th.is-on .llb-hbtn::after{color:var(--acc)}
 .llb-table td{padding:0 13px;height:62px;border-bottom:1px solid var(--rule-2);font-size:14px;color:var(--body)}
 .llb-table tbody tr:last-child td{border-bottom:0}
+.llb-table tbody tr{contain:paint}
 .llb-table tbody tr:hover{background:#f1fbf6}
 .llb-table tbody tr:hover .rkb{border-color:var(--acc)}
 

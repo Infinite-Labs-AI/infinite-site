@@ -97,8 +97,12 @@
    */
   function account(name, handle, avatar, site) {
     var href = safeHref(site) || (handle ? "https://x.com/" + encodeURIComponent(handle) : null);
+    // decoding="async" keeps image decode off the critical path. There are up to ~78 avatars on a
+    // page and they land as you scroll (loading="lazy"), so synchronous decode is felt directly as
+    // scroll jank rather than as a slower load.
     var av = avatar
-      ? '<img class="llb-av" src="' + esc(avatar) + '" alt="" width="38" height="38" loading="lazy">'
+      ? '<img class="llb-av" src="' + esc(avatar) +
+        '" alt="" width="38" height="38" loading="lazy" decoding="async">'
       : '<span class="llb-av llb-mono">' + esc(name.charAt(0)) + "</span>";
     var title = site ? "Visit " + name + "’s site" : name + " on X";
     var logo = href
