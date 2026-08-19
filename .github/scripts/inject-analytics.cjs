@@ -456,7 +456,7 @@ function ga4DownloadSnippet(tagId) {
 // /download attempt (the real Downloads number) is unchanged either way.
 //
 // TODO(pin infinite-tag >= 0.6.0): `window.__infiniteHandoffContext` ships in infinite-tag 0.6.0,
-// which is NOT published yet — package.json still pins the reviewed 0.3.5, so on today's bytes the
+// published 2026-08-19 and pinned here as 0.6.0 — before that, package.json pinned 0.3.5, so on those bytes the
 // accessor is simply absent and this whole flow is inert (it takes the ordinary no-context path).
 // Pin >= 0.6.0 exactly, record the tarball receipt in docs/analytics/first-party-ledger-contract.md,
 // and only then flip INFINITE_HANDOFF_ENABLED. Flipping the flag against 0.3.5 would ship a

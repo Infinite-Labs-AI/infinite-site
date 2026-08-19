@@ -86,18 +86,18 @@ assert.equal(packageJson.private, true);
 assert.equal(packageJson.type, "module");
 assert.deepEqual(packageJson.devDependencies, {
   "@vercel/functions": "3.7.6",
-  "infinite-tag": "0.3.5",
+  "infinite-tag": "0.6.0",
 });
 const packageLock = JSON.parse(read("package-lock.json"));
-assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.3.5");
-assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.3.5");
+assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.6.0");
+assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.6.0");
 assert.equal(
   packageLock.packages["node_modules/infinite-tag"].resolved,
-  "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.3.5.tgz",
+  "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.6.0.tgz",
 );
 assert.equal(
   packageLock.packages["node_modules/infinite-tag"].integrity,
-  "sha512-O67P+0iAK7J1EjQVz3W4B2beInlsEP1psvsmzXLGKVYTgTOxI0NQj+gRevhHyNyEJM4eKlWIL+n1wi+zyIdp/w==",
+  "sha512-j6OqYG2QZUOjq+icaR5YORfPGHyclGqm5HTyvxHOXNqAEvaTiXzYdesIyZxSfPr0BCArtxqC8vQfTqK2DGjkhA==",
 );
 assert.match(read(".gitignore"), /^node_modules\/$/m);
 
@@ -123,7 +123,7 @@ for (const location of ["navigation", "hero", "pricing", "final-cta"]) {
 }
 
 const privacy = read("privacy/index.html");
-assert.match(privacy, /Last updated: 2 August 2026/);
+assert.match(privacy, /Last updated: 19 August 2026/);
 assert.match(privacy, /Website visitor analytics/i);
 assert.match(privacy, /90 days/i);
 assert.match(privacy, /25 months/i);
