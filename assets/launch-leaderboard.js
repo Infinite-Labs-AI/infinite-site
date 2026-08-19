@@ -39,8 +39,7 @@
   var ORCHID = {
     startup: "Orchid",
     handle: "orchid_hq",
-    avatar:
-      "https://wdxjduorvpayxixpmskf.supabase.co/storage/v1/object/public/web-assets/launchvids/av2-orchid_hq.jpg",
+    avatar: "/lv/av2-orchid_hq.jpg",
     reportedViews: "~32M",
     url: "https://www.fastcompany.com/91581882/orchid-ai-assistant-launches-gets-backlash-for-relationship-ad",
   };
@@ -283,7 +282,38 @@
   // Everything above is pure and runs in Node at build time. Nothing below does.
   if (typeof document === "undefined") return;
 
+  /**
+   * Stop decoding the hero video once it scrolls away.
+   *
+   * It is a looping autoplay plate at the top of a long page, so without this the browser keeps
+   * decoding frames the whole time someone is reading the table — sustained CPU that shows up as
+   * scroll jank, and battery on a laptop. Chrome throttles offscreen video inconsistently and
+   * Safari not at all, so it is worth doing explicitly.
+   *
+   * Guarded on IntersectionObserver: where it is missing, the video simply keeps playing as before.
+   */
+  function idleTheHeroVideo() {
+    var video = document.querySelector(".llb-hero-vid");
+    if (!video || typeof IntersectionObserver === "undefined") return;
+    new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            // play() rejects if the tab is backgrounded; nothing to do about that, and nothing to
+            // report either.
+            var p = video.play();
+            if (p && p.catch) p.catch(function () {});
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { rootMargin: "128px" },
+    ).observe(video);
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    idleTheHeroVideo();
     var mount = document.getElementById("llb");
     var dataEl = document.getElementById("llb-data");
     if (!mount || !dataEl) return;

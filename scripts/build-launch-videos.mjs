@@ -47,8 +47,23 @@ const require = createRequire(import.meta.url);
 require("../assets/launch-leaderboard.js");
 const LB = globalThis.LaunchLeaderboard;
 
-const ASSETS =
+/**
+ * Media is served through a same-origin path that vercel.json rewrites to the bucket, and that
+ * vercel.json caches as immutable for a year.
+ *
+ * The bucket itself answers `cache-control: no-cache` on every object, so before this each visit
+ * re-fetched the hero video, its poster and every avatar — roughly 1.5MB across 78 requests to a
+ * third-party origin, every single page view. Same-origin also means one HTTP/2 connection instead
+ * of a second DNS + TLS handshake before any of it starts.
+ */
+const ASSETS = "/lv";
+/** Absolute bucket URL. For anything a THIRD PARTY consumes — og:image, JSON-LD — which must not
+ *  depend on our routing to resolve. */
+const ASSETS_ABS =
   "https://wdxjduorvpayxixpmskf.supabase.co/storage/v1/object/public/web-assets/launchvids";
+/** Rewrite a stored absolute bucket URL onto the cached path. */
+const localAsset = (url) =>
+  typeof url === "string" && url.startsWith(ASSETS_ABS) ? `/lv${url.slice(ASSETS_ABS.length)}` : url;
 const AUTHOR = "River Tamoor Baig";
 const PUBLISHED_ISO = "2026-08-17T00:00:00.000Z";
 const REFRESHED_HUMAN = "17 August 2026";
@@ -102,6 +117,8 @@ function sanitizeRows(rows) {
     ...row,
     tweet_url: LB.safeHref(row.tweet_url),
     startup_url: LB.safeHref(row.startup_url),
+    startup_avatar: localAsset(row.startup_avatar),
+    founders: (row.founders ?? []).map((f) => ({ ...f, avatar: localAsset(f.avatar) })),
   }));
 }
 
@@ -261,7 +278,7 @@ ${footerHtml(`Live data, refreshed ${esc(asOf)}`)}
     title: "Startup Launch Video Leaderboard: the most-viewed launches on X (2026)",
     description: payload.description,
     canonical: LEADERBOARD_URL,
-    image: `${ASSETS}/breaker-1.jpg`,
+    image: `${ASSETS_ABS}/breaker-1.jpg`,
     extraLd: [dataset, itemList, webPage],
   })}<style>${FONT_CSS}${LEADERBOARD_CSS}${NAV_CSS}${FOOTER_CSS}</style>
 </head>
@@ -279,7 +296,7 @@ function studyHtml() {
     description:
       "An analysis of 194 hand-verified startup launch videos on X: the best 20 got 82M views, the worst 20 got 323, and the difference wasn't clarity. What separates a launch video that spreads from one nobody watches, with every finding charted.",
   };
-  const image = `${ASSETS}/hero-poster.jpg`;
+  const image = `${ASSETS_ABS}/hero-poster.jpg`;
 
   const graph = {
     "@context": "https://schema.org",
