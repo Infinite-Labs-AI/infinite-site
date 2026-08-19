@@ -4,6 +4,15 @@
   "outputDirectory": "dist",
   "headers": [
     {
+      "source": "/lv/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/homepage-20260729-founder-x-posts.css",
       "headers": [
         {
@@ -74,6 +83,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/lv/:path*",
+      "destination": "https://wdxjduorvpayxixpmskf.supabase.co/storage/v1/object/public/web-assets/launchvids/:path*"
+    },
     {
       "source": "/api/launch-videos/submit",
       "destination": "https://api.ultima.inc/api/launch-videos/submit"

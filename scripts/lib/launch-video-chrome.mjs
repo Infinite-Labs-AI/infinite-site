@@ -95,10 +95,18 @@ export function footerHtml(status) {
 </footer>`;
 }
 
+/**
+ * NO backdrop-filter on the nav, deliberately.
+ *
+ * It is `position:sticky` over a page carrying a looping video and ~76 avatars, so a blur made the
+ * browser re-composite the strip under it on every scrolled frame — the single biggest source of
+ * the scroll jank here. The bar is 94% opaque, so the blur was barely visible behind it anyway.
+ * If it ever comes back, it needs to come back with a scroll profile.
+ */
 export const NAV_CSS = `
 .seo-nav{position:sticky;top:16px;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:24px;
   width:min(1120px,calc(100% - 32px));margin:16px auto 0;padding:10px 14px;border:1px solid #dfe7ef;border-radius:999px;
-  background:rgba(255,255,255,.9);box-shadow:0 18px 60px rgba(32,54,78,.1);backdrop-filter:blur(18px);
+  background:rgba(255,255,255,.94);box-shadow:0 18px 60px rgba(32,54,78,.1);
   font-family:"IBM Plex Sans",-apple-system,"Helvetica Neue",Arial,sans-serif}
 .seo-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:#111;text-decoration:none}
 .seo-brand img{width:26px;height:26px;border-radius:8px;display:block}

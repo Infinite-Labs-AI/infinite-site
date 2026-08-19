@@ -153,7 +153,8 @@ function heroSplit(a, b, opts) {
   const head = `<text x="360" y="56" class="hero-mult" text-anchor="middle">${opts.multiple}</text><text x="360" y="86" class="hero-sub" text-anchor="middle">${opts.sub}</text>`;
   return svgOpen(W, H) + head + plate(a, 0, "a") + plate(b, pw + gap, "b") + `</svg>`;
 }
-const VBASE = "https://wdxjduorvpayxixpmskf.supabase.co/storage/v1/object/public/web-assets/launchvids";
+// Same-origin, immutable-cached path (see vercel.json). The bucket serves no-cache.
+const VBASE = "/lv";
 function vembed(slug, opts = {}) {
   const head = opts.title || opts.tag ? `<figcaption class="v-cap"><b>${opts.title ?? ""}</b>${opts.meta ? ` &middot; ${opts.meta}` : ""}${opts.tag ? `<span class="v-tag">${opts.tag}</span>` : ""}</figcaption>` : "";
   return `<figure class="vembed">
