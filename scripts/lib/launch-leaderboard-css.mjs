@@ -34,8 +34,13 @@ export const LEADERBOARD_CSS = `
 .llb-deck{margin:20px auto 0;max-width:52ch;font-size:clamp(17px,2vw,21px);line-height:1.45;color:rgba(255,255,255,.86);font-weight:500}
 .llb-timer{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:7px 13px;border:1px solid rgba(255,255,255,.16);
   border-radius:999px;background:rgba(255,255,255,.06);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;color:rgba(255,255,255,.82)}
-.llb-timer-dot{width:7px;height:7px;border-radius:50%;background:var(--volt);box-shadow:0 0 0 0 rgba(74,222,128,.5);animation:llb-pulse 2.4s ease-out infinite}
-@keyframes llb-pulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.45)}70%{box-shadow:0 0 0 7px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+/* The ring is a pseudo-element animating transform+opacity, which the compositor handles on its own
+   thread. It used to animate box-shadow spread, which cannot be composited — so this dot forced a
+   main-thread repaint on EVERY frame it was on screen, permanently, on top of a video-backed hero. */
+.llb-timer-dot{position:relative;width:7px;height:7px;border-radius:50%;background:var(--volt)}
+.llb-timer-dot::after{content:"";position:absolute;inset:0;border-radius:50%;
+  box-shadow:0 0 0 7px rgba(74,222,128,.45);animation:llb-pulse 2.4s ease-out infinite;will-change:transform,opacity}
+@keyframes llb-pulse{0%{transform:scale(.2);opacity:.55}70%{transform:scale(1);opacity:0}100%{transform:scale(.2);opacity:0}}
 .llb-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:38px auto 0;max-width:580px}
 .llb-stats div{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:16px 18px}
 .llb-stats b{display:block;font-family:var(--disp);font-weight:700;font-size:clamp(24px,2.7vw,30px);letter-spacing:-0.02em;color:#fff}
@@ -101,9 +106,18 @@ export const LEADERBOARD_CSS = `
   color:var(--acc-ink);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px;cursor:pointer}
 .llb-modal-link:hover{color:var(--ink)}
 
-.llb-scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:18px;background:var(--card);box-shadow:0 14px 40px rgba(15,23,41,.06)}
+/* overflow:clip, NOT auto.
+   The table's min-width is 880px inside a ~1032px column, so on a laptop it never actually needs to
+   scroll — but overflow-x:auto made this a scroll container in BOTH axes anyway (a non-visible
+   overflow-x computes overflow-y to auto). Every wheel event over the table then had to hit-test
+   into the inner scroller, determine it could not scroll, and chain out to the page. That is felt
+   as the table specifically being slower to scroll than the rest of the document.
+   clip still clips to the border-radius but creates NO scroll container. auto comes back below
+   the width where the table genuinely overflows. */
+.llb-scroll{overflow:clip;border:1px solid var(--rule);border-radius:18px;background:var(--card);box-shadow:0 14px 40px rgba(15,23,41,.06)}
+@media(max-width:960px){.llb-scroll{overflow-x:auto;overflow-y:visible}}
 .llb-table{width:100%;border-collapse:collapse;min-width:880px}
-.llb-table thead th{position:sticky;top:0;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;
+.llb-table thead th{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;
   letter-spacing:.07em;color:var(--mut);font-weight:600;text-align:right;padding:15px 13px;
   border-bottom:1px solid var(--rule);white-space:nowrap;background:#fbfdfe}
 .llb-table th.llb-rk{text-align:center;width:48px}
@@ -147,7 +161,10 @@ export const LEADERBOARD_CSS = `
   overflow:hidden;text-overflow:ellipsis;display:block}
 .llb-uh:hover{color:var(--acc-ink)}
 .llb-av{width:38px;height:38px;border-radius:50%;flex:none;object-fit:cover;background:var(--rule-2);border:1px solid var(--rule)}
-.llb-avlink{display:inline-flex;flex:none;border-radius:50%;transition:box-shadow .12s,transform .12s;cursor:pointer}
+/* Only transform is transitioned. The focus ring lands instantly rather than animating, because
+   animating box-shadow is a ~120ms main-thread repaint per hover and there are ~78 of these in a
+   column you drag a pointer straight down. */
+.llb-avlink{display:inline-flex;flex:none;border-radius:50%;transition:transform .12s;cursor:pointer}
 .llb-avlink:hover{box-shadow:0 0 0 2px var(--acc);transform:translateY(-1px)}
 .llb-avlink:hover .llb-av{border-color:var(--acc)}
 .llb-who{display:flex;flex-direction:column;line-height:1.28;min-width:0}
@@ -234,4 +251,12 @@ export const LEADERBOARD_CSS = `
 .llb-benefits-list b{display:block;font-family:var(--disp);font-weight:700;font-size:15.5px;color:var(--ink)}
 .llb-benefits-list span{display:block;margin-top:3px;font-size:14px;line-height:1.5;color:var(--body)}
 @media(max-width:820px){.llb-stats{grid-template-columns:repeat(2,1fr)}.llb-grid2{grid-template-columns:1fr}.llb-benefits-in{grid-template-columns:1fr;gap:26px}}
-@media(max-width:560px){.llb-hero-in{padding:52px 20px 40px}}`;
+@media(max-width:560px){.llb-hero-in{padding:52px 20px 40px}}
+
+/* Respect the OS setting. The looping hero video is left alone here — it is paused offscreen by
+   script — but nothing decorative should animate for someone who asked it not to. */
+@media(prefers-reduced-motion:reduce){
+  .llb-timer-dot::after{animation:none}
+  .llb-avlink,.llb-studycard,.llb-submit{transition:none}
+}
+`;
