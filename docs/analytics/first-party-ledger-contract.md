@@ -73,7 +73,7 @@ Two properties are load-bearing and easy to undo by accident:
 `Attributed handoff start` and is never counted as a download, an installation, or a person.
 
 **Package pin:** the accessor ships in `infinite-tag@0.6.0`, which is not published yet. The site
-still pins `0.3.5`; the flow is written against the documented accessor shape and is inert without
+pinned `0.3.5` until 2026-08-19 and now pins `0.6.0` (accessor present); the flow was written against the documented accessor shape and was inert without
 it (`typeof window.__infiniteHandoffContext !== "function"` is just another no-context path). Pin
 `>= 0.6.0` and record its tarball receipt before flipping `INFINITE_HANDOFF_ENABLED`.
 

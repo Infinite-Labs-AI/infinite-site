@@ -3,6 +3,6 @@
   "type": "module",
   "devDependencies": {
     "@vercel/functions": "3.7.6",
-    "infinite-tag": "0.3.5"
+    "infinite-tag": "0.6.0"
   }
 }

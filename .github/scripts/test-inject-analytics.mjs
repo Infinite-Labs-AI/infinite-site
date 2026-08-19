@@ -11,7 +11,7 @@ const repoRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const tempDir = mkdtempSync(join(tmpdir(), "infinite-analytics-"));
 const injectorPath = join(repoRoot, ".github/scripts/inject-analytics.cjs");
 const contractHashes = {
-  "browser-collect-v1.schema.json": "919130276f983c61de47a75e986386c8bc7be543d4fd6706a71f0bc5481f34c0",
+  "browser-collect-v1.schema.json": "3040f263378f6bbcac4a03019e3f0deedb53ac9416d1312ba59dcad6c74b220f", // 0.6.0: + site_page_view.nav, maxProperties 4 (byte-identical with 1bu-1)
   "browser-collect-v1.fixture.json": "08d5ae19194044bf0f2d144c2bd50902baacb09f5170f66067d0e9fd9b9148a9",
 };
 const downloadLocations = ["navigation", "hero", "pricing", "final-cta"];
@@ -29,7 +29,7 @@ const page = (title) => `<!doctype html><html><head><title>${title}</title></hea
 </body></html>`;
 
 try {
-  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.3.5");
+  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.6.0");
   for (const [name, expectedHash] of Object.entries(contractHashes)) {
     const bytes = readFileSync(join(repoRoot, "node_modules/infinite-tag/contracts", name));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), expectedHash, `${name} must match the reviewed public contract`);
@@ -332,7 +332,10 @@ try {
   for (const dormantBytes of [syntheticHtml, readFileSync(nestedPath, "utf8")]) {
     assert.doesNotMatch(dormantBytes, /infinite-handoff-card/);
     assert.doesNotMatch(dormantBytes, /\/infinite\/handoff/);
-    assert.doesNotMatch(dormantBytes, /__infiniteHandoffContext/);
+    // NOTE (infinite-tag 0.6.0): the TAG's own consent-gated accessor `window.__infiniteHandoffContext`
+    // is part of the runtime bytes on every page (it only READS existing ids; it mints nothing, emits
+    // nothing) — so its name is NOT a handoff-flow marker any more. The site flow's markers are the
+    // card, the endpoint, and the custom scheme, asserted above/below.
     assert.doesNotMatch(dormantBytes, /infinite:\/\/handoff/);
   }
 
@@ -464,7 +467,7 @@ try {
 
     // A browser whose infinite-tag predates the accessor (or an unverified host / missing source
     // key, where the accessor is never installed) behaves identically.
-    const noAccessor = executeAnalytics(enabledHtml, {});
+    const noAccessor = executeAnalytics(enabledHtml, { handoffAccessor: "absent" });
     const legacy = noAccessor.click(noAccessor.downloads.hero);
     assert.equal(noAccessor.handoffBeacons.length, 0);
     assert.equal(noAccessor.handoffCard(), null);
@@ -496,7 +499,9 @@ try {
 function handoffScriptOf(html) {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
     .map((match) => match[1])
-    .filter((script) => script.includes("__infiniteHandoffContext"));
+    // The SITE's handoff snippet (not the tag runtime, which also names the accessor since 0.6.0): the
+    // one script that builds the card and calls the accessor.
+    .filter((script) => script.includes("infinite-handoff-card") && script.includes("__infiniteHandoffContext"));
   assert.equal(scripts.length, 1, "exactly one handoff snippet per page");
   return scripts[0];
 }
@@ -518,6 +523,9 @@ function executeAnalytics(html, {
   // key). `null` = the accessor exists and reports no consent-qualified context. An object = a
   // consent-qualified context, exactly the documented infinite-tag >= 0.6.0 shape.
   handoffContext,
+  /** "absent" = simulate a tag that predates the accessor (or an unverified host / no source key, where
+   *  infinite-tag never installs it): the runtime-installed accessor is removed after the page scripts ran. */
+  handoffAccessor,
   // Browsers return false from sendBeacon when they refuse the payload; the handoff snippet must
   // then fall back to one same-origin keepalive fetch.
   beaconRefuses = false,
@@ -632,6 +640,11 @@ function executeAnalytics(html, {
   context.globalThis = context;
 
   for (const script of scripts) runInNewContext(script, context);
+  // infinite-tag >= 0.6.0 installs its OWN consent-gated accessor while the runtime script runs; the
+  // harness's controlled context must win for the handoff-flow assertions, so (re)install it AFTER the
+  // page scripts executed — the site snippet reads the accessor lazily, at click time.
+  if (handoffContext !== undefined) window.__infiniteHandoffContext = () => handoffContext;
+  if (handoffAccessor === "absent") delete window.__infiniteHandoffContext;
   while (timers.length > 0) timers.shift()();
 
   const posthogEvents = (name) => (window.posthog ?? []).filter((entry) => entry[0] === "capture" && entry[1] === name);
