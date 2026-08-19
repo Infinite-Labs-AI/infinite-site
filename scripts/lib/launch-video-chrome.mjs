@@ -1,5 +1,6 @@
 /**
- * Shared chrome for the two launch-video pages (`/startup-launch-videos/`, `/research/launch-videos/`).
+ * Shared chrome for the leaderboard (`/startup-launch-videos/`). The study it cites now lives on
+ * the hub — see STUDY_URL.
  *
  * Both pages are assembled as HTML strings rather than written by hand, so their nav, footer and
  * webfonts live here — one definition, so the two cannot drift apart and every link between them
@@ -37,10 +38,14 @@ export const FONT_CSS = `
 `;
 
 export const LEADERBOARD_PATH = "/startup-launch-videos/";
-export const STUDY_PATH = "/research/launch-videos/";
 export const ORIGIN = "https://infinite.fast";
 export const LEADERBOARD_URL = `${ORIGIN}${LEADERBOARD_PATH}`;
-export const STUDY_URL = `${ORIGIN}${STUDY_PATH}`;
+/**
+ * The study moved to the hub on 2026-08-19 — it is a research paper, and the hub is the publication.
+ * ABSOLUTE and off-origin on purpose: `/research/*` on this domain is now a 301 (see vercel.json),
+ * and linking through a redirect would spend a hop on every reader and every crawler.
+ */
+export const STUDY_URL = "https://hub.infinite.fast/research/launch-videos";
 /**
  * The headless API that publishes the dataset. The PAGES live here; the DATA lives there.
  *
@@ -59,7 +64,7 @@ const RING = "/logos/infinite-ring-clean.png";
 const NAV_LINKS = [
   ["/tools/", "Tools"],
   ["/agents/", "Agents"],
-  ["/research/", "Research"],
+  ["https://hub.infinite.fast/research", "Research"],
   ["/compare/", "Compare"],
   ["https://blog.infinite.fast/", "Blog"],
   ["/#pricing", "Pricing"],
@@ -84,7 +89,7 @@ export function footerHtml(status) {
     <div class="wrangle-footer-grid">
       <div><span class="wrangle-footer-mark" aria-hidden="true"><img src="${RING}" width="24" height="24" alt="" loading="lazy"></span></div>
       ${col("Platform", [["/#command", "Buyer intent"], ["/#command", "SEO + GEO"], ["/#command", "Landing tests"], ["/#leads", "Claude Code"]])}
-      ${col("Research", [[STUDY_PATH, "The Launch Video Index"], [LEADERBOARD_PATH, "Launch video leaderboard"], [DATASET_API, "Dataset (JSON)"], [`${DATASET_API}/csv`, "Dataset (CSV)"]])}
+      ${col("Research", [[STUDY_URL, "The Launch Video Index"], [LEADERBOARD_PATH, "Launch video leaderboard"], [DATASET_API, "Dataset (JSON)"], [`${DATASET_API}/csv`, "Dataset (CSV)"]])}
       ${col("Free tools", [["/tools/high-intent-lead-finder-template/", "Lead finder template"], ["/tools/seo-geo-brief-generator/", "SEO + GEO brief generator"], ["/tools/founder-content-ideas-generator/", "Content ideas"], ["/agents/", "Agents directory"]])}
       ${col("Compare", [["/compare/infinite-vs-okara/", "Infinite vs Okara"], ["/compare/infinite-vs-ploy/", "Infinite vs Ploy"], ["/compare/infinite-vs-blaze/", "Infinite vs Blaze"], ["/compare/", "All comparisons"]])}
       ${col("Company", [["/#proof", "Proof"], ["/#pricing", "Pricing"], ["https://blog.infinite.fast/", "Blog"], ["/privacy/", "Privacy Policy"], ["/terms/", "Terms of Service"]])}

@@ -2,7 +2,6 @@
  * Builds the two launch-video pages into dist as real static HTML.
  *
  *   /startup-launch-videos/   the live leaderboard, ranked at build time
- *   /research/launch-videos/  the study
  *
  * WHY THE DATA COMES OVER HTTP. The ranking lives in the app's Postgres, but this repo has no
  * database credentials and should never get any: it is a marketing site. It reads the SAME public
@@ -30,7 +29,6 @@ import {
   LEADERBOARD_URL,
   NAV_CSS,
   ORIGIN,
-  STUDY_PATH,
   STUDY_URL,
   esc,
   footerHtml,
@@ -38,8 +36,6 @@ import {
   navHtml,
 } from "./lib/launch-video-chrome.mjs";
 import { LEADERBOARD_CSS } from "./lib/launch-leaderboard-css.mjs";
-import { PLAYBOOK_CSS, PLAYBOOK_HTML, PLAYBOOK_JS } from "./research/launch-video-index.mjs";
-import { LAUNCH_VIDEO_FAQ } from "./research/launch-video-faq.mjs";
 
 const require = createRequire(import.meta.url);
 // Loaded for its side effect: the shared renderer assigns itself to globalThis so this build and
@@ -225,7 +221,7 @@ function leaderboardHtml(payload) {
     publisher: ORG,
   };
 
-  const studyCard = `<a class="llb-studycard" href="${STUDY_PATH}">
+  const studyCard = `<a class="llb-studycard" href="${STUDY_URL}">
   <span class="llb-studycard-thumb" style="background-image:url(${ASSETS}/hero-poster.jpg)"></span>
   <span class="llb-studycard-body">
     <span class="llb-studycard-k">The deep dive</span><b>The Launch Video Index</b>
@@ -280,7 +276,7 @@ ${table}
   <div class="llb-method">
     <p class="llb-cite-k">How this is built</p>
     <p>We reviewed ${rows.length}+ startup launch videos on X and kept only the genuine startup launches, not established companies shipping a feature. Metrics are a snapshot, current as of ${esc(asOf)}; a re-run updates them.</p>
-    <a class="llb-study" href="${STUDY_PATH}">Read the full analysis &rarr;<span>The Launch Video Index: what actually drives reach</span></a>
+    <a class="llb-study" href="${STUDY_URL}">Read the full analysis &rarr;<span>The Launch Video Index: what actually drives reach</span></a>
   </div>
 </div>
 </section>
@@ -332,89 +328,6 @@ ${body}
 </html>`;
 }
 
-// ── The study ───────────────────────────────────────────────────────────────────────────────────
-function studyHtml() {
-  const meta = {
-    title: "The Launch Video Index",
-    seoTitle: "We Studied 194 Startup Launch Videos — What Actually Goes Viral (2026)",
-    description:
-      "An analysis of 194 hand-verified startup launch videos on X: the best 20 got 82M views, the worst 20 got 323, and the difference wasn't clarity. What separates a launch video that spreads from one nobody watches, with every finding charted.",
-  };
-  const image = `${ASSETS_ABS}/hero-poster.jpg`;
-
-  const graph = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Article",
-        "@id": `${STUDY_URL}#article`,
-        headline: meta.seoTitle,
-        description: meta.description,
-        // A named human with a fact attached, not a bare string, so the byline resolves to an entity.
-        author: {
-          "@type": "Person",
-          name: AUTHOR,
-          jobTitle: "Founder, Infinite",
-          worksFor: { "@type": "Organization", name: "Infinite" },
-        },
-        publisher: ORG,
-        datePublished: PUBLISHED_ISO,
-        dateModified: PUBLISHED_ISO,
-        mainEntityOfPage: { "@type": "WebPage", "@id": STUDY_URL },
-        image,
-      },
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${STUDY_URL}#breadcrumbs`,
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Infinite", item: ORIGIN },
-          { "@type": "ListItem", position: 2, name: "Research", item: `${ORIGIN}/research/` },
-          { "@type": "ListItem", position: 3, name: meta.title, item: STUDY_URL },
-        ],
-      },
-      {
-        "@type": "FAQPage",
-        "@id": `${STUDY_URL}#faq`,
-        mainEntity: LAUNCH_VIDEO_FAQ.map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: { "@type": "Answer", text: item.answer },
-        })),
-      },
-    ],
-  };
-
-  // The study's reading bar is position:fixed, so it takes the footer WITHOUT the sticky site nav —
-  // two bars would fight for the same 60px at the top of the page.
-  // The study reserves a slot for its call to action. On the hub this was filled from workspace
-  // settings; here it is one link to the product, written in place. An unfilled slot would ship the
-  // marker comment and no CTA at all — the piece would end on its sources.
-  const cta = `<section class="pcta"><div class="pcta-in">
-  <div>
-    <p class="pcta-k">Ready when you are</p>
-    <h2>Run the growth work this study measures &mdash; every day, without remembering to.</h2>
-    <p>Infinite finds the buyers, writes the pages, and ships the tests. You review what it did.</p>
-  </div>
-  <a class="pcta-btn" href="/download" data-download-location="research-launch-videos">Get Infinite &rarr;</a>
-</div></section>`;
-
-  return `${head({
-    title: meta.seoTitle,
-    description: meta.description,
-    canonical: STUDY_URL,
-    image,
-    type: "article",
-    extraLd: [graph],
-  })}<style>${FONT_CSS}${PLAYBOOK_CSS}${FOOTER_CSS}</style>
-</head>
-<body>
-${PLAYBOOK_HTML.replace("<!--PLAYBOOK_CTA_SLOT-->", cta)}
-${footerHtml(`194 verified launches &middot; refreshed ${REFRESHED_HUMAN}`)}
-<script>${PLAYBOOK_JS}</script>
-</body>
-</html>`;
-}
-
 
 // ── Entry ───────────────────────────────────────────────────────────────────────────────────────
 export async function buildLaunchVideoPages(distDir) {
@@ -450,7 +363,6 @@ export async function buildLaunchVideoPages(distDir) {
   };
 
   write(LEADERBOARD_PATH.replace(/^\/|\/$/g, ""), leaderboardHtml(payload));
-  write(STUDY_PATH.replace(/^\/|\/$/g, ""), studyHtml());
   return { rows: payload.rows.length, asOf: payload.as_of };
 }
 

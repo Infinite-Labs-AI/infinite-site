@@ -47,8 +47,6 @@ const expectedLastmodByPath = new Map([
   ["/compare/infinite-vs-okara/", "2026-07-22"],
   ["/compare/infinite-vs-ploy/", "2026-07-22"],
   ["/compare/infinite-vs-blaze/", "2026-07-22"],
-  ["/research/", "2026-08-19"],
-  ["/research/launch-videos/", "2026-08-19"],
   ["/startup-launch-videos/", "2026-08-19"],
   ["/privacy/", "2026-08-02"],
   ["/terms/", "2026-07-22"],

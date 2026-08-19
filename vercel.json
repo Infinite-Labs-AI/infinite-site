@@ -1,6 +1,28 @@
 {
   "installCommand": "npm ci",
   "buildCommand": "node scripts/prepare-static-deploy.cjs",
+  "redirects": [
+    {
+      "source": "/research",
+      "destination": "https://hub.infinite.fast/research",
+      "permanent": true
+    },
+    {
+      "source": "/research/",
+      "destination": "https://hub.infinite.fast/research",
+      "permanent": true
+    },
+    {
+      "source": "/research/launch-videos",
+      "destination": "https://hub.infinite.fast/research/launch-videos",
+      "permanent": true
+    },
+    {
+      "source": "/research/launch-videos/",
+      "destination": "https://hub.infinite.fast/research/launch-videos",
+      "permanent": true
+    }
+  ],
   "outputDirectory": "dist",
   "headers": [
     {
