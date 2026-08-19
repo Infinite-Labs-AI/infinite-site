@@ -52,7 +52,15 @@ function isProductionDocumentNavigation(request, path) {
   if (isPrefetch(request)) return false;
   const destination = request.headers.get("sec-fetch-dest");
   const userAgent = request.headers.get("user-agent") ?? "";
-  if (BOT_UA.test(userAgent)) return false;
+  // AGENTS ARE COUNTED, NOT DROPPED (2026-08-19, "humans vs agents"): a declared bot/crawler/agent
+  // fetching a KNOWN document path gets the SAME document marker (and the same 30-min fingerprint)
+  // as a browser. The drain classifies the request from the Vercel record's user agent (human /
+  // AI agent / search crawler / automation, verified against published IP ranges) and flags it —
+  // it never enters the human Visitors count. Before this, BOT_UA returned false here, so GPTBot,
+  // ClaudeBot and Googlebot were invisible on our own site while the dashboard promised an agent
+  // split. Crawlers rarely send sec-fetch-dest and sometimes send accept: */*, so the browser-shape
+  // rule below does not gate them — the KNOWN_DOCUMENT_PATHS manifest is their 404/scanner filter.
+  if (BOT_UA.test(userAgent)) return true;
   if (destination) return destination === "document";
   return /Mozilla\//.test(userAgent) && request.headers.get("accept")?.includes("text/html") === true;
 }

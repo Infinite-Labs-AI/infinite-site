@@ -38,6 +38,30 @@ assert.deepEqual(
   "browser navigation fallback works when sec-fetch-dest is absent",
 );
 
+// AGENTS ARE COUNTED (2026-08-19): declared crawlers/agents on KNOWN document paths emit the same
+// document marker as a browser (no sec-fetch-dest, accept */* is fine) — the drain classifies and
+// flags them; they never enter the human Visitors count. Unknown paths still get nothing.
+assert.deepEqual(
+  await run(request("https://infinite.fast/privacy", { headers: { "user-agent": "Googlebot/2.1 (+http://www.google.com/bot.html)", accept: "*/*" } })),
+  [marker("/privacy/")],
+  "a declared crawler on a known page emits the document marker",
+);
+assert.deepEqual(
+  await run(request("https://infinite.fast/agents", { headers: { "user-agent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.2; +https://openai.com/gptbot" } })),
+  [marker("/agents/")],
+  "a declared AI crawler on a known page emits the document marker",
+);
+assert.deepEqual(
+  await run(request("https://infinite.fast/privacy", { headers: { "user-agent": "curl/8.0" } })),
+  [marker("/privacy/")],
+  "CLI automation on a known page is counted (and flagged downstream), not dropped",
+);
+assert.deepEqual(
+  await run(request("https://infinite.fast/definitely-not-a-real-page-xyz", { headers: { "user-agent": "Googlebot/2.1" } })),
+  [],
+  "an agent on an unknown path is still not a pageview",
+);
+
 const excluded = [
   request("https://infinite.fast/LICENSE"),
   request("https://infinite.fast/asset/app.js?secret=1"),
@@ -55,8 +79,6 @@ const excluded = [
   request("https://infinite.fast/privacy", { headers: { purpose: "prefetch" } }),
   request("https://infinite.fast/privacy", { headers: { "sec-purpose": "prefetch" } }),
   request("https://infinite.fast/privacy", { headers: { "sec-fetch-dest": "empty" } }),
-  request("https://infinite.fast/privacy", { headers: { "user-agent": "Googlebot/2.1" } }),
-  request("https://infinite.fast/privacy", { headers: { "user-agent": "curl/8.0" } }),
   request("https://preview-branch.vercel.app/privacy"),
   request("https://attacker.example/privacy"),
   // Paths that do not exist must never count as pageviews, even with perfectly
