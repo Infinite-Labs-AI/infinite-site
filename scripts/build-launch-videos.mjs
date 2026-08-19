@@ -88,8 +88,25 @@ function compact(n) {
 }
 
 // ── The leaderboard ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Drop any URL that is not plainly http(s) BEFORE it reaches the page.
+ *
+ * The renderer already refuses to emit such an href, so this is not what stops the click — it is
+ * what stops the string being PUBLISHED at all. Without it a hostile `javascript:` URL still ships
+ * inside the inlined JSON blob: inert today, but it is attacker-authored script text sitting in a
+ * file we serve, one careless future consumer away from mattering. Publish only what we would be
+ * willing to render.
+ */
+function sanitizeRows(rows) {
+  return rows.map((row) => ({
+    ...row,
+    tweet_url: LB.safeHref(row.tweet_url),
+    startup_url: LB.safeHref(row.startup_url),
+  }));
+}
+
 function leaderboardHtml(payload) {
-  const rows = payload.rows;
+  const rows = sanitizeRows(payload.rows);
   const view = LB.resolve(rows, { sortKey: "views", page: 1, query: "" });
   const totalViews = rows.reduce((sum, r) => sum + (r.views || 0), 0);
   // Orchid's reported ~32M is added because it IS the biggest launch of the period, even though its

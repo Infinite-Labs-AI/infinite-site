@@ -75,6 +75,11 @@
   ],
   "rewrites": [
     {
+      "comment": "The leaderboard's submit form. Same-origin on purpose: the page's CSP is connect-src 'self', and a direct cross-origin POST to the API would need CORS on a route that has none. Mirrors the /infinite/ledger pattern below.",
+      "source": "/api/launch-videos/submit",
+      "destination": "https://api.ultima.inc/api/launch-videos/submit"
+    },
+    {
       "source": "/infinite/ledger",
       "destination": "https://api.ultima.inc/api/analytics/events/collect"
     },

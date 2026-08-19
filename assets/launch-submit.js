@@ -1,9 +1,9 @@
 /**
  * "Submit your startup" — the one-field modal on the leaderboard.
  *
- * Posts straight to the app's public submission endpoint on api.ultima.inc. That cross-origin call
- * is deliberate and is the ONLY thing this static page needs a server for: the page itself is built
- * ahead of time, so there is nothing here to render on demand. The endpoint inserts a PENDING row —
+ * Posts to the app's public submission endpoint through a same-origin rewrite. That request is the
+ * ONLY thing this static page needs a server for: the page itself is built ahead of time, so there
+ * is nothing here to render on demand. The endpoint inserts a PENDING row —
  * nothing reaches the leaderboard until an admin approves it, which is what keeps this cheap and
  * spam-tolerant.
  *
@@ -13,7 +13,10 @@
 (function () {
   "use strict";
 
-  var ENDPOINT = "https://api.ultima.inc/api/launch-videos/submit";
+  // SAME-ORIGIN on purpose. The page's CSP is connect-src 'self', and the API route emits no CORS
+  // headers, so a direct cross-origin POST is blocked twice over — silently, at the preflight, with
+  // nothing in the UI to explain it. vercel.json rewrites this path to the API.
+  var ENDPOINT = "/api/launch-videos/submit";
   var overlay = null;
 
   function close() {

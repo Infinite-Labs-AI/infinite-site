@@ -11,12 +11,15 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { createServer } from "node:http";
 import { join } from "node:path";
 
-import { serveDatasetFixture } from "./fixtures/launch-videos-dataset.mjs";
+import { datasetFixture, serveDatasetFixture } from "./fixtures/launch-videos-dataset.mjs";
 
 const scratch = mkdtempSync(join(tmpdir(), "launch-videos-"));
 
+const fixture = datasetFixture(60);
+const row = (i) => fixture.rows[i - 1];
 const dataset = await serveDatasetFixture(60);
 process.env.LAUNCH_VIDEOS_DATASET_URL = dataset.url;
 
@@ -62,13 +65,69 @@ try {
   assert.match(board, /<script type="application\/json" id="llb-data">/);
   assert.match(board, /<script src="\/assets\/launch-leaderboard\.js" defer><\/script>/);
 
+  // ── Hostile data must not become executable markup. ──
+  // Every one of these values originates from a PUBLIC submission or an X profile we do not
+  // control, and ends up in a static file we publish. The page had a real stored-XSS path here: an
+  // unanchored submit regex accepted `javascript:...//x.com/a/status/123`, stored it raw, and the
+  // renderer wrote it into an href — where the site's own 'unsafe-inline' CSP would have run it.
+  {
+    const hostile = {
+      ...row(1),
+      startup: '</script><img src=x onerror=alert(1)>',
+      startup_handle: '"><script>alert(2)</script>',
+      startup_url: "javascript:alert(3)",
+      tweet_url: "javascript:alert(4)//x.com/a/status/1968052293912547554",
+      founders: [{ name: "</script>alert(5)", handle: null, avatar: null }],
+    };
+    const hostileFixture = { ...fixture, count: 1, rows: [hostile] };
+    const hostileServer = createServer((_req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(hostileFixture));
+    });
+    await new Promise((resolve) => hostileServer.listen(0, "127.0.0.1", resolve));
+    const hostileDir = mkdtempSync(join(tmpdir(), "launch-videos-xss-"));
+    try {
+      process.env.LAUNCH_VIDEOS_DATASET_URL = `http://127.0.0.1:${hostileServer.address().port}/`;
+      const { buildLaunchVideoPages: rebuild } = await import(
+        `../../scripts/build-launch-videos.mjs?xss=${process.pid}`
+      );
+      await rebuild(hostileDir);
+      const page = readFileSync(join(hostileDir, "startup-launch-videos/index.html"), "utf8");
+
+      // Nowhere on the page, in any context: the build strips non-http(s) URLs before publishing,
+      // so attacker script text is never served even inertly.
+      assert.doesNotMatch(page, /javascript:/i, "no javascript: URL may reach the published page");
+
+      // In the RENDERED table, hostile names must be text, never markup. (The same characters
+      // appear safely inside the JSON blob as \u003c escapes, which is why this is scoped.)
+      const tbody = page.split("<tbody>")[1].split("</tbody>")[0];
+      assert.doesNotMatch(tbody, /<script/i, "a startup name must not open a script tag in the table");
+      // The only <img> in the table is our own avatar element. An injected one would be a raw tag.
+      assert.doesNotMatch(tbody, /<img(?![^>]*llb-av)/i, "an injected img tag must not survive as markup");
+      // An event handler is only dangerous inside a REAL tag, and the checks above are what prove
+      // no injected tag exists. Asserting on the escaped form is the precise statement: the name is
+      // still displayed to the reader, and every character that could have opened a tag is escaped.
+      assert.match(tbody, /&lt;img src=x onerror=alert\(1\)&gt;/, "the hostile name must render as escaped text");
+      assert.match(tbody, /&lt;\/script&gt;/, "a </script> in a name must be escaped, not literal");
+      // The inlined JSON blob is the other sink: </script> inside it would end the block early and
+      // put the rest of the row data into the document as markup.
+      const blob = page.split('<script type="application/json" id="llb-data">')[1].split("</script>")[0];
+      assert.doesNotMatch(blob, /<\/script/i, "the data blob must not be able to close its own tag");
+      assert.ok(blob.includes("\\u003c"), "the data blob must escape < as \\u003c");
+    } finally {
+      hostileServer.close();
+      rmSync(hostileDir, { recursive: true, force: true });
+      process.env.LAUNCH_VIDEOS_DATASET_URL = dataset.url;
+    }
+  }
+
   // ── Structured data. ──
   const boardLd = ld(board);
   assert.deepEqual(boardLd.map((d) => d["@type"]), ["Dataset", "ItemList", "WebPage"]);
-  const dataset = boardLd[0];
-  assert.equal(dataset.url, "https://infinite.fast/startup-launch-videos/");
+  const datasetLd = boardLd[0];
+  assert.equal(datasetLd.url, "https://infinite.fast/startup-launch-videos/");
   assert.ok(
-    dataset.distribution.every((d) => d.contentUrl.startsWith("https://api.ultima.inc/api/launch-videos")),
+    datasetLd.distribution.every((d) => d.contentUrl.startsWith("https://api.ultima.inc/api/launch-videos")),
     "the dataset downloads must point at the API that actually serves them",
   );
   assert.equal(boardLd[1].itemListElement.length, 25);

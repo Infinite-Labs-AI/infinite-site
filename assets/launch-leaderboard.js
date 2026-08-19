@@ -41,6 +41,20 @@
       .replace(/"/g, "&quot;");
   }
 
+  /**
+   * An href we are willing to emit, or null.
+   *
+   * esc() makes a value safe as attribute TEXT, but an href is also a SCHEME, and `javascript:`
+   * contains nothing esc() escapes. The submit endpoint now canonicalises URLs before storing them,
+   * so this is the second lock: it means a bad row reaching this table — from an older record, a
+   * hand-edit, or a future code path that forgets — still cannot produce a clickable script URL.
+   * Anything not plainly http(s) is dropped rather than rendered.
+   */
+  function safeHref(value) {
+    var v = String(value == null ? "" : value).trim();
+    return /^https?:\/\/[^\s]+$/i.test(v) ? v : null;
+  }
+
   function fmt(n) {
     if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 1 : 2) + "M";
     if (n >= 1000) return (n / 1000).toFixed(n >= 100000 ? 0 : 1) + "K";
@@ -53,7 +67,7 @@
    * submitting, so it must never quietly become nofollow or a redirect.
    */
   function account(name, handle, avatar, site) {
-    var href = site || (handle ? "https://x.com/" + encodeURIComponent(handle) : null);
+    var href = safeHref(site) || (handle ? "https://x.com/" + encodeURIComponent(handle) : null);
     var av = avatar
       ? '<img class="llb-av" src="' + esc(avatar) + '" alt="" width="38" height="38" loading="lazy">'
       : '<span class="llb-av llb-mono">' + esc(name.charAt(0)) + "</span>";
@@ -146,6 +160,9 @@
         r.founders.map(function (f) { return account(f.name, f.handle, f.avatar, null); }).join("") +
         "</div>"
       : '<span class="llb-dash">&mdash;</span>';
+    // A row whose launch URL is not plainly http(s) renders as a dash, exactly like the pinned
+    // Orchid row whose post was removed. Better a missing link than a clickable script URL.
+    var watchHref = safeHref(r.tweet_url);
     var cells = METRIC_COLUMNS.map(function (c) {
       var on = c.key === sortKey;
       var v = r[c.key] || 0;
@@ -159,11 +176,13 @@
       '<td class="llb-rk"><span class="rkb' + (rank <= 3 ? " rk" + rank : "") + '">' + rank + "</span>" + move + "</td>" +
       '<td class="llb-nm">' + account(r.startup, r.startup_handle, r.startup_avatar, r.startup_url) + "</td>" +
       '<td class="llb-nm2">' + founders + "</td>" +
-      '<td class="llb-vid"><a class="llb-vidlink" href="' + esc(r.tweet_url) +
-        '" target="_blank" rel="noopener noreferrer" aria-label="Watch ' + esc(r.startup) +
-        ' launch on X"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">' +
-        '<circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>' +
-        '<path d="M10 8.3l6 3.7-6 3.7z" fill="currentColor"></path></svg></a></td>' +
+      (watchHref
+        ? '<td class="llb-vid"><a class="llb-vidlink" href="' + esc(watchHref) +
+          '" target="_blank" rel="noopener noreferrer" aria-label="Watch ' + esc(r.startup) +
+          ' launch on X"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">' +
+          '<circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>' +
+          '<path d="M10 8.3l6 3.7-6 3.7z" fill="currentColor"></path></svg></a></td>'
+        : '<td class="llb-vid"><span class="llb-vid-none">&mdash;</span></td>') +
       cells +
       "</tr>"
     );
@@ -226,6 +245,7 @@
 
   root.LaunchLeaderboard = {
     PAGE: PAGE,
+    safeHref: safeHref,
     METRIC_COLUMNS: METRIC_COLUMNS,
     ORCHID: ORCHID,
     esc: esc,
