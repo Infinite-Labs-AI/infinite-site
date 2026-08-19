@@ -9,7 +9,7 @@
  * Runs against a fixture rather than the live API so CI never depends on the app being up.
  */
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { createServer } from "node:http";
 import { join } from "node:path";
@@ -25,23 +25,27 @@ process.env.LAUNCH_VIDEOS_DATASET_URL = dataset.url;
 
 try {
   const { buildLaunchVideoPages } = await import("../../scripts/build-launch-videos.mjs");
-  const { LAUNCH_VIDEO_FAQ } = await import("../../scripts/research/launch-video-faq.mjs");
   await buildLaunchVideoPages(scratch);
 
   const board = readFileSync(join(scratch, "startup-launch-videos/index.html"), "utf8");
-  const study = readFileSync(join(scratch, "research/launch-videos/index.html"), "utf8");
   const ld = (html) =>
     [...html.matchAll(/type="application\/ld\+json">(.*?)<\/script>/gs)].map((m) =>
       JSON.parse(m[1].replaceAll("\\u003c", "<")),
     );
 
-  // ── Canonicals. Both pages are served from infinite.fast and nowhere else. ──
+  // ── Canonical. The board is served from infinite.fast and nowhere else. ──
   assert.match(board, /<link rel="canonical" href="https:\/\/infinite\.fast\/startup-launch-videos\/">/);
-  assert.match(study, /<link rel="canonical" href="https:\/\/infinite\.fast\/research\/launch-videos\/">/);
+
+  // ── The study MOVED to the hub (2026-08-19). This build must not resurrect it: two live copies
+  //    of a citation asset is a duplicate-content problem, and the apex URL is a 301 now. ──
+  assert.ok(
+    !existsSync(join(scratch, "research/launch-videos/index.html")),
+    "the study must NOT be built here — it lives at hub.infinite.fast/research/launch-videos",
+  );
 
   // The app is a data source, never a page host. A page URL pointing at it would split the cluster
   // across two origins and hand the ranking signal to a host that answers 404 to the public.
-  for (const [name, html] of [["leaderboard", board], ["study", study]]) {
+  for (const [name, html] of [["leaderboard", board]]) {
     assert.doesNotMatch(html, /app\.ultima\.inc/, `${name} must not reference the retired app host`);
     assert.doesNotMatch(
       html, /<link rel="canonical" href="https:\/\/api\./,
@@ -146,39 +150,14 @@ try {
   );
   assert.equal(boardLd[1].itemListElement.length, 25);
 
-  const graph = ld(study)[0]["@graph"];
-  assert.deepEqual(graph.map((n) => n["@type"]), ["Article", "BreadcrumbList", "FAQPage"]);
-  assert.deepEqual(graph[1].itemListElement[1], {
-    "@type": "ListItem", position: 2, name: "Research", item: "https://infinite.fast/research/",
-  });
-
-  // ── FAQ parity. Google drops the rich result when the schema claims answers the page does not
-  //    show, so every question and the opening of every answer must be visible in the markup. ──
-  assert.equal(graph[2].mainEntity.length, LAUNCH_VIDEO_FAQ.length);
-  const escape = (v) =>
-    v.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll("'", "&#x27;").replaceAll('"', "&quot;");
-  for (const item of LAUNCH_VIDEO_FAQ) {
-    assert.ok(
-      study.includes(item.question) || study.includes(escape(item.question)),
-      `FAQ question missing from the visible page: ${item.question}`,
-    );
-    const opening = item.answer.split(/[,.—]/)[0];
-    assert.ok(study.includes(escape(opening)), `FAQ answer missing from the visible page: ${opening}`);
-  }
-
-  // The reserved CTA slot must be FILLED. Shipping the raw marker means the piece ends on its
-  // sources with no way to act on it.
-  assert.doesNotMatch(study, /PLAYBOOK_CTA_SLOT/, "the study's CTA slot must be filled, not shipped raw");
-  assert.match(study, /<section class="pcta">/);
-  assert.match(study, /href="\/download"/);
-
-  // ── The two pages must point at each other, or the cluster does not compound. ──
-  assert.match(board, /href="\/research\/launch-videos\/"/);
-  assert.match(study, /href="\/startup-launch-videos\/"/);
+  // ── The board must still point at the study, now ABSOLUTELY and cross-origin. A root-relative
+  //    href would resolve on infinite.fast and take the reader through the 301 on every click. ──
+  assert.match(board, /href="https:\/\/hub\.infinite\.fast\/research\/launch-videos"/);
+  assert.doesNotMatch(board, /href="\/research\//, "the board must not link into the redirected namespace");
 
   // ── Fonts must be self-hosted: this site's CSP is font-src 'self', so a remote face is a silent
   //    fallback to system sans on the whole page. ──
-  for (const [name, html] of [["leaderboard", board], ["study", study]]) {
+  for (const [name, html] of [["leaderboard", board]]) {
     assert.doesNotMatch(html, /fonts\.googleapis\.com|fonts\.gstatic\.com/, `${name} must not fetch remote fonts`);
     assert.match(html, /@font-face\{font-family:"Hanken Grotesk"/, `${name} must declare its local faces`);
   }
