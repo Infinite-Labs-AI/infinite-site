@@ -352,11 +352,22 @@ ${footerHtml(`194 verified launches &middot; refreshed ${REFRESHED_HUMAN}`)}
 
 // ── Entry ───────────────────────────────────────────────────────────────────────────────────────
 export async function buildLaunchVideoPages(distDir) {
-  const source = datasetSource();
-  const res = await fetch(source, { headers: { accept: "application/json" } });
+  // BUST THE CDN CACHE. The dataset endpoint is public and deliberately cached hard
+  // (`cache-control: public, max-age=3600`), which is right for everyone else fetching it — but a
+  // build is not everyone else. An approval pings the deploy hook immediately, so without this the
+  // rebuild fetches a payload up to an hour old and republishes the ranking WITHOUT the launch that
+  // was just approved. The maintainer is told it will be visible once the deploy finishes; that has
+  // to be true. A unique query key is what actually bypasses the edge cache; `no-store` alone does
+  // not, because the CDN answers before the origin is consulted.
+  const source = new URL(datasetSource());
+  source.searchParams.set("build", String(Date.now()));
+  const res = await fetch(source, {
+    cache: "no-store",
+    headers: { accept: "application/json", "cache-control": "no-cache" },
+  });
   if (!res.ok) {
     throw new Error(
-      `Launch-video dataset fetch failed: ${res.status} ${res.statusText} from ${source}. ` +
+      `Launch-video dataset fetch failed: ${res.status} ${res.statusText} from ${source.href}. ` +
         `The leaderboard page cannot be built without it, and shipping a stale ranking under a ` +
         `"live data" label is not an acceptable substitute.`,
     );
