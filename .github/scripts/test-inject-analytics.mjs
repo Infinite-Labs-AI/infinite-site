@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomUUID, webcrypto } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -324,8 +324,181 @@ try {
   } finally {
     rmSync(wrongKeyDir, { recursive: true, force: true });
   }
+
+  // ── Browser-led desktop attribution handoff (Wave 2) ─────────────────────────────────────────
+  // Two-keyed enablement: the site half is `INFINITE_HANDOFF_ENABLED=1`. Shipped OFF, and OFF must
+  // mean ZERO handoff bytes — not an inert snippet, not a dead endpoint reference. `syntheticHtml`
+  // above is a full production build with every other lane on and this key unset.
+  for (const dormantBytes of [syntheticHtml, readFileSync(nestedPath, "utf8")]) {
+    assert.doesNotMatch(dormantBytes, /infinite-handoff-card/);
+    assert.doesNotMatch(dormantBytes, /\/infinite\/handoff/);
+    assert.doesNotMatch(dormantBytes, /__infiniteHandoffContext/);
+    assert.doesNotMatch(dormantBytes, /infinite:\/\/handoff/);
+  }
+
+  const handoffDir = mkdtempSync(join(tmpdir(), "infinite-analytics-handoff-"));
+  try {
+    mkdirSync(join(handoffDir, "dist"), { recursive: true });
+    writeFileSync(join(handoffDir, "dist/index.html"), page("Handoff"));
+    runInjector(handoffDir, {
+      POSTHOG_API_HOST: "/ingest",
+      POSTHOG_PROJECT_TOKEN: "phc_test_project_token",
+      GOOGLE_ANALYTICS_TAG_ID: "G-TEST1234",
+      INFINITE_SITE_SOURCE_KEY: "site_synthetic_test",
+      INFINITE_PRODUCTION_HOSTS: "infinite.fast",
+      INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact("site_synthetic_test", ["infinite.fast"]),
+      VERCEL_ENV: "production",
+      INFINITE_HANDOFF_ENABLED: "1",
+    });
+    const enabledHtml = readFileSync(join(handoffDir, "dist/index.html"), "utf8");
+
+    // Byte-level contract pinned by the plan.
+    assert.match(enabledHtml, /window\.__infiniteHandoffContext/);
+    assert.match(enabledHtml, /navigator\.sendBeacon\("\/infinite\/handoff"/);
+    assert.match(enabledHtml, /target = "_blank"/);
+    assert.match(enabledHtml, /infinite:\/\/handoff\/v1/);
+    assert.match(enabledHtml, /Install Infinite, then come back here and click Open Infinite/);
+    assert.match(enabledHtml, /if \(!context\) return/);
+    assert.match(enabledHtml, /Download started/);
+    assert.match(enabledHtml, /Download again/);
+    assert.equal((enabledHtml.match(/data-infinite-runtime="managed"/g) ?? []).length, 1, "the handoff snippet must not disturb the managed runtime");
+    assert.match(enabledHtml, /gtag\("event", "app_download_clicked"/, "the canonical GA4 download bridge survives");
+
+    const handoffScript = handoffScriptOf(enabledHtml);
+    // The handler NEVER cancels the navigation, never schedules an automatic scheme launch, and
+    // never reads anything identifying beyond the consent-gated accessor's own bounded context.
+    assert.doesNotMatch(handoffScript, /preventDefault/, "the handoff handler must never cancel the download navigation");
+    assert.doesNotMatch(handoffScript, /setTimeout|setInterval|requestAnimationFrame/, "no auto-launch timer: the user's explicit click is the only browser->app transition");
+    assert.doesNotMatch(handoffScript, /location\.href\s*=|location\.assign|location\.replace|window\.open/, "the snippet never navigates on the visitor's behalf");
+    assert.doesNotMatch(handoffScript, /email|userAgent|textContent|innerHTML|\.search\b|referrer/i, "no email, UA, DOM text, query string, or referrer capture");
+
+    const HANDOFF_CONTEXT = {
+      siteSourceKey: "site_synthetic_test",
+      anonymousId: "ca36c3bb-afd2-45eb-8987-d711ecd07cf7",
+      sessionId: "16e97614-a026-4c6c-9aa0-3f29fa8cd522",
+      url: "https://infinite.fast/tools/",
+    };
+    const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+    const CLAIM_SECRET = /^[A-Za-z0-9_-]{43}$/;
+
+    const handoff = executeAnalytics(enabledHtml, { handoffContext: HANDOFF_CONTEXT });
+    assert.equal(handoff.documentCaptureListenerCount("click"), 1, "the handoff handler binds once, in the capture phase");
+    assert.equal(handoff.handoffCard(), null, "no card exists before a download click");
+
+    const first = handoff.click(handoff.downloads.hero);
+    // THE contract: the original page survives, so the DMG must open in a NEW tab and nothing may
+    // cancel the anchor's own navigation. With target="_blank" set during capture, the GA4 bubble
+    // bridge classifies the click as new-tab and leaves it alone.
+    assert.equal(first.defaultPrevented, false, "a handoff download click must never be cancelled");
+    assert.equal(handoff.downloads.hero.getAttribute("target"), "_blank");
+    assert.equal(handoff.downloads.hero.getAttribute("rel"), "noopener");
+    assert.equal(handoff.handoffBeacons.length, 1, "one claim per download click");
+    assert.equal(handoff.handoffFetches.length, 0, "an accepted beacon needs no keepalive fetch");
+
+    const claim = handoff.handoffBeacons[0];
+    assert.deepEqual(
+      Object.keys(claim).sort(),
+      ["anonymousId", "claimId", "claimSecret", "occurredAt", "sessionId", "siteSourceKey", "url"],
+      "the claim payload is exactly the bounded v1 issue shape",
+    );
+    assert.match(claim.claimId, UUID_V4);
+    assert.match(claim.claimSecret, CLAIM_SECRET);
+    assert.equal(claim.siteSourceKey, HANDOFF_CONTEXT.siteSourceKey);
+    assert.equal(claim.anonymousId, HANDOFF_CONTEXT.anonymousId);
+    assert.equal(claim.sessionId, HANDOFF_CONTEXT.sessionId);
+    assert.equal(claim.url, HANDOFF_CONTEXT.url);
+    assert.match(claim.occurredAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    assert.doesNotMatch(JSON.stringify(claim), /campaign=secret|Download for Mac|search\.example|\?|#/);
+
+    assert.equal(handoff.handoffCardCount(), 1);
+    assert.match(handoff.handoffCardText(), /Download started/);
+    assert.match(handoff.handoffCardText(), /Install Infinite, then come back here and click Open Infinite\./);
+    assert.equal(
+      handoff.handoffOpenUrl(),
+      `infinite://handoff/v1?claim_id=${encodeURIComponent(claim.claimId)}&secret=${encodeURIComponent(claim.claimSecret)}`,
+    );
+    // The canonical lanes are untouched: this feature adds a claim, it does not replace Downloads.
+    assert.equal(handoff.infiniteEvents("app_download_click").length, 1);
+    assert.equal(handoff.gaEvents("app_download_clicked").length, 1);
+
+    // A later valid Download REPLACES the card's claim rather than stacking cards.
+    handoff.click(handoff.downloads.pricing);
+    assert.equal(handoff.handoffBeacons.length, 2);
+    assert.equal(handoff.handoffCardCount(), 1, "a second download replaces the claim, never stacks a card");
+    assert.notEqual(handoff.handoffBeacons[1].claimId, claim.claimId, "each download mints its own claim");
+    assert.notEqual(handoff.handoffBeacons[1].claimSecret, claim.claimSecret);
+    assert.equal(
+      handoff.handoffOpenUrl(),
+      `infinite://handoff/v1?claim_id=${encodeURIComponent(handoff.handoffBeacons[1].claimId)}&secret=${encodeURIComponent(handoff.handoffBeacons[1].claimSecret)}`,
+      "the card carries the newest claim",
+    );
+
+    // The card's own "Download again" link is an ordinary same-origin /download anchor, so it runs
+    // the same path: new claim, new tab, one card.
+    const again = handoff.clickHandoffLink("Download again");
+    const againEvent = handoff.click(again);
+    assert.equal(againEvent.defaultPrevented, false);
+    assert.equal(again.getAttribute("target"), "_blank");
+    assert.equal(handoff.handoffBeacons.length, 3);
+    assert.equal(handoff.handoffCardCount(), 1);
+
+    handoff.dismissHandoffCard();
+    assert.equal(handoff.handoffCard(), null, "the card is dismissible");
+    handoff.click(handoff.downloads.navigation);
+    assert.equal(handoff.handoffCardCount(), 1, "a later download brings the card back");
+
+    // A non-download CTA never mints a claim.
+    const claimsBefore = handoff.handoffBeacons.length;
+    handoff.click(handoff.cta);
+    assert.equal(handoff.handoffBeacons.length, claimsBefore, "only /download clicks mint claims");
+
+    // No consent-qualified context (DNT/GPC or a saved denial) → the accessor returns null and the
+    // ordinary direct download is preserved byte for byte, including the GA4 same-tab bridge.
+    const noContext = executeAnalytics(enabledHtml, { handoffContext: null });
+    const denied = noContext.click(noContext.downloads.hero);
+    assert.equal(noContext.handoffBeacons.length, 0, "no context, no claim");
+    assert.equal(noContext.handoffFetches.length, 0);
+    assert.equal(noContext.handoffCard(), null, "no context, no card");
+    assert.equal(noContext.downloads.hero.getAttribute("target"), null, "no context means no anchor mutation");
+    assert.equal(denied.defaultPrevented, true, "without a claim the ordinary GA4 same-tab download path is untouched");
+
+    // A browser whose infinite-tag predates the accessor (or an unverified host / missing source
+    // key, where the accessor is never installed) behaves identically.
+    const noAccessor = executeAnalytics(enabledHtml, {});
+    const legacy = noAccessor.click(noAccessor.downloads.hero);
+    assert.equal(noAccessor.handoffBeacons.length, 0);
+    assert.equal(noAccessor.handoffCard(), null);
+    assert.equal(legacy.defaultPrevented, true);
+
+    // Beacon refusal falls back to ONE same-origin keepalive fetch with the identical payload.
+    const refused = executeAnalytics(enabledHtml, { handoffContext: HANDOFF_CONTEXT, beaconRefuses: true });
+    const refusedClick = refused.click(refused.downloads.hero);
+    assert.equal(refused.handoffBeacons.length, 0);
+    assert.equal(refused.handoffFetches.length, 1);
+    assert.equal(refused.handoffFetches[0].init.method, "POST");
+    assert.equal(refused.handoffFetches[0].init.keepalive, true);
+    assert.equal(refused.handoffFetches[0].init.credentials, "same-origin");
+    assert.equal(refused.handoffFetches[0].init.headers["content-type"], "application/json");
+    assert.match(refused.handoffFetches[0].payload.claimId, UUID_V4);
+    assert.match(refused.handoffFetches[0].payload.claimSecret, CLAIM_SECRET);
+    assert.equal(refusedClick.defaultPrevented, false, "a refused beacon still downloads in a new tab");
+    assert.equal(refused.handoffCardCount(), 1);
+  } finally {
+    rmSync(handoffDir, { recursive: true, force: true });
+  }
 } finally {
   rmSync(tempDir, { recursive: true, force: true });
+}
+
+/** The ONE injected script that owns the handoff flow, isolated so its prohibitions
+ *  (no preventDefault, no timer, no identifying capture) are asserted against that snippet alone
+ *  and not against the unrelated GA4 bridge that legitimately cancels same-tab clicks. */
+function handoffScriptOf(html) {
+  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
+    .map((match) => match[1])
+    .filter((script) => script.includes("__infiniteHandoffContext"));
+  assert.equal(scripts.length, 1, "exactly one handoff snippet per page");
+  return scripts[0];
 }
 
 function runInjector(cwd, env) {
@@ -341,6 +514,13 @@ function executeAnalytics(html, {
   doNotTrack = "0",
   globalPrivacyControl = false,
   hostname = "infinite.fast",
+  // `undefined` = the accessor is absent entirely (older infinite-tag, unverified host, no source
+  // key). `null` = the accessor exists and reports no consent-qualified context. An object = a
+  // consent-qualified context, exactly the documented infinite-tag >= 0.6.0 shape.
+  handoffContext,
+  // Browsers return false from sendBeacon when they refuse the payload; the handoff snippet must
+  // then fall back to one same-origin keepalive fetch.
+  beaconRefuses = false,
 }) {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
     .map((match) => match[1])
@@ -367,8 +547,15 @@ function executeAnalytics(html, {
     }),
   ]));
   const documentListeners = new Map();
+  const handoffBeacons = [];
+  const handoffFetches = [];
   const consentChanges = [];
   const body = createNode("body");
+  // Capture-phase listeners are kept in their own bucket and fired FIRST, exactly as the DOM does:
+  // document's capture listeners run before the event ever bubbles back to document. The handoff
+  // handler depends on that ordering to set target="_blank" before the GA4 bubble bridge reads it.
+  const listenerKey = (name, options) =>
+    (options === true || (options && options.capture === true) ? `capture:${name}` : name);
   const document = {
     referrer: "https://search.example/results?q=secret",
     readyState: "loading",
@@ -378,8 +565,9 @@ function executeAnalytics(html, {
     getElementsByTagName: () => [{ parentNode: { insertBefore: (node) => insertedScripts.push(node) } }],
     head: { appendChild: (node) => insertedScripts.push(node) },
     body,
-    addEventListener: (name, listener) => {
-      documentListeners.set(name, [...(documentListeners.get(name) ?? []), listener]);
+    addEventListener: (name, listener, options) => {
+      const key = listenerKey(name, options);
+      documentListeners.set(key, [...(documentListeners.get(key) ?? []), listener]);
     },
   };
   const window = {
@@ -396,6 +584,7 @@ function executeAnalytics(html, {
     },
     posthog: [],
   };
+  if (handoffContext !== undefined) window.__infiniteHandoffContext = () => handoffContext;
   const context = {
     URL,
     Date,
@@ -404,6 +593,8 @@ function executeAnalytics(html, {
     Object,
     Set,
     Promise,
+    Uint8Array,
+    btoa,
     window,
     posthog: window.posthog,
     document,
@@ -412,12 +603,25 @@ function executeAnalytics(html, {
     navigator: {
       doNotTrack,
       globalPrivacyControl,
-      sendBeacon: (_path, body) => { infiniteBodies.push(JSON.parse(body)); return true; },
+      sendBeacon: (path, body) => {
+        if (String(path) === "/infinite/handoff") {
+          if (beaconRefuses) return false;
+          handoffBeacons.push(JSON.parse(body));
+          return true;
+        }
+        infiniteBodies.push(JSON.parse(body));
+        return true;
+      },
     },
     localStorage: storageApi(storage),
     sessionStorage: storageApi(sessionStorage),
-    crypto: { randomUUID },
-    fetch: () => Promise.resolve({ ok: true }),
+    crypto: { randomUUID, getRandomValues: (array) => webcrypto.getRandomValues(array) },
+    fetch: (path, init) => {
+      if (String(path) === "/infinite/handoff") {
+        handoffFetches.push({ path: String(path), init, payload: JSON.parse(init.body) });
+      }
+      return Promise.resolve({ ok: true });
+    },
     CustomEvent: class CustomEvent {
       constructor(type, init = {}) { this.type = type; this.detail = init.detail; }
     },
@@ -446,8 +650,29 @@ function executeAnalytics(html, {
     xEvents,
     metaEvents,
     insertedScripts,
+    handoffBeacons,
+    handoffFetches,
+    handoffCard: () => findNodeById(body, "infinite-handoff-card"),
+    handoffCardCount: () => countNodesById(body, "infinite-handoff-card"),
+    handoffCardText: () => {
+      const card = findNodeById(body, "infinite-handoff-card");
+      return card ? textOf(card) : "";
+    },
+    handoffOpenUrl: () => findLink(findNodeById(body, "infinite-handoff-card"), "Open Infinite")?.href ?? null,
+    dismissHandoffCard: () => {
+      const card = findNodeById(body, "infinite-handoff-card");
+      const button = findByAttribute(card, "aria-label", "Dismiss");
+      if (!button) throw new Error("handoff card dismiss control is missing");
+      for (const listener of button.listeners.get("click") ?? []) listener({});
+    },
+    clickHandoffLink: (label) => {
+      const link = findLink(findNodeById(body, "infinite-handoff-card"), label);
+      if (!link) throw new Error(`handoff card link not found: ${label}`);
+      return link;
+    },
     loaderSrcs: () => insertedScripts.map((node) => String(node.src ?? "")),
     documentListenerCount: (name) => documentListeners.get(name)?.length ?? 0,
+    documentCaptureListenerCount: (name) => documentListeners.get(`capture:${name}`)?.length ?? 0,
     setConsent: (granted) => window.setInfiniteAnalyticsConsent(granted),
     consentChanges: () => [...consentChanges],
     fireDomContentLoaded: () => { for (const listener of documentListeners.get("DOMContentLoaded") ?? []) listener(); },
@@ -468,6 +693,7 @@ function executeAnalytics(html, {
         defaultPrevented: false,
         preventDefault() { this.defaultPrevented = true; },
       };
+      for (const listener of documentListeners.get("capture:click") ?? []) listener(event);
       for (const listener of documentListeners.get("click") ?? []) listener(event);
       return event;
     },
@@ -498,11 +724,39 @@ function createNode(tagName) {
       node.children.push(child);
       return child;
     },
-    removeChild(child) { node.children = node.children.filter((existing) => existing !== child); },
+    removeChild(child) {
+      node.children = node.children.filter((existing) => existing !== child);
+      // The real DOM clears parentNode on removal; without this a snippet that re-appends a
+      // detached node (the dismissed handoff card) silently never comes back.
+      if (child && typeof child === "object" && child.parentNode === node) child.parentNode = null;
+    },
     addEventListener(name, listener) { node.listeners.set(name, [...(node.listeners.get(name) ?? []), listener]); },
     querySelector: () => null,
+    // Built nodes participate in delegated click matching too: the handoff card's own
+    // "Download again" anchor must reach the same document-level handler a page anchor does.
+    closest(selector) {
+      if (selector !== "a[href]") return null;
+      let current = node;
+      while (current) {
+        if (current.tagName === "a" && current.href) return current;
+        current = current.parentNode;
+      }
+      return null;
+    },
   };
+  for (const reflected of ["target", "rel"]) {
+    Object.defineProperty(node, reflected, {
+      get: () => node.attributes[reflected] ?? "",
+      set: (value) => { node.attributes[reflected] = String(value); },
+    });
+  }
   return node;
+}
+
+function countNodesById(node, id) {
+  if (!node || typeof node !== "object") return 0;
+  return (node.id === id ? 1 : 0)
+    + (node.children ?? []).reduce((total, child) => total + countNodesById(child, id), 0);
 }
 
 function findNodeById(node, id) {
@@ -525,11 +779,48 @@ function findButton(node, label) {
   return null;
 }
 
+function findLink(node, label) {
+  if (!node || typeof node !== "object") return null;
+  if (node.tagName === "a" && (node.children ?? []).some((child) => child?.data === label)) return node;
+  for (const child of node.children ?? []) {
+    const found = findLink(child, label);
+    if (found) return found;
+  }
+  return null;
+}
+
+function findByAttribute(node, name, value) {
+  if (!node || typeof node !== "object") return null;
+  if (node.attributes?.[name] === value) return node;
+  for (const child of node.children ?? []) {
+    const found = findByAttribute(child, name, value);
+    if (found) return found;
+  }
+  return null;
+}
+
+function textOf(node) {
+  if (!node || typeof node !== "object") return "";
+  if (node.nodeType === 3) return String(node.data ?? "");
+  return (node.children ?? []).map(textOf).join(" ");
+}
+
 function element({ href, attributes }) {
   const node = {
     href,
     getAttribute: (name) => attributes[name] ?? null,
+    setAttribute: (name, value) => { attributes[name] = String(value); },
   };
+  // `target` and `rel` are REFLECTED IDL attributes on HTMLAnchorElement: assigning the property
+  // updates the content attribute, which is what the GA4 bubble bridge reads back with
+  // getAttribute("target") to decide whether the click stays in this tab. Model that faithfully —
+  // a plain property would let a broken snippet pass while the real page still self-navigated.
+  for (const reflected of ["target", "rel"]) {
+    Object.defineProperty(node, reflected, {
+      get: () => attributes[reflected] ?? "",
+      set: (value) => { attributes[reflected] = String(value); },
+    });
+  }
   node.closest = (selector) => {
     if (selector === "a[href]") return node;
     if (selector === "[data-analytics-cta-id]" && attributes["data-analytics-cta-id"]) return node;
