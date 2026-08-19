@@ -66,7 +66,16 @@
     overlay.innerHTML =
       '<div class="llb-modal"><button type="button" class="llb-modal-x" aria-label="Close" data-close>&times;</button>' +
       formHtml() + "</div>";
-    document.body.appendChild(overlay);
+    // Mount INSIDE .llb-page, not on <body>.
+    //
+    // Every colour on this page is a custom property declared on .llb-page (--card, --paper,
+    // --ink, --rule, --acc...), not on :root. An overlay appended to <body> sits outside that
+    // scope, so background:var(--card) resolved to nothing and the whole modal — card, inputs and
+    // submit button — rendered fully transparent over the page. It looked like a rendering bug and
+    // was really a variable-scope one.
+    //
+    // The overlay is position:fixed, so mounting it deeper does not change where it covers.
+    (document.querySelector(".llb-page") || document.body).appendChild(overlay);
     document.addEventListener("keydown", onKey);
 
     var card = overlay.querySelector(".llb-modal");
