@@ -17,6 +17,14 @@ Status: production behavior inventory. Founder/counsel review and exact processo
 | Request IP | Short-lived quota/rate context only | Never persisted in the analytics ledger; any platform handling follows the processor setting | Vercel/network boundary; collector may derive an in-memory rotating HMAC quota key |
 | User agent | Bot classification and delivery diagnostics | Bounded server processing; classification result may accompany the 90-day raw row | Vercel and Infinite collector |
 | Synthetic browser/Drain events | Daily end-to-end delivery proof | Synthetic-only diagnostic retention; excluded from production aggregates and readiness | Dedicated synthetic sources; environment is server-derived |
+| Desktop handoff claim: random claim UUID, SHA-256 claim-secret hash, existing visitor/session HMACs, site source/workspace/environment, issue/expiry/redemption timestamps, redeemed Supabase user UUID, app version/runtime kind, internal-user boolean | Consent-qualified browser download-start to authenticated desktop-open attribution and aggregate activation analysis | 90 days, bounded cron; workspace/source deletion cascades; auth-user deletion sets `redeemed_user_id` null | Service role only; no member/public RLS. The raw claim secret, email, IP, UA and raw browser ids are not stored. The secret exists only in the browser and in the `infinite://handoff/v1` URL the visitor clicks |
+
+The handoff claim row exists only while the two-keyed browser-to-desktop handoff is enabled (site
+`INFINITE_HANDOFF_ENABLED` plus cloud `INFINITE_HANDOFF_ATTRIBUTION_ENABLED`); both ship off. A claim
+is created only by an explicit `/download` click from a consent-qualified visitor, and it is joined
+to an account only when that visitor explicitly clicks "Open Infinite" and then authenticates in the
+desktop app. An unused, expired, denied, or cross-browser journey is left unlinked; it is never
+inferred from IP address, user agent, email, time proximity, or the server visit fingerprint.
 
 ## Operational follow-ups
 
