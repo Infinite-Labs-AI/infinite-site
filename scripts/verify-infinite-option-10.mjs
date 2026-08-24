@@ -192,9 +192,22 @@ if (wrangleHtml) {
     "this has been a lifesaver!",
     "Put growth on <span>auto-pilot</span>",
     '"sameAs": [',
-    '"offers": {',
+    '"offers": [',
     'data-download-location="hero"',
     'data-download-location="pricing"',
+    'data-pricing-plan="max"',
+    'data-pricing-plan="ultra"',
+    'data-pricing-billing="monthly"',
+    'data-pricing-billing="annual"',
+    'data-pricing-value="max"',
+    'data-pricing-value="ultra"',
+    "Infinite Max",
+    "Infinite Ultra",
+    "Included in both",
+    "AI Visibility",
+    "Reels",
+    "Competitor Tracking",
+    "Billed monthly",
     "Dashboard metrics use demo data.",
     "Demo data",
     'class="footer-label"',
@@ -235,6 +248,9 @@ if (wrangleHtml) {
     "Book a demo call",
     "<h4>",
     "</h4>",
+    "Then $49/mo",
+    '"price": "49"',
+    "All in one",
   ];
 
   for (const snippet of requiredWrangleSnippets) {
@@ -245,6 +261,9 @@ if (wrangleHtml) {
     ".founder-x-strip-two {",
     ".founder-x-card {",
     "box-shadow: 0 16px 40px rgba(31, 72, 112, 0.075);",
+    ".pricing-tier-grid {",
+    ".pricing-plan--ultra {",
+    ".pricing-shared {",
   ];
 
   for (const snippet of requiredWrangleStyleSnippets) {
@@ -266,6 +285,36 @@ if (wrangleHtml) {
   const focusStylePattern = /:focus-visible[\s\S]*outline:\s*3px solid #128345;/;
   if (!focusStylePattern.test(wrangleHtml)) {
     failures.push("Missing visible keyboard focus style with sufficient contrast");
+  }
+
+  const homepagePricingPlanCount = (wrangleHtml.match(/data-pricing-plan="(?:max|ultra)"/g) || []).length;
+  if (homepagePricingPlanCount !== 2) {
+    failures.push(`Expected exactly 2 homepage pricing plans, found ${homepagePricingPlanCount}`);
+  }
+
+  const homepageBillingControlCount = (wrangleHtml.match(/data-pricing-billing="(?:monthly|annual)"/g) || []).length;
+  if (homepageBillingControlCount !== 2) {
+    failures.push(`Expected exactly 2 homepage billing controls, found ${homepageBillingControlCount}`);
+  }
+
+  const pricingCatalogMatch = wrangleHtml.match(/const pricingCatalog = (\{[\s\S]*?\n    \});/);
+  if (!pricingCatalogMatch) {
+    failures.push("Missing executable homepage pricing catalog");
+  } else {
+    const pricingCatalog = Function(`"use strict"; return (${pricingCatalogMatch[1]});`)();
+    const expectedPricingCatalog = {
+      max: {
+        monthly: { price: "$60", note: "Billed monthly" },
+        annual: { price: "$50", note: "Billed $600/year" },
+      },
+      ultra: {
+        monthly: { price: "$200", note: "Billed monthly" },
+        annual: { price: "$180", note: "Billed $2,160/year" },
+      },
+    };
+    if (JSON.stringify(pricingCatalog) !== JSON.stringify(expectedPricingCatalog)) {
+      failures.push(`Homepage pricing catalog mismatch: ${JSON.stringify(pricingCatalog)}`);
+    }
   }
 }
 

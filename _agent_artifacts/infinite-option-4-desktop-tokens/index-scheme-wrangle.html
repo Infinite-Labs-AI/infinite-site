@@ -75,15 +75,48 @@
           "applicationCategory": "BusinessApplication",
           "applicationSubCategory": "Marketing automation software",
           "operatingSystem": "macOS",
-          "offers": {
-            "@type": "Offer",
-            "url": "https://infinite.fast/#pricing",
-            "price": "49",
-            "priceCurrency": "USD",
-            "category": "subscription",
-            "description": "7-day free trial, then $49 per month. Cancel anytime.",
-            "availability": "https://schema.org/InStock"
-          },
+          "offers": [
+            {
+              "@type": "Offer",
+              "name": "Infinite Max monthly",
+              "url": "https://infinite.fast/#pricing",
+              "price": "60",
+              "priceCurrency": "USD",
+              "category": "subscription",
+              "description": "7-day free trial, then $60 per month. Cancel anytime.",
+              "availability": "https://schema.org/InStock"
+            },
+            {
+              "@type": "Offer",
+              "name": "Infinite Max annual",
+              "url": "https://infinite.fast/#pricing",
+              "price": "600",
+              "priceCurrency": "USD",
+              "category": "subscription",
+              "description": "7-day free trial, then $600 per year. Cancel anytime.",
+              "availability": "https://schema.org/InStock"
+            },
+            {
+              "@type": "Offer",
+              "name": "Infinite Ultra monthly",
+              "url": "https://infinite.fast/#pricing",
+              "price": "200",
+              "priceCurrency": "USD",
+              "category": "subscription",
+              "description": "7-day free trial, then $200 per month. Cancel anytime.",
+              "availability": "https://schema.org/InStock"
+            },
+            {
+              "@type": "Offer",
+              "name": "Infinite Ultra annual",
+              "url": "https://infinite.fast/#pricing",
+              "price": "2160",
+              "priceCurrency": "USD",
+              "category": "subscription",
+              "description": "7-day free trial, then $2,160 per year. Cancel anytime.",
+              "availability": "https://schema.org/InStock"
+            }
+          ],
           "featureList": [
             "Find high-intent leads",
             "Automate SEO and GEO",
@@ -3855,34 +3888,71 @@
           </div>
         </div>
 
-        <div class="pricing-panel pricing-plan-card">
-          <div class="pricing-plan-left">
-            <div class="pricing-plan-top">
-              <h3>All in one</h3>
-              <span>7-day free trial</span>
+        <div class="pricing-package">
+        <div class="pricing-billing" role="group" aria-label="Choose billing period">
+          <button type="button" data-pricing-billing="monthly" aria-pressed="true">Monthly</button>
+          <button type="button" data-pricing-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
+        </div>
+
+        <div class="pricing-tier-grid">
+          <article class="pricing-plan pricing-plan--max" data-pricing-plan="max">
+            <div class="pricing-tier-head">
+              <h3>Infinite Max</h3>
+              <span class="pricing-trial">7-day free trial</span>
             </div>
-            <div class="price"><strong>$0</strong><span>for 7 days</span></div>
-            <p class="billing-note">Then $49/mo. Cancel anytime.</p>
+            <p class="pricing-tier-copy">Find demand, plan growth, and ship the work.</p>
+            <div class="pricing-tier-price"><strong data-pricing-value="max" aria-live="polite">$60</strong><span>/month</span></div>
+            <p class="pricing-tier-note" data-pricing-note="max" aria-live="polite">Billed monthly</p>
             <a class="hero-cta pricing-cta" href="/download" data-download-location="pricing">
               <svg class="hero-cta-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path fill="currentColor" d="M16.7 12.7c0-2.2 1.8-3.3 1.9-3.4-1.1-1.5-2.7-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8s-1.8-.8-3-.8c-1.5 0-2.9.9-3.7 2.2-1.6 2.8-.4 6.9 1.1 9.1.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.2-2.4 1.2-2.5 0 0-2.6-1-2.6-3.8ZM14.5 6.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.7-1 2.8 1 0 2.1-.5 2.8-1.3Z"/>
               </svg>
               <span>Download for Mac</span>
             </a>
-            <p class="pricing-cancel"><strong>Cancel anytime.</strong> No questions asked.</p>
-          </div>
-
-          <div class="pricing-included">
-            <h3>What's included:</h3>
-            <ul class="pricing-feature-grid">
-              <li><strong>Always-on buyer-intent monitoring</strong> across configured sources such as Reddit, X, search, competitors, and communities.</li>
-              <li><strong>SEO + GEO briefs</strong> for pages, AI-search gaps, and comparison content.</li>
-              <li><strong>Claude Code + Codex context</strong> for turning growth work into shipped changes.</li>
-              <li><strong>Landing-page A/B test ideas</strong> with winning message, CTA, and conversion notes.</li>
-              <li><strong>Organic content angles</strong> pulled from trending creator and competitor patterns.</li>
-              <li><strong>Integrations</strong> for analytics, ads, social, Shopify, and your growth stack.</li>
+            <p class="pricing-feature-label">Core outcomes</p>
+            <ul class="pricing-tier-features">
+              <li><strong>Find buyer signals</strong> across your market</li>
+              <li><strong>Turn signals into briefs</strong> and experiments</li>
+              <li><strong>Ship with AI context</strong> already attached</li>
             </ul>
-          </div>
+          </article>
+
+          <article class="pricing-plan pricing-plan--ultra" data-pricing-plan="ultra">
+            <div class="pricing-tier-head">
+              <h3>Infinite Ultra</h3>
+              <span class="pricing-recommended">Most powerful</span>
+            </div>
+            <p class="pricing-tier-copy">See more, create more, and track every move.</p>
+            <div class="pricing-tier-price"><strong data-pricing-value="ultra" aria-live="polite">$200</strong><span>/month</span></div>
+            <p class="pricing-tier-note" data-pricing-note="ultra" aria-live="polite">Billed monthly</p>
+            <a class="hero-cta pricing-cta" href="/download" data-download-location="pricing">
+              <svg class="hero-cta-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M16.7 12.7c0-2.2 1.8-3.3 1.9-3.4-1.1-1.5-2.7-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8s-1.8-.8-3-.8c-1.5 0-2.9.9-3.7 2.2-1.6 2.8-.4 6.9 1.1 9.1.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.2-2.4 1.2-2.5 0 0-2.6-1-2.6-3.8ZM14.5 6.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.7-1 2.8 1 0 2.1-.5 2.8-1.3Z"/>
+              </svg>
+              <span>Download for Mac</span>
+            </a>
+            <p class="pricing-feature-label">Everything in Max, plus</p>
+            <ul class="pricing-tier-features">
+              <li><strong>AI Visibility</strong> across AI answers</li>
+              <li><strong>Reels</strong> from winning market signals</li>
+              <li><strong>Competitor Tracking</strong> across content, pricing, and ads</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="pricing-shared">
+          <p>Included in both</p>
+          <ul>
+            <li>Buyer-intent monitoring</li>
+            <li>SEO + GEO briefs</li>
+            <li>Claude Code + Codex context</li>
+            <li>Landing-page experiments</li>
+            <li>Organic content angles</li>
+            <li>Growth-stack integrations</li>
+          </ul>
+        </div>
+
+        <p class="pricing-cancel"><strong>Both plans start with a 7-day free trial.</strong> Cancel anytime. No questions asked.</p>
         </div>
 
         <div class="faq-panel" id="faq">
@@ -3972,6 +4042,34 @@
     </div>
     <div class="wrangle-giant-word" aria-hidden="true">Infinite</div>
   </footer>
+
+  <script>
+    const pricingCatalog = {
+      max: {
+        monthly: { price: "$60", note: "Billed monthly" },
+        annual: { price: "$50", note: "Billed $600/year" },
+      },
+      ultra: {
+        monthly: { price: "$200", note: "Billed monthly" },
+        annual: { price: "$180", note: "Billed $2,160/year" },
+      },
+    };
+
+    document.querySelectorAll("[data-pricing-billing]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const billing = button.dataset.pricingBilling;
+        document.querySelectorAll("[data-pricing-billing]").forEach((peer) => {
+          peer.setAttribute("aria-pressed", String(peer === button));
+        });
+        document.querySelectorAll("[data-pricing-value]").forEach((price) => {
+          price.textContent = pricingCatalog[price.dataset.pricingValue][billing].price;
+        });
+        document.querySelectorAll("[data-pricing-note]").forEach((note) => {
+          note.textContent = pricingCatalog[note.dataset.pricingNote][billing].note;
+        });
+      });
+    });
+  </script>
 
 </body>
 </html>
