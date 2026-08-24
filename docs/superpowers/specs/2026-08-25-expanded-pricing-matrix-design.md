@@ -75,9 +75,25 @@ Drop:
    - `79 agent tools`
    - `One growth operating system`
 4. Add the always-visible comparison headed `Everything Infinite does.`
-5. Render nine feature groups containing the 46 rows below.
+5. Render nine feature groups containing the 27 bundled rows below.
 6. Add a closing CTA strip with both plan names and the existing Download for Mac action.
 7. Keep the trial and cancellation reassurance below the final CTA.
+
+## Plan-card positioning
+
+The compact cards explain who each plan is for. The comparison matrix owns the capability detail, so the cards no longer repeat outcome or feature lists.
+
+### Max — Best for
+
+- Solo founders from $0 to $10k MRR
+- Small bootstrapped teams
+- Content creators building distribution
+
+### Ultra — Best for
+
+- Fast-growing, venture-backed teams
+- Companies above $10k MRR
+- Teams scaling multiple channels and content output
 
 ## Capability matrix
 
@@ -87,33 +103,25 @@ Every Max capability is also included in Ultra. `Ultra only` means the Max cell 
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Command Center | Included | Included |
-| Chat with Infinite | Included | Included |
-| Agent task board and status | Included | Included |
-| Agent run history | Included | Included |
+| Command Center and Chat with Infinite | Included | Included |
+| Agent tasks, status, and run history | Included | Included |
 | Review-first approvals | Included | Included |
 
 ### 2. Find buyers
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Reddit lead scanner | Included | Included |
-| X lead scanner | Included | Included |
-| Facebook Groups lead scanner | Included | Included |
-| Buyer-intent qualification | Included | Included |
-| Source context and recommended next action | Included | Included |
+| Lead scanners — Reddit, X, and Facebook Groups | Included | Included |
+| Buyer-intent qualification, source context, and next actions | Included | Included |
 
 ### 3. SEO, GEO, and AI search
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Keyword discovery and curation | Included | Included |
-| SEO autopilot strategy | Included | Included |
-| SEO and GEO briefs | Included | Included |
-| Brief, write, critique, and revision pipeline | Included | Included |
-| Content calendar and scheduling | Included | Included |
-| Custom-domain blog publishing | Included | Included |
-| Search rank monitoring | Included | Included |
+| Keyword research and curation | Included | Included |
+| SEO and GEO strategy and briefs | Included | Included |
+| Write, critique, and revise content | Included | Included |
+| Calendar, custom-domain publishing, and rank monitoring | Included | Included |
 | AI Visibility and citation monitoring | Ultra only | Included |
 
 ### 4. Ads and creative
@@ -121,19 +129,14 @@ Every Max capability is also included in Ultra. `Ultra only` means the Max cell 
 | Capability | Max | Ultra |
 |---|---:|---:|
 | Meta Ads performance | Included | Included |
-| Ad creative generation | Included | Included |
-| Creative research library | Included | Included |
-| Ad autopilot strategy and briefs | Included | Included |
-| Review, approve, and launch workflow | Included | Included |
-| Clone, refine, upscale, and expand creatives | Included | Included |
+| Ad creative generation and research | Included | Included |
+| Ad autopilot — strategy, approvals, launch, and creative operations | Included | Included |
 
 ### 5. Organic content and video
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Instagram analytics, posts, hooks, and funnels | Included | Included |
-| Instagram inspiration and creator research | Included | Included |
-| X inspiration, drafts, and analytics | Included | Included |
+| Instagram and X content intelligence | Included | Included |
 | Viral trend discovery | Included | Included |
 | Faceless YouTube video generation | Ultra only | Included |
 | Reels creation | Ultra only | Included |
@@ -143,17 +146,14 @@ Every Max capability is also included in Ultra. `Ultra only` means the Max cell 
 | Capability | Max | Ultra |
 |---|---:|---:|
 | Site funnels, pages, and CTA breakdowns | Included | Included |
-| Tracked links and UTM library | Included | Included |
-| Landing-page creation and publishing | Included | Included |
+| Tracked links, UTMs, and landing-page creation | Included | Included |
 | Landing-page A/B testing | Ultra only | Included |
 
 ### 7. Analytics and revenue
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Site Analytics overview | Included | Included |
-| Traffic, channels, referrers, and UTMs | Included | Included |
-| Audience, geography, pages, and funnels | Included | Included |
+| Site Analytics — traffic, channels, audience, pages, and funnels | Included | Included |
 | App Analytics | Included | Included |
 | Revenue, MRR, churn, orders, ROAS, spend, and CTR | Included | Included |
 
@@ -161,12 +161,9 @@ Every Max capability is also included in Ultra. `Ultra only` means the Max cell 
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Persistent Brand Info and global context | Included | Included |
-| Audience, positioning, products, and goals | Included | Included |
-| GA4, PostHog, and Google Search Console | Included | Included |
-| Meta, Instagram, and X | Included | Included |
-| Stripe and Shopify | Included | Included |
-| Codex and Gemini context | Included | Included |
+| Brand, audience, positioning, products, and goals | Included | Included |
+| Analytics and search connections — GA4, PostHog, and GSC | Included | Included |
+| Channel, commerce, and AI connections — Meta, Instagram, X, Stripe, Shopify, Codex, and Gemini | Included | Included |
 
 ### 9. Competitive intelligence
 
@@ -209,12 +206,13 @@ On mobile, sticky behavior is removed. Every category remains expanded. Each fea
 
 ## Testing contract
 
-- The homepage verifier asserts all nine group identifiers and exactly 46 feature rows.
+- The homepage verifier asserts all nine group identifiers and exactly 27 feature rows.
 - The verifier asserts exactly five Ultra-only rows and pins their labels.
 - The verifier rejects the five Ultra capabilities if they appear as included in Max.
 - The verifier asserts the proof-strip counts `21` and `79`.
 - The verifier asserts the matrix remains present in built `dist/index.html`.
 - The verifier asserts the mobile layout has no horizontal overflow contract and no collapsed/accordion markup.
+- The verifier asserts the exact three Max and three Ultra `Best for` statements.
 - Existing pricing amount, billing-toggle, download-marker, build, analytics-injection, and stale-price checks continue to pass.
 
 ## Success criteria

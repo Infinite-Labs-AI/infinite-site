@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add an always-visible, 46-row Max/Ultra feature comparison beneath the existing compact homepage pricing cards.
+**Goal:** Add an always-visible, 27-row Max/Ultra feature comparison beneath the existing compact homepage pricing cards.
 
 **Architecture:** Preserve the current pricing cards and billing script. Replace the six-item shared band with a proof strip, an accessible role-based comparison table grouped into nine sections, and a closing CTA strip. Extend the existing homepage verifier so the matrix structure, exact Ultra-only assignments, proof counts, built output, and non-collapsible mobile contract fail closed.
 
@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Use the exact 46 capabilities and plan assignments in `docs/superpowers/specs/2026-08-25-expanded-pricing-matrix-design.md`.
+- Use the exact 27 bundled capabilities and plan assignments in `docs/superpowers/specs/2026-08-25-expanded-pricing-matrix-design.md`.
 - Exactly five rows are Ultra-only: AI Visibility, Reels, Competitor Tracking, Landing-page A/B Testing, and Faceless YouTube Video Generation.
 - Preserve the existing compact plan-card dimensions and the white Ultra CTA.
 - Keep all nine groups visible on desktop and mobile; no accordions, disclosure controls, or horizontal scrolling.
@@ -27,18 +27,18 @@
 
 **Interfaces:**
 - Consumes: the matrix contract in the approved design spec.
-- Produces: source checks for `[data-pricing-proof]`, `[data-pricing-matrix]`, nine `[data-pricing-group]` elements, 46 `[data-pricing-feature]` rows, five `[data-ultra-only="true"]` rows, and `[data-pricing-closing-cta]`.
+- Produces: source checks for `[data-pricing-proof]`, `[data-pricing-matrix]`, nine `[data-pricing-group]` elements, 27 `[data-pricing-feature]` rows, five `[data-ultra-only="true"]` rows, the six `Best for` statements, and `[data-pricing-closing-cta]`.
 
 - [ ] Add a failing verifier block that asserts:
   - proof-strip text includes `21 product surfaces`, `79 agent tools`, and `One growth operating system`;
   - group IDs are `operator`, `leads`, `seo`, `ads`, `content`, `conversion`, `analytics`, `brand`, and `competitive`;
-  - feature-row count is 46;
+  - feature-row count is 27;
   - Ultra-only count is five and their labels exactly match the approved set;
   - no `<details>` or `data-collapsed` exists inside the matrix;
   - the matrix CSS defines a three-column desktop row and a one-column mobile row without `overflow-x: auto`.
 - [ ] Run `node scripts/verify-infinite-option-10.mjs` and confirm it fails for the missing expanded matrix.
 
-### Task 2: Build the proof strip, matrix, and closing CTA
+### Task 2: Build the proof strip, condensed matrix, and closing CTA
 
 **Files:**
 - Modify: `_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html`
@@ -50,7 +50,8 @@
 - [ ] Remove the old `.pricing-shared` six-item band.
 - [ ] Add the proof strip immediately below `.pricing-tier-grid`.
 - [ ] Add a sticky matrix header with Feature, Max, and Ultra columns.
-- [ ] Add all nine group sections and all 46 rows.
+- [ ] Add all nine group sections and all 27 bundled rows.
+- [ ] Replace the two card feature lists with the approved three-item `Best for` lists.
 - [ ] Mark the five exclusives with `data-ultra-only="true"`; render an accessible neutral dash in Max and an `Ultra` pill in Ultra.
 - [ ] Add a closing CTA strip with Max and Ultra labels and the existing `/download` CTA contract.
 - [ ] Keep the existing trial reassurance beneath the closing CTA.
@@ -88,7 +89,7 @@
 - [ ] Run `node --test .github/scripts/test-prepare-static-deploy.mjs`.
 - [ ] Run `node --test .github/scripts/test-static-remediation.mjs`.
 - [ ] Run `node scripts/prepare-static-deploy.cjs` after tests because the deploy test removes `dist/` in its cleanup.
-- [ ] Verify `dist/index.html` contains nine groups, 46 rows, five Ultra-only rows, and no stale prices.
+- [ ] Verify `dist/index.html` contains nine groups, 27 rows, five Ultra-only rows, six `Best for` statements, and no stale prices.
 - [ ] Serve `dist/` locally and verify the root route returns HTTP 200.
 - [ ] Commit only the plan, homepage source, homepage CSS, and verifier changes.
 - [ ] Push `feature/2026-08-25-expanded-pricing-matrix`; do not merge to main without a separate user request.

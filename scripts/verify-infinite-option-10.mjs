@@ -357,8 +357,8 @@ if (wrangleHtml) {
   }
 
   const pricingFeatureIds = [...wrangleHtml.matchAll(/data-pricing-feature="([^"]+)"/g)].map((match) => match[1]);
-  if (pricingFeatureIds.length !== 46) {
-    failures.push(`Expected exactly 46 pricing feature rows, found ${pricingFeatureIds.length}`);
+  if (pricingFeatureIds.length !== 27) {
+    failures.push(`Expected exactly 27 pricing feature rows, found ${pricingFeatureIds.length}`);
   }
   if (new Set(pricingFeatureIds).size !== pricingFeatureIds.length) {
     failures.push("Pricing feature row IDs must be unique");
@@ -385,6 +385,28 @@ if (wrangleHtml) {
     "Competitor Tracking across content, pricing, and ads",
   ]) {
     if (!wrangleHtml.includes(label)) failures.push(`Missing Ultra-only pricing label: ${label}`);
+  }
+
+  for (const [label, pattern] of [
+    ["Solo founders from $0 to $10k MRR", /Solo founders<\/strong> from \$0 to \$10k MRR/],
+    ["Small bootstrapped teams", /<strong>Small bootstrapped teams<\/strong>/],
+    ["Content creators building distribution", /Content creators<\/strong> building distribution/],
+    ["Fast-growing, venture-backed teams", /<strong>Fast-growing, venture-backed teams<\/strong>/],
+    ["Companies above $10k MRR", /<strong>Companies above \$10k MRR<\/strong>/],
+    ["Teams scaling multiple channels and content output", /Teams scaling multiple channels<\/strong> and content output/],
+  ]) {
+    if (!pattern.test(wrangleHtml)) failures.push(`Missing pricing audience statement: ${label}`);
+  }
+
+  for (const condensedLabel of [
+    "Lead scanners — Reddit, X, and Facebook Groups",
+    "Buyer-intent qualification, source context, and next actions",
+    "Ad creative generation and research",
+    "Instagram and X content intelligence",
+    "Tracked links, UTMs, and landing-page creation",
+    "Channel, commerce, and AI connections",
+  ]) {
+    if (!wrangleHtml.includes(condensedLabel)) failures.push(`Missing condensed pricing capability: ${condensedLabel}`);
   }
 
   if (/<details[^>]*class="[^"]*pricing-matrix/.test(wrangleHtml) || wrangleHtml.includes("data-pricing-collapsed")) {
