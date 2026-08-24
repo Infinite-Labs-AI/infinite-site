@@ -535,14 +535,138 @@
       line-height: 1.3;
     }
 
-    .direction--twin .plans {
-      grid-template-columns: 1fr 1.08fr;
-      align-items: stretch;
+    .direction--twin .stage {
+      max-width: 980px;
+      margin-inline: auto;
+      padding: 26px;
+      border-radius: 30px;
     }
 
-    .direction--twin .plan--ultra { transform: translateY(-10px); }
+    .direction--twin .stage__bar { margin-bottom: 18px; }
 
-    .direction--twin .plan--max { margin-bottom: 10px; }
+    .direction--twin .plans {
+      grid-template-columns: 1fr 1.05fr;
+      align-items: stretch;
+      gap: 14px;
+    }
+
+    .direction--twin .plan {
+      padding: 24px 26px;
+      border-radius: 22px;
+    }
+
+    .direction--twin .plan__topline {
+      min-height: 24px;
+      margin-bottom: 14px;
+    }
+
+    .direction--twin .plan__name { font-size: 17px; }
+
+    .direction--twin .plan__badge {
+      padding: 5px 8px;
+      font-size: 9px;
+    }
+
+    .direction--twin .plan__positioning {
+      min-height: 42px;
+      margin-bottom: 16px;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .direction--twin .price-row { min-height: 58px; }
+
+    .direction--twin .price {
+      font-size: clamp(46px, 5vw, 60px);
+    }
+
+    .direction--twin .price.price--pending {
+      max-width: 190px;
+      font-size: 30px;
+    }
+
+    .direction--twin .trial {
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .direction--twin .cta {
+      min-height: 44px;
+      margin: 18px 0 16px;
+      padding: 11px 16px;
+      font-size: 14px;
+    }
+
+    .direction--twin .feature-label {
+      margin-bottom: 10px;
+      font-size: 10px;
+    }
+
+    .direction--twin .features { gap: 9px; }
+
+    .direction--twin .features li {
+      padding-left: 24px;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .direction--twin .features li::before {
+      width: 17px;
+      height: 17px;
+      font-size: 9px;
+    }
+
+    .direction--twin .plan--ultra {
+      transform: translateY(-5px);
+      box-shadow: 0 18px 38px rgba(19, 23, 32, 0.2);
+    }
+
+    .direction--twin .plan--max { margin-bottom: 5px; }
+
+    .compact-shared {
+      display: grid;
+      grid-template-columns: 140px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+      margin-top: 14px;
+      padding: 15px 18px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .compact-shared p {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .compact-shared ul {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .compact-shared li {
+      position: relative;
+      padding-left: 15px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .compact-shared li::before {
+      content: "·";
+      position: absolute;
+      left: 2px;
+      color: #42a862;
+      font-weight: 700;
+    }
 
     .switcher-wrap {
       position: relative;
@@ -897,6 +1021,9 @@
       .power-stack { grid-template-columns: 1fr; }
       .direction--twin .plan--ultra { order: -1; transform: none; }
       .direction--twin .plan--max { margin-bottom: 0; }
+      .direction--twin .stage { padding: 13px; }
+      .compact-shared { grid-template-columns: 1fr; }
+      .compact-shared ul { grid-template-columns: 1fr 1fr; }
       .switcher-head { align-items: flex-start; flex-direction: column; }
       .plan-switch { width: 100%; }
       .plan-switch button { flex: 1; }
@@ -936,10 +1063,10 @@
       <header class="direction__intro">
         <span class="direction__number">01</span>
         <div class="direction__title">
-          <p>Clear comparison</p>
+          <p>Selected direction · compact v2</p>
           <h2 id="twin-title">Twin plan cards</h2>
         </div>
-        <p class="direction__note">The conversion-first option. Both plans are visible immediately, with Ultra elevated as the obvious power choice.</p>
+        <p class="direction__note">A tighter conversion-first layout: compact decision cards up top, shared capabilities in one slim band below.</p>
       </header>
 
       <div class="stage">
@@ -954,37 +1081,48 @@
         <div class="plans">
           <article class="plan plan--max">
             <div class="plan__topline"><h3 class="plan__name">Infinite Max</h3></div>
-            <p class="plan__positioning">Everything a founder needs to find, plan, and ship growth work.</p>
+            <p class="plan__positioning">Find demand, plan growth, and ship the work.</p>
             <div class="price-row"><p class="price" data-price="max">$49</p><span class="period" data-period>/month</span></div>
             <p class="trial"><strong>7-day free trial.</strong> Then cancel anytime.</p>
             <button class="cta" type="button">Start free with Max</button>
-            <p class="feature-label">The complete growth OS</p>
+            <p class="feature-label">Core outcomes</p>
             <ul class="features">
-              <li><strong>Buyer-intent monitoring</strong> across Reddit, X, search, and communities</li>
-              <li><strong>SEO + GEO briefs</strong> for pages, gaps, and comparisons</li>
-              <li><strong>Claude Code + Codex context</strong> for shipping changes</li>
-              <li><strong>Content, experiments, and integrations</strong> in one operating system</li>
+              <li><strong>Find buyer signals</strong> across your market</li>
+              <li><strong>Turn signals into briefs</strong> and experiments</li>
+              <li><strong>Ship with AI context</strong> already attached</li>
             </ul>
           </article>
 
           <article class="plan plan--ultra">
             <div class="plan__topline"><h3 class="plan__name">Infinite Ultra</h3><span class="plan__badge">Most powerful</span></div>
-            <p class="plan__positioning">See more of your market, create more of what works, and track every move.</p>
+            <p class="plan__positioning">See more, create more, and track every move.</p>
             <div class="price-row"><p class="price" data-price="ultra">$199</p><span class="period" data-period>/month</span></div>
             <p class="trial"><strong>7-day free trial.</strong> Then cancel anytime.</p>
             <button class="cta" type="button">Start free with Ultra</button>
             <p class="feature-label">Everything in Max, plus</p>
             <ul class="features">
-              <li><strong>AI Visibility</strong> to see where your brand appears in AI answers</li>
-              <li><strong>Reels</strong> built from your ideas, signals, and winning patterns</li>
+              <li><strong>AI Visibility</strong> across AI answers</li>
+              <li><strong>Reels</strong> from winning market signals</li>
               <li><strong>Competitor Tracking</strong> across content, pricing, and ads</li>
             </ul>
           </article>
         </div>
+
+        <div class="compact-shared">
+          <p>Included in both</p>
+          <ul>
+            <li>Buyer-intent monitoring</li>
+            <li>SEO + GEO briefs</li>
+            <li>Claude Code + Codex context</li>
+            <li>Landing-page experiments</li>
+            <li>Organic content angles</li>
+            <li>Growth-stack integrations</li>
+          </ul>
+        </div>
       </div>
 
       <aside class="reaction" aria-label="React to twin plan cards">
-        <button class="pick" type="button" data-pick-direction="Twin plan cards" aria-pressed="false">Choose this direction</button>
+        <button class="pick" type="button" data-pick-direction="Twin plan cards" aria-pressed="true">Direction selected ✓</button>
         <label><span>Details to steal</span><textarea data-steal aria-label="Details to steal from twin plan cards" placeholder="e.g. the dark Ultra card"></textarea></label>
         <label><span>Details to reject</span><textarea data-reject aria-label="Details to reject from twin plan cards" placeholder="e.g. too much repeated copy"></textarea></label>
       </aside>
@@ -1209,6 +1347,8 @@
       ];
       document.querySelector("#combined-brief").textContent = lines.join("\n");
     }
+
+    updateBrief();
 
     document.querySelector("[data-copy-brief]").addEventListener("click", async (event) => {
       const button = event.currentTarget;

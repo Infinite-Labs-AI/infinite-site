@@ -78,6 +78,8 @@ Trade-off: Ultra can read as an add-on if the hierarchy is not carefully balance
 - No annual price or discount is fabricated.
 - The user can select a preferred direction or produce a combined-direction brief from the review page.
 
-## Recommended production direction
+## Selected production direction
 
-Twin plan cards are the leading recommendation because they make a two-tier decision easiest to understand and provide the least friction at the point of conversion. The review artifact deliberately includes the other two directions so useful interaction and upgrade-story details can be combined into the final production design.
+Twin plan cards are selected because they make a two-tier decision easiest to understand and provide the least friction at the point of conversion.
+
+The selected layout uses compact decision cards rather than large feature containers. The pricing stage is capped at 980 pixels, card body copy stays in the 13–15 pixel range, and monthly prices cap at 60 pixels. Max contains three short core-outcome bullets; Ultra contains its three exclusive capabilities. The six capabilities shared by both plans move into one slim "Included in both" band beneath the cards. Ultra remains emphasized through its dark surface, badge, slightly wider column, and five-pixel lift rather than oversized typography or excessive card height.

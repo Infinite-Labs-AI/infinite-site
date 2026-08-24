@@ -41,6 +41,10 @@ assert.match(html, /aria-pressed/);
 assert.match(html, /addEventListener\("click"/);
 assert.match(html, /@media\s*\(max-width:\s*760px\)/);
 assert.match(html, /:focus-visible/);
+assert.match(html, /class="compact-shared"/);
+assert.match(html, /direction--twin \.stage\s*\{[^}]*max-width:\s*980px/s);
+assert.match(html, /direction--twin \.price\s*\{[^}]*font-size:\s*clamp\(46px,\s*5vw,\s*60px\)/s);
+assert.match(html, /data-pick-direction="Twin plan cards" aria-pressed="true"/);
 assert.doesNotMatch(html, /save \d+%|billed annually at \$|annual discount/i);
 assert.doesNotMatch(html, /href=["']\/download/);
 
