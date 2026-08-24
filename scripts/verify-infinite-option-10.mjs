@@ -329,7 +329,6 @@ if (wrangleHtml) {
   }
 
   for (const [label, pattern] of [
-    ["21 product surfaces", />21<\/strong><span>product surfaces<\/span>/],
     ["79 agent tools", />79<\/strong><span>agent tools<\/span>/],
     ["One growth operating system", />One<\/strong><span>growth operating system<\/span>/],
   ]) {
@@ -342,7 +341,6 @@ if (wrangleHtml) {
 
   const pricingGroupIds = [...wrangleHtml.matchAll(/data-pricing-group="([^"]+)"/g)].map((match) => match[1]);
   const expectedPricingGroupIds = [
-    "operator",
     "leads",
     "seo",
     "ads",
@@ -357,8 +355,8 @@ if (wrangleHtml) {
   }
 
   const pricingFeatureIds = [...wrangleHtml.matchAll(/data-pricing-feature="([^"]+)"/g)].map((match) => match[1]);
-  if (pricingFeatureIds.length !== 27) {
-    failures.push(`Expected exactly 27 pricing feature rows, found ${pricingFeatureIds.length}`);
+  if (pricingFeatureIds.length !== 21) {
+    failures.push(`Expected exactly 21 pricing feature rows, found ${pricingFeatureIds.length}`);
   }
   if (new Set(pricingFeatureIds).size !== pricingFeatureIds.length) {
     failures.push("Pricing feature row IDs must be unique");
@@ -399,14 +397,29 @@ if (wrangleHtml) {
   }
 
   for (const condensedLabel of [
-    "Lead scanners — Reddit, X, and Facebook Groups",
+    "Lead scanners: Reddit, X, and Facebook Groups",
     "Buyer-intent qualification, source context, and next actions",
     "Ad creative generation and research",
     "Instagram and X content intelligence",
     "Tracked links, UTMs, and landing-page creation",
-    "Channel, commerce, and AI connections",
+    "Analytics and search connections: GA4, PostHog, and Google Search Console",
+    "Growth stack connections: Meta, Instagram, X, Stripe, Shopify, Codex, and Gemini",
   ]) {
     if (!wrangleHtml.includes(condensedLabel)) failures.push(`Missing condensed pricing capability: ${condensedLabel}`);
+  }
+
+  if (!wrangleHtml.includes("Meta Ads and creative")) failures.push("Missing merged Meta Ads and creative group title");
+
+  for (const removedCopy of [
+    "21</strong><span>product surfaces",
+    "Command Center and Chat with Infinite",
+    "Agent tasks, status, and run history",
+    "Review-first approvals",
+    "Write, critique, and revise content",
+    "Meta Ads performance",
+    "Brand, audience, positioning, products, and goals",
+  ]) {
+    if (wrangleHtml.includes(removedCopy)) failures.push(`Removed pricing copy still present: ${removedCopy}`);
   }
 
   if (/<details[^>]*class="[^"]*pricing-matrix/.test(wrangleHtml) || wrangleHtml.includes("data-pricing-collapsed")) {

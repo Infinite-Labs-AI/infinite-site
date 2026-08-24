@@ -71,11 +71,10 @@ Drop:
 1. Preserve the existing pricing heading and Monthly / Annual toggle.
 2. Preserve the compact Max and Ultra cards as the plan-decision header.
 3. Add a proof strip below the cards:
-   - `21 product surfaces`
    - `79 agent tools`
    - `One growth operating system`
 4. Add the always-visible comparison headed `Everything Infinite does.`
-5. Render nine feature groups containing the 27 bundled rows below.
+5. Render eight feature groups containing the 21 bundled rows below.
 6. Add a closing CTA strip with both plan names and the existing Download for Mac action.
 7. Keep the trial and cancellation reassurance below the final CTA.
 
@@ -99,40 +98,30 @@ The compact cards explain who each plan is for. The comparison matrix owns the c
 
 Every Max capability is also included in Ultra. `Ultra only` means the Max cell shows a neutral dash with accessible text `Not included in Max`, while the Ultra cell shows a highlighted `Ultra` badge.
 
-### 1. Your AI growth team
+### 1. Find buyers
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Command Center and Chat with Infinite | Included | Included |
-| Agent tasks, status, and run history | Included | Included |
-| Review-first approvals | Included | Included |
-
-### 2. Find buyers
-
-| Capability | Max | Ultra |
-|---|---:|---:|
-| Lead scanners — Reddit, X, and Facebook Groups | Included | Included |
+| Lead scanners: Reddit, X, and Facebook Groups | Included | Included |
 | Buyer-intent qualification, source context, and next actions | Included | Included |
 
-### 3. SEO, GEO, and AI search
+### 2. SEO, GEO, and AI search
 
 | Capability | Max | Ultra |
 |---|---:|---:|
 | Keyword research and curation | Included | Included |
 | SEO and GEO strategy and briefs | Included | Included |
-| Write, critique, and revise content | Included | Included |
 | Calendar, custom-domain publishing, and rank monitoring | Included | Included |
 | AI Visibility and citation monitoring | Ultra only | Included |
 
-### 4. Ads and creative
+### 3. Meta Ads and creative
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Meta Ads performance | Included | Included |
 | Ad creative generation and research | Included | Included |
-| Ad autopilot — strategy, approvals, launch, and creative operations | Included | Included |
+| Ad autopilot with strategy, approvals, launch, and creative operations | Included | Included |
 
-### 5. Organic content and video
+### 4. Organic content and video
 
 | Capability | Max | Ultra |
 |---|---:|---:|
@@ -141,7 +130,7 @@ Every Max capability is also included in Ultra. `Ultra only` means the Max cell 
 | Faceless YouTube video generation | Ultra only | Included |
 | Reels creation | Ultra only | Included |
 
-### 6. Conversion and sites
+### 5. Conversion and sites
 
 | Capability | Max | Ultra |
 |---|---:|---:|
@@ -149,23 +138,22 @@ Every Max capability is also included in Ultra. `Ultra only` means the Max cell 
 | Tracked links, UTMs, and landing-page creation | Included | Included |
 | Landing-page A/B testing | Ultra only | Included |
 
-### 7. Analytics and revenue
+### 6. Analytics and revenue
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Site Analytics — traffic, channels, audience, pages, and funnels | Included | Included |
+| Site Analytics for traffic, channels, audience, pages, and funnels | Included | Included |
 | App Analytics | Included | Included |
 | Revenue, MRR, churn, orders, ROAS, spend, and CTR | Included | Included |
 
-### 8. Brand context and connections
+### 7. Connections
 
 | Capability | Max | Ultra |
 |---|---:|---:|
-| Brand, audience, positioning, products, and goals | Included | Included |
-| Analytics and search connections — GA4, PostHog, and GSC | Included | Included |
-| Channel, commerce, and AI connections — Meta, Instagram, X, Stripe, Shopify, Codex, and Gemini | Included | Included |
+| Analytics and search connections: GA4, PostHog, and Google Search Console | Included | Included |
+| Growth stack connections: Meta, Instagram, X, Stripe, Shopify, Codex, and Gemini | Included | Included |
 
-### 9. Competitive intelligence
+### 8. Competitive intelligence
 
 | Capability | Max | Ultra |
 |---|---:|---:|
@@ -206,10 +194,10 @@ On mobile, sticky behavior is removed. Every category remains expanded. Each fea
 
 ## Testing contract
 
-- The homepage verifier asserts all nine group identifiers and exactly 27 feature rows.
+- The homepage verifier asserts all eight group identifiers and exactly 21 feature rows.
 - The verifier asserts exactly five Ultra-only rows and pins their labels.
 - The verifier rejects the five Ultra capabilities if they appear as included in Max.
-- The verifier asserts the proof-strip counts `21` and `79`.
+- The verifier asserts the proof-strip count `79` and the `One growth operating system` statement.
 - The verifier asserts the matrix remains present in built `dist/index.html`.
 - The verifier asserts the mobile layout has no horizontal overflow contract and no collapsed/accordion markup.
 - The verifier asserts the exact three Max and three Ultra `Best for` statements.
