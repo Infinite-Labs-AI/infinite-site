@@ -203,7 +203,6 @@ if (wrangleHtml) {
     'data-pricing-value="ultra"',
     "Infinite Max",
     "Infinite Ultra",
-    "Included in both",
     "AI Visibility",
     "Reels",
     "Competitor Tracking",
@@ -327,6 +326,130 @@ if (wrangleHtml) {
     if (JSON.stringify(pricingCatalog) !== JSON.stringify(expectedPricingCatalog)) {
       failures.push(`Homepage pricing catalog mismatch: ${JSON.stringify(pricingCatalog)}`);
     }
+  }
+
+  for (const [label, pattern] of [
+    ["79 agent tools", />79<\/strong><span>agent tools<\/span>/],
+    ["One growth operating system", />One<\/strong><span>growth operating system<\/span>/],
+  ]) {
+    if (!pattern.test(wrangleHtml)) failures.push(`Missing pricing proof: ${label}`);
+  }
+
+  if (!wrangleHtml.includes("data-pricing-proof")) failures.push("Missing pricing proof strip contract");
+  if (!wrangleHtml.includes("data-pricing-matrix")) failures.push("Missing expanded pricing matrix contract");
+  if (!wrangleHtml.includes("data-pricing-closing-cta")) failures.push("Missing closing pricing CTA contract");
+
+  const pricingGroupIds = [...wrangleHtml.matchAll(/data-pricing-group="([^"]+)"/g)].map((match) => match[1]);
+  const expectedPricingGroupIds = [
+    "leads",
+    "seo",
+    "ads",
+    "content",
+    "conversion",
+    "analytics",
+    "brand",
+    "competitive",
+  ];
+  if (JSON.stringify(pricingGroupIds) !== JSON.stringify(expectedPricingGroupIds)) {
+    failures.push(`Pricing group mismatch: ${JSON.stringify(pricingGroupIds)}`);
+  }
+
+  const pricingFeatureIds = [...wrangleHtml.matchAll(/data-pricing-feature="([^"]+)"/g)].map((match) => match[1]);
+  if (pricingFeatureIds.length !== 21) {
+    failures.push(`Expected exactly 21 pricing feature rows, found ${pricingFeatureIds.length}`);
+  }
+  if (new Set(pricingFeatureIds).size !== pricingFeatureIds.length) {
+    failures.push("Pricing feature row IDs must be unique");
+  }
+
+  const ultraOnlyFeatureIds = [...wrangleHtml.matchAll(/data-pricing-feature="([^"]+)"[^>]*data-ultra-only="true"/g)]
+    .map((match) => match[1]);
+  const expectedUltraOnlyFeatureIds = [
+    "ai-visibility",
+    "faceless-youtube",
+    "reels",
+    "landing-page-ab-testing",
+    "competitor-tracking",
+  ];
+  if (JSON.stringify(ultraOnlyFeatureIds) !== JSON.stringify(expectedUltraOnlyFeatureIds)) {
+    failures.push(`Ultra-only pricing feature mismatch: ${JSON.stringify(ultraOnlyFeatureIds)}`);
+  }
+
+  for (const label of [
+    "AI Visibility and citation monitoring",
+    "Faceless YouTube video generation",
+    "Reels creation",
+    "Landing-page A/B testing",
+    "Competitor Tracking across content, pricing, and ads",
+  ]) {
+    if (!wrangleHtml.includes(label)) failures.push(`Missing Ultra-only pricing label: ${label}`);
+  }
+
+  for (const [label, pattern] of [
+    ["Solo founders from $0 to $10k MRR", /Solo founders<\/strong> from \$0 to \$10k MRR/],
+    ["Small bootstrapped teams", /<strong>Small bootstrapped teams<\/strong>/],
+    ["Content creators building distribution", /Content creators<\/strong> building distribution/],
+    ["Fast-growing, venture-backed teams", /<strong>Fast-growing, venture-backed teams<\/strong>/],
+    ["Companies above $10k MRR", /<strong>Companies above \$10k MRR<\/strong>/],
+    ["Teams scaling multiple channels and content output", /Teams scaling multiple channels<\/strong> and content output/],
+  ]) {
+    if (!pattern.test(wrangleHtml)) failures.push(`Missing pricing audience statement: ${label}`);
+  }
+
+  for (const condensedLabel of [
+    "Lead scanners: Reddit, X, and Facebook Groups",
+    "Buyer-intent qualification, source context, and next actions",
+    "Ad creative generation and research",
+    "Instagram and X content intelligence",
+    "Tracked links, UTMs, and landing-page creation",
+    "Analytics and search connections: GA4, PostHog, and Google Search Console",
+    "Growth stack connections: Meta, Instagram, X, Stripe, Shopify, Codex, and Gemini",
+  ]) {
+    if (!wrangleHtml.includes(condensedLabel)) failures.push(`Missing condensed pricing capability: ${condensedLabel}`);
+  }
+
+  if (!wrangleHtml.includes("Meta Ads and creative")) failures.push("Missing merged Meta Ads and creative group title");
+
+  for (const removedCopy of [
+    "21</strong><span>product surfaces",
+    "Command Center and Chat with Infinite",
+    "Agent tasks, status, and run history",
+    "Review-first approvals",
+    "Write, critique, and revise content",
+    "Meta Ads performance",
+    "Brand, audience, positioning, products, and goals",
+  ]) {
+    if (wrangleHtml.includes(removedCopy)) failures.push(`Removed pricing copy still present: ${removedCopy}`);
+  }
+
+  if (/<details[^>]*class="[^"]*pricing-matrix/.test(wrangleHtml) || wrangleHtml.includes("data-pricing-collapsed")) {
+    failures.push("Expanded pricing matrix must never collapse");
+  }
+
+  const desktopMatrixRowRule = wrangleStyles.match(/\.pricing-matrix-row\s*\{([^}]*)\}/)?.[1] ?? "";
+  if (!desktopMatrixRowRule.includes("grid-template-columns: minmax(0, 1fr) 92px 112px;")) {
+    failures.push("Missing three-column desktop pricing matrix row contract");
+  }
+  if (!/@media \(max-width: 760px\)[\s\S]*?\.pricing-matrix-row\s*\{[^}]*grid-template-columns: 1fr;/.test(wrangleStyles)) {
+    failures.push("Missing one-column mobile pricing matrix row contract");
+  }
+  if (/\.pricing-matrix[^}]*overflow-x:\s*auto/.test(wrangleStyles)) {
+    failures.push("Pricing matrix must not use horizontal scrolling");
+  }
+
+  const pricingProofCardRule = wrangleStyles.match(/\.pricing-proof-strip > div\s*\{([^}]*)\}/)?.[1] ?? "";
+  for (const declaration of [
+    "display: grid;",
+    "justify-items: center;",
+    "align-content: center;",
+  ]) {
+    if (!pricingProofCardRule.includes(declaration)) {
+      failures.push(`Pricing proof values must stack above their labels: ${declaration}`);
+    }
+  }
+  const pricingProofValueRule = wrangleStyles.match(/\.pricing-proof-strip strong\s*\{([^}]*)\}/)?.[1] ?? "";
+  if (!pricingProofValueRule.includes("font-size: clamp(38px, 5vw, 56px);")) {
+    failures.push("Pricing proof values must use the larger display scale");
   }
 }
 
