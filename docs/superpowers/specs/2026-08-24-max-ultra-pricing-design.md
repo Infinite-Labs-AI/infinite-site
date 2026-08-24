@@ -6,17 +6,17 @@ Create a reviewable visual comparison of three genuinely different pricing-secti
 
 ## Commercial content
 
-- Infinite Max costs $49 per month.
-- Infinite Ultra costs $199 per month.
+- Infinite Max costs $60 per month or $600 per year, displayed as a $50-per-month annual equivalent.
+- Infinite Ultra costs $200 per month or $2,160 per year, displayed as a $180-per-month annual equivalent.
 - Both plans include a 7-day free trial and can be cancelled at any time.
 - Infinite Ultra receives stronger visual emphasis.
-- Max retains all capabilities in the current $49 plan.
+- Max retains all capabilities in the existing core plan.
 - Ultra includes everything in Max, plus:
   - AI Visibility
   - Reels
   - Competitor Tracking across content, pricing, and ads
 - The interface includes Monthly and Annual billing controls.
-- Until annual prices are supplied, Monthly is the active state and Annual is visibly labelled "Pricing coming soon." The prototype must not imply or invent an annual discount.
+- Monthly is the active state. Annual displays the monthly equivalent and the exact yearly charge beneath it.
 
 ## Review artifact
 
@@ -57,8 +57,8 @@ Trade-off: Ultra can read as an add-on if the hierarchy is not carefully balance
 ## Interaction behavior
 
 - Monthly is selected by default.
-- Selecting Annual keeps both plans visible but replaces numeric prices with an honest "Annual pricing coming soon" state.
-- Returning to Monthly restores $49/month and $199/month.
+- Selecting Annual keeps both plans visible, shows $50/month for Max with "Billed $600/year," and shows $180/month for Ultra with "Billed $2,160/year."
+- Returning to Monthly restores $60/month for Max and $200/month for Ultra with "Billed monthly."
 - All controls must work with mouse, touch, and keyboard and expose accessible labels and selected state.
 - Calls to action are visual-only in the design artifact and do not start checkout or download flows.
 - Reaction controls persist only for the current browser session; no account or server storage is required.
@@ -75,7 +75,7 @@ Trade-off: Ultra can read as an add-on if the hierarchy is not carefully balance
 - The three directions differ in layout logic, information density, and interaction model rather than only color.
 - Max remains credible and complete while Ultra is unmistakably emphasized.
 - The Ultra-only capabilities are understandable within a short scan.
-- No annual price or discount is fabricated.
+- Monthly and annual amounts exactly match the supplied live Stripe catalog.
 - The user can select a preferred direction or produce a combined-direction brief from the review page.
 
 ## Selected production direction

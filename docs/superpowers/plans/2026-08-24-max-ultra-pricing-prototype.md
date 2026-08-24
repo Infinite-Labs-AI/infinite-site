@@ -10,12 +10,12 @@
 
 ## Global Constraints
 
-- Infinite Max costs $49 per month.
-- Infinite Ultra costs $199 per month.
+- Infinite Max costs $60 per month or $600 per year ($50 per month equivalent).
+- Infinite Ultra costs $200 per month or $2,160 per year ($180 per month equivalent).
 - Both plans include a 7-day free trial and can be cancelled at any time.
 - Infinite Ultra receives stronger visual emphasis.
 - Ultra includes everything in Max, plus AI Visibility, Reels, and Competitor Tracking across content, pricing, and ads.
-- Monthly is active by default; Annual must say "Pricing coming soon" and must not invent a price or discount.
+- Monthly is active by default; Annual must show the monthly equivalent and exact yearly charge.
 - Calls to action are inert visual controls in this design-review artifact.
 - Do not edit the production homepage source or its pricing CSS.
 - Preserve unrelated working-tree changes.
@@ -49,14 +49,17 @@ for (const direction of ["twin", "switcher", "power-up"]) {
 for (const copy of [
   "Infinite Max",
   "Infinite Ultra",
-  "$49",
-  "$199",
+  "$60",
+  "$200",
+  "$50",
+  "$180",
+  "$600/year",
+  "$2,160/year",
   "7-day free trial",
   "AI Visibility",
   "Reels",
   "Competitor Tracking",
   "content, pricing, and ads",
-  "Pricing coming soon",
 ]) {
   assert.ok(html.includes(copy), `Missing required copy: ${copy}`);
 }
@@ -96,16 +99,16 @@ Use a single `index.html` with this exact top-level structure:
     <header class="direction__intro">Twin plan cards</header>
     <div class="billing-toggle" role="group" aria-label="Twin cards billing period">
       <button data-billing="monthly" aria-pressed="true">Monthly</button>
-      <button data-billing="annual" aria-pressed="false">Annual <small>Pricing coming soon</small></button>
+      <button data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
     </div>
     <div class="twin-grid">
       <article class="plan plan--max">
-        <p>Infinite Max</p><h2 data-price="max">$49</h2><span>/month</span>
+        <p>Infinite Max</p><h2 data-price="max">$60</h2><span>/month</span>
         <p>7-day free trial. Cancel anytime.</p><button type="button">Start free with Max</button>
         <ul><li>Buyer-intent monitoring</li><li>SEO + GEO briefs</li><li>Claude Code + Codex context</li><li>Landing-page A/B test ideas</li><li>Organic content angles</li><li>Growth-stack integrations</li></ul>
       </article>
       <article class="plan plan--ultra">
-        <strong>Most powerful</strong><p>Infinite Ultra</p><h2 data-price="ultra">$199</h2><span>/month</span>
+        <strong>Most powerful</strong><p>Infinite Ultra</p><h2 data-price="ultra">$200</h2><span>/month</span>
         <p>7-day free trial. Cancel anytime.</p><button type="button">Start free with Ultra</button>
         <p>Everything in Max, plus:</p><ul><li>AI Visibility</li><li>Reels</li><li>Competitor Tracking across content, pricing, and ads</li></ul>
       </article>
@@ -120,11 +123,11 @@ Use a single `index.html` with this exact top-level structure:
     <header class="direction__intro">Interactive plan switcher</header>
     <div class="billing-toggle" role="group" aria-label="Switcher billing period">
       <button data-billing="monthly" aria-pressed="true">Monthly</button>
-      <button data-billing="annual" aria-pressed="false">Annual <small>Pricing coming soon</small></button>
+      <button data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
     </div>
     <div class="plan-switch" role="group" aria-label="Plan"><button data-plan="max">Max</button><button data-plan="ultra">Ultra</button></div>
     <article class="focus-plan" data-active-plan="ultra">
-      <div><p data-focus-eyebrow>See more. Create more. Track everything.</p><h2 data-focus-name>Infinite Ultra</h2><p data-focus-price data-price="ultra">$199</p><span>/month</span><p>7-day free trial. Cancel anytime.</p><button type="button">Start free</button></div>
+      <div><p data-focus-eyebrow>See more. Create more. Track everything.</p><h2 data-focus-name>Infinite Ultra</h2><p data-focus-price data-price="ultra">$200</p><span>/month</span><p>7-day free trial. Cancel anytime.</p><button type="button">Start free</button></div>
       <div><h3>Everything in Max</h3><ul><li>Intent, search, content, experiments, and integrations</li></ul><div data-ultra-extras><h3>Ultra unlocks</h3><ul><li>AI Visibility</li><li>Reels</li><li>Competitor Tracking across content, pricing, and ads</li></ul></div></div>
     </article>
     <aside class="reaction">
@@ -137,11 +140,11 @@ Use a single `index.html` with this exact top-level structure:
     <header class="direction__intro">Base + power-up</header>
     <div class="billing-toggle" role="group" aria-label="Base and power-up billing period">
       <button data-billing="monthly" aria-pressed="true">Monthly</button>
-      <button data-billing="annual" aria-pressed="false">Annual <small>Pricing coming soon</small></button>
+      <button data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
     </div>
     <div class="power-stack">
-      <article class="plan plan--max"><p>The complete growth OS</p><h2>Infinite Max</h2><p data-price="max">$49</p><span>/month</span><p>7-day free trial. Cancel anytime.</p><ul><li>Buyer intent</li><li>SEO + GEO</li><li>Shipping context</li><li>Content and experiments</li></ul><button type="button">Start free with Max</button></article>
-      <article class="plan plan--ultra"><p>Everything in Max, plus</p><h2>Infinite Ultra</h2><p data-price="ultra">$199</p><span>/month</span><ul><li>AI Visibility</li><li>Reels</li><li>Competitor Tracking across content, pricing, and ads</li></ul><button type="button">Start free with Ultra</button></article>
+      <article class="plan plan--max"><p>The complete growth OS</p><h2>Infinite Max</h2><p data-price="max">$60</p><span>/month</span><p>7-day free trial. Cancel anytime.</p><ul><li>Buyer intent</li><li>SEO + GEO</li><li>Shipping context</li><li>Content and experiments</li></ul><button type="button">Start free with Max</button></article>
+      <article class="plan plan--ultra"><p>Everything in Max, plus</p><h2>Infinite Ultra</h2><p data-price="ultra">$200</p><span>/month</span><ul><li>AI Visibility</li><li>Reels</li><li>Competitor Tracking across content, pricing, and ads</li></ul><button type="button">Start free with Ultra</button></article>
     </div>
     <aside class="reaction">
       <button data-pick-direction="Base + power-up" aria-pressed="false">Choose this direction</button>
@@ -208,12 +211,14 @@ Use local `../../fonts/infinite-ui/hanken-grotesk-*.woff2` font files through `@
 const planCopy = {
   max: {
     name: "Infinite Max",
-    monthly: "$49",
+    monthly: { price: "$60", note: "Billed monthly" },
+    annual: { price: "$50", note: "Billed $600/year" },
     eyebrow: "The complete growth operating system",
   },
   ultra: {
     name: "Infinite Ultra",
-    monthly: "$199",
+    monthly: { price: "$200", note: "Billed monthly" },
+    annual: { price: "$180", note: "Billed $2,160/year" },
     eyebrow: "See more. Create more. Track everything.",
   },
 };
@@ -226,7 +231,7 @@ document.querySelectorAll("[data-direction]").forEach((direction) => {
         peer.setAttribute("aria-pressed", String(peer === button));
       });
       direction.querySelectorAll("[data-price]").forEach((price) => {
-        price.textContent = annual ? "Pricing coming soon" : planCopy[price.dataset.price].monthly;
+        price.textContent = planCopy[price.dataset.price][button.dataset.billing].price;
         price.classList.toggle("price--pending", annual);
       });
     });
@@ -244,7 +249,7 @@ function renderFocusPlan(plan) {
   panel.dataset.activePlan = plan;
   panel.querySelector("[data-focus-name]").textContent = planCopy[plan].name;
   panel.querySelector("[data-focus-price]").dataset.price = plan;
-  panel.querySelector("[data-focus-price]").textContent = annual ? "Pricing coming soon" : planCopy[plan].monthly;
+  panel.querySelector("[data-focus-price]").textContent = planCopy[plan][activeBilling.dataset.billing].price;
   panel.querySelector("[data-focus-eyebrow]").textContent = planCopy[plan].eyebrow;
   panel.querySelector("[data-ultra-extras]").hidden = plan !== "ultra";
   document.querySelectorAll("[data-plan]").forEach((peer) => peer.setAttribute("aria-pressed", String(peer === button)));

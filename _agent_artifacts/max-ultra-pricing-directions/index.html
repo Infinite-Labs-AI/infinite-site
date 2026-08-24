@@ -390,6 +390,14 @@
       font-size: 14px;
     }
 
+    .billing-detail {
+      min-height: 18px;
+      margin: 7px 0 0;
+      color: var(--muted-2);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
     .trial strong { color: inherit; }
 
     .cta {
@@ -461,6 +469,7 @@
     .plan--ultra .plan__positioning,
     .plan--ultra .period,
     .plan--ultra .trial,
+    .plan--ultra .billing-detail,
     .plan--ultra .features li { color: #b9c0cb; }
 
     .plan--ultra .features strong,
@@ -1074,7 +1083,7 @@
           <span class="stage__label">Pricing preview</span>
           <div class="billing-toggle" role="group" aria-label="Twin cards billing period">
             <button type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
-            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Pricing coming soon</small></button>
+            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
           </div>
         </div>
 
@@ -1082,7 +1091,8 @@
           <article class="plan plan--max">
             <div class="plan__topline"><h3 class="plan__name">Infinite Max</h3></div>
             <p class="plan__positioning">Find demand, plan growth, and ship the work.</p>
-            <div class="price-row"><p class="price" data-price="max">$49</p><span class="period" data-period>/month</span></div>
+            <div class="price-row"><p class="price" data-price="max">$60</p><span class="period" data-period>/month</span></div>
+            <p class="billing-detail" data-billing-note="max">Billed monthly</p>
             <p class="trial"><strong>7-day free trial.</strong> Then cancel anytime.</p>
             <button class="cta" type="button">Start free with Max</button>
             <p class="feature-label">Core outcomes</p>
@@ -1096,7 +1106,8 @@
           <article class="plan plan--ultra">
             <div class="plan__topline"><h3 class="plan__name">Infinite Ultra</h3><span class="plan__badge">Most powerful</span></div>
             <p class="plan__positioning">See more, create more, and track every move.</p>
-            <div class="price-row"><p class="price" data-price="ultra">$199</p><span class="period" data-period>/month</span></div>
+            <div class="price-row"><p class="price" data-price="ultra">$200</p><span class="period" data-period>/month</span></div>
+            <p class="billing-detail" data-billing-note="ultra">Billed monthly</p>
             <p class="trial"><strong>7-day free trial.</strong> Then cancel anytime.</p>
             <button class="cta" type="button">Start free with Ultra</button>
             <p class="feature-label">Everything in Max, plus</p>
@@ -1143,7 +1154,7 @@
           <span class="stage__label">Pricing preview</span>
           <div class="billing-toggle" role="group" aria-label="Switcher billing period">
             <button type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
-            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Pricing coming soon</small></button>
+            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
           </div>
         </div>
 
@@ -1160,7 +1171,8 @@
             <div class="focus-plan__price">
               <p class="focus-eyebrow" data-focus-eyebrow>See more. Create more. Track everything.</p>
               <h3 data-focus-name>Infinite Ultra</h3>
-              <div class="price-row"><p class="price" data-focus-price data-price="ultra">$199</p><span class="period" data-period>/month</span></div>
+              <div class="price-row"><p class="price" data-focus-price data-price="ultra">$200</p><span class="period" data-period>/month</span></div>
+              <p class="billing-detail" data-focus-billing-note data-billing-note="ultra">Billed monthly</p>
               <p class="trial"><strong>7-day free trial.</strong> Cancel anytime.</p>
               <button class="cta" type="button">Start free</button>
             </div>
@@ -1209,7 +1221,7 @@
           <span class="stage__label">Pricing preview</span>
           <div class="billing-toggle" role="group" aria-label="Base and power-up billing period">
             <button type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
-            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Pricing coming soon</small></button>
+            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
           </div>
         </div>
 
@@ -1217,7 +1229,7 @@
           <article class="core-card">
             <header class="core-card__header">
               <div><p class="mini-kicker">The complete growth OS</p><h3>Infinite Max</h3></div>
-              <div class="core-price"><p class="price" data-price="max">$49</p><span class="period" data-period>/month</span></div>
+              <div class="core-price"><p class="price" data-price="max">$60</p><span class="period" data-period>/month</span><p class="billing-detail" data-billing-note="max">Billed monthly</p></div>
             </header>
             <div class="outcome-grid">
               <div class="outcome"><strong>Find demand</strong><span>Buyer signals from the places your market talks.</span></div>
@@ -1232,7 +1244,8 @@
           <article class="boost-card">
             <p class="mini-kicker">Everything in Max, plus</p>
             <h3>Infinite Ultra</h3>
-            <div class="boost-price"><p class="price" data-price="ultra">$199</p><span class="period" data-period>/month</span></div>
+            <div class="boost-price"><p class="price" data-price="ultra">$200</p><span class="period" data-period>/month</span></div>
+            <p class="billing-detail" data-billing-note="ultra">Billed monthly</p>
             <ul class="features">
               <li><strong>Own AI discovery</strong><br>AI Visibility shows where your brand wins and disappears.</li>
               <li><strong>Turn insight into Reels</strong><br>Create short-form video from proven market signals.</li>
@@ -1260,35 +1273,41 @@
     </section>
   </main>
 
-  <footer class="footer-note">Design review only · monthly pricing is real · annual pricing remains intentionally unset</footer>
+  <footer class="footer-note">Design review only · monthly and annual amounts reflect the live Stripe price catalog</footer>
 
   <script>
     const planCopy = {
       max: {
         name: "Infinite Max",
-        monthly: "$49",
         eyebrow: "The complete growth operating system.",
+        monthly: { price: "$60", period: "/month", note: "Billed monthly" },
+        annual: { price: "$50", period: "/month", note: "Billed $600/year" },
       },
       ultra: {
         name: "Infinite Ultra",
-        monthly: "$199",
         eyebrow: "See more. Create more. Track everything.",
+        monthly: { price: "$200", period: "/month", note: "Billed monthly" },
+        annual: { price: "$180", period: "/month", note: "Billed $2,160/year" },
       },
     };
 
     document.querySelectorAll("[data-direction]").forEach((direction) => {
       direction.querySelectorAll("[data-billing]").forEach((button) => {
         button.addEventListener("click", () => {
-          const annual = button.dataset.billing === "annual";
+          const billing = button.dataset.billing;
           direction.querySelectorAll("[data-billing]").forEach((peer) => {
             peer.setAttribute("aria-pressed", String(peer === button));
           });
           direction.querySelectorAll("[data-price]").forEach((price) => {
-            price.textContent = annual ? "Pricing coming soon" : planCopy[price.dataset.price].monthly;
-            price.classList.toggle("price--pending", annual);
+            price.textContent = planCopy[price.dataset.price][billing].price;
+            price.classList.remove("price--pending");
           });
           direction.querySelectorAll("[data-period]").forEach((period) => {
-            period.textContent = annual ? "Annual" : "/month";
+            const plan = period.closest("article, .switcher-wrap").querySelector("[data-price]").dataset.price;
+            period.textContent = planCopy[plan][billing].period;
+          });
+          direction.querySelectorAll("[data-billing-note]").forEach((note) => {
+            note.textContent = planCopy[note.dataset.billingNote][billing].note;
           });
         });
       });
@@ -1302,15 +1321,18 @@
       const panel = document.querySelector(".switcher-wrap");
       const button = document.querySelector(`[data-plan="${plan}"]`);
       const activeBilling = panel.closest("[data-direction]").querySelector('[data-billing][aria-pressed="true"]');
-      const annual = activeBilling.dataset.billing === "annual";
+      const billing = activeBilling.dataset.billing;
       const price = panel.querySelector("[data-focus-price]");
+      const billingNote = panel.querySelector("[data-focus-billing-note]");
 
       panel.dataset.activePlan = plan;
       panel.querySelector("[data-focus-name]").textContent = planCopy[plan].name;
       panel.querySelector("[data-focus-eyebrow]").textContent = planCopy[plan].eyebrow;
       price.dataset.price = plan;
-      price.textContent = annual ? "Pricing coming soon" : planCopy[plan].monthly;
-      price.classList.toggle("price--pending", annual);
+      price.textContent = planCopy[plan][billing].price;
+      price.classList.remove("price--pending");
+      billingNote.dataset.billingNote = plan;
+      billingNote.textContent = planCopy[plan][billing].note;
       panel.querySelector("[data-ultra-extras]").hidden = plan !== "ultra";
       document.querySelectorAll("[data-plan]").forEach((peer) => {
         peer.setAttribute("aria-pressed", String(peer === button));
@@ -1343,7 +1365,7 @@
       const lines = [
         chosen ? `Preferred direction: ${chosen}.` : "Preferred direction: not selected yet.",
         ...notes.map((note) => `${note.label} — steal: ${note.steal || "nothing noted"}; reject: ${note.reject || "nothing noted"}.`),
-        "Keep Infinite Ultra visually emphasized. Both plans include a 7-day free trial. Monthly prices are $49 for Max and $199 for Ultra; annual prices remain unset.",
+        "Keep Infinite Ultra visually emphasized. Both plans include a 7-day free trial. Max is $60 monthly or $600/year ($50/month equivalent). Ultra is $200 monthly or $2,160/year ($180/month equivalent).",
       ];
       document.querySelector("#combined-brief").textContent = lines.join("\n");
     }

@@ -19,14 +19,17 @@ for (const direction of ["twin", "switcher", "power-up"]) {
 for (const copy of [
   "Infinite Max",
   "Infinite Ultra",
-  "$49",
-  "$199",
+  "$60",
+  "$200",
+  "$50",
+  "$180",
+  "$600/year",
+  "$2,160/year",
   "7-day free trial",
   "AI Visibility",
   "Reels",
   "Competitor Tracking",
   "content, pricing, and ads",
-  "Pricing coming soon",
 ]) {
   assert.ok(html.includes(copy), `Missing required copy: ${copy}`);
 }
@@ -46,6 +49,33 @@ assert.match(html, /direction--twin \.stage\s*\{[^}]*max-width:\s*980px/s);
 assert.match(html, /direction--twin \.price\s*\{[^}]*font-size:\s*clamp\(46px,\s*5vw,\s*60px\)/s);
 assert.match(html, /data-pick-direction="Twin plan cards" aria-pressed="true"/);
 assert.doesNotMatch(html, /save \d+%|billed annually at \$|annual discount/i);
+assert.doesNotMatch(html, /\$49|\$199|Pricing coming soon|annual prices remain unset/i);
 assert.doesNotMatch(html, /href=["']\/download/);
+
+const planCopyMatch = html.match(/const planCopy = (\{[\s\S]*?\n    \});/);
+assert.ok(planCopyMatch, "Missing executable plan price catalog");
+const planCopy = Function(`"use strict"; return (${planCopyMatch[1]});`)();
+assert.deepEqual(planCopy.max.monthly, {
+  price: "$60",
+  period: "/month",
+  note: "Billed monthly",
+});
+assert.deepEqual(planCopy.max.annual, {
+  price: "$50",
+  period: "/month",
+  note: "Billed $600/year",
+});
+assert.deepEqual(planCopy.ultra.monthly, {
+  price: "$200",
+  period: "/month",
+  note: "Billed monthly",
+});
+assert.deepEqual(planCopy.ultra.annual, {
+  price: "$180",
+  period: "/month",
+  note: "Billed $2,160/year",
+});
+assert.match(html, /planCopy\[price\.dataset\.price\]\[billing\]\.price/);
+assert.match(html, /planCopy\[note\.dataset\.billingNote\]\[billing\]\.note/);
 
 console.log("Max + Ultra pricing directions contract: PASS");
