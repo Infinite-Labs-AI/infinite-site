@@ -1,0 +1,1388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Infinite Max + Ultra · Pricing design review</title>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("../../fonts/infinite-ui/hanken-grotesk-400.woff2") format("woff2");
+      font-weight: 400;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("../../fonts/infinite-ui/hanken-grotesk-600.woff2") format("woff2");
+      font-weight: 600;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("../../fonts/infinite-ui/hanken-grotesk-700.woff2") format("woff2");
+      font-weight: 700;
+      font-display: swap;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #141414;
+      --muted: #626872;
+      --muted-2: #818896;
+      --paper: #f7f9fc;
+      --card: rgba(255, 255, 255, 0.93);
+      --line: #dfe5ed;
+      --line-strong: #cfd7e2;
+      --green: #57c879;
+      --green-soft: #eaf9ef;
+      --blue: #cfe5ff;
+      --pink: #ffd7e8;
+      --ultra: #15171b;
+      --ultra-2: #22262d;
+      --radius: 28px;
+      --shadow: 0 24px 70px rgba(34, 53, 82, 0.12);
+      --display: clamp(44px, 7vw, 82px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 7% 17%, rgba(255, 215, 232, 0.5), transparent 25%),
+        radial-gradient(circle at 93% 14%, rgba(207, 229, 255, 0.72), transparent 27%),
+        linear-gradient(180deg, #fbfcfe 0%, var(--paper) 46%, #f4f7fb 100%);
+      font-family: "Hanken Grotesk", Inter, system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    button,
+    textarea { font: inherit; }
+
+    button { min-height: 44px; }
+
+    button:focus-visible,
+    textarea:focus-visible,
+    a:focus-visible {
+      outline: 3px solid #6aa8ff;
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 40px));
+      margin-inline: auto;
+    }
+
+    .review-hero {
+      min-height: 68vh;
+      display: grid;
+      place-content: center;
+      padding: 96px 0 76px;
+      text-align: center;
+    }
+
+    .hero-mark {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 30px;
+      border: 1px solid rgba(20, 20, 20, 0.08);
+      border-radius: 19px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 12px 28px rgba(52, 69, 94, 0.1);
+      font-weight: 700;
+      font-size: 26px;
+      letter-spacing: -0.08em;
+      transform: rotate(-5deg);
+    }
+
+    .eyebrow {
+      margin: 0 0 20px;
+      color: #347248;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .review-hero h1 {
+      max-width: 920px;
+      margin: 0 auto;
+      font-size: var(--display);
+      line-height: 0.96;
+      letter-spacing: -0.06em;
+    }
+
+    .review-hero h1 span {
+      background: linear-gradient(100deg, #e95a9e 8%, #7058d7 47%, #2589ce 89%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .review-hero > p:last-of-type {
+      max-width: 600px;
+      margin: 26px auto 0;
+      color: var(--muted);
+      font-size: clamp(18px, 2.2vw, 23px);
+    }
+
+    .jump-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 34px;
+    }
+
+    .jump-links a {
+      padding: 11px 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .jump-links a:hover { border-color: #9fadbe; }
+
+    .direction {
+      position: relative;
+      margin-bottom: 112px;
+      scroll-margin-top: 28px;
+    }
+
+    .direction::before {
+      content: "";
+      position: absolute;
+      inset: 100px -16px -24px;
+      z-index: -1;
+      border: 1px solid rgba(203, 216, 233, 0.72);
+      border-radius: 44px;
+      background: rgba(255, 255, 255, 0.3);
+      filter: drop-shadow(0 22px 42px rgba(36, 57, 84, 0.06));
+    }
+
+    .direction__intro {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) minmax(260px, 0.72fr);
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 34px;
+    }
+
+    .direction__number {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border: 1px solid var(--line-strong);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .direction__title p {
+      margin: 0 0 7px;
+      color: var(--muted-2);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .direction__title h2 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 50px);
+      line-height: 1;
+      letter-spacing: -0.045em;
+    }
+
+    .direction__note {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .stage {
+      position: relative;
+      padding: clamp(18px, 3.5vw, 42px);
+      border: 1px solid rgba(196, 211, 229, 0.9);
+      border-radius: 38px;
+      background:
+        radial-gradient(circle at 0 0, rgba(255, 215, 232, 0.34), transparent 27%),
+        radial-gradient(circle at 100% 0, rgba(207, 229, 255, 0.54), transparent 30%),
+        rgba(251, 253, 255, 0.84);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .stage__bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .stage__label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .stage__label::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(87, 200, 121, 0.13);
+    }
+
+    .billing-toggle,
+    .plan-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(239, 243, 248, 0.9);
+    }
+
+    .billing-toggle button,
+    .plan-switch button {
+      position: relative;
+      min-height: 42px;
+      padding: 8px 16px;
+      border: 0;
+      border-radius: 999px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .billing-toggle button[aria-pressed="true"],
+    .plan-switch button[aria-pressed="true"] {
+      color: var(--ink);
+      background: white;
+      box-shadow: 0 3px 12px rgba(51, 65, 85, 0.11);
+    }
+
+    .billing-toggle small {
+      display: block;
+      color: #67806f;
+      font-size: 9px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .plans { display: grid; gap: 18px; }
+
+    .plan {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: clamp(24px, 3vw, 38px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+    }
+
+    .plan__topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 28px;
+      margin-bottom: 28px;
+    }
+
+    .plan__name {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .plan__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: #173720;
+      background: #9aefb3;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .plan__badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .plan__positioning {
+      min-height: 54px;
+      margin: 0 0 23px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.42;
+    }
+
+    .price-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 8px;
+      min-height: 85px;
+    }
+
+    .price {
+      margin: 0;
+      font-size: clamp(54px, 7vw, 76px);
+      line-height: 0.92;
+      letter-spacing: -0.065em;
+      font-weight: 700;
+    }
+
+    .price.price--pending {
+      max-width: 250px;
+      font-size: clamp(31px, 4vw, 43px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .period {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .trial {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .billing-detail {
+      min-height: 18px;
+      margin: 7px 0 0;
+      color: var(--muted-2);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .trial strong { color: inherit; }
+
+    .cta {
+      width: 100%;
+      margin: 28px 0 25px;
+      padding: 14px 20px;
+      border: 0;
+      border-radius: 999px;
+      color: white;
+      background: var(--ink);
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 14px 28px rgba(18, 18, 18, 0.16);
+    }
+
+    .cta:hover { transform: translateY(-1px); }
+
+    .feature-label {
+      margin: 0 0 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .features {
+      display: grid;
+      gap: 13px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .features li {
+      position: relative;
+      padding-left: 27px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .features li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: -1px;
+      display: grid;
+      place-items: center;
+      width: 19px;
+      height: 19px;
+      border: 1.5px solid var(--green);
+      border-radius: 50%;
+      color: #349655;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .features strong { color: var(--ink); }
+
+    .plan--ultra {
+      color: white;
+      border-color: rgba(255, 255, 255, 0.08);
+      background:
+        radial-gradient(circle at 90% 0, rgba(96, 137, 255, 0.17), transparent 27%),
+        radial-gradient(circle at 5% 100%, rgba(255, 96, 173, 0.11), transparent 33%),
+        var(--ultra);
+      box-shadow: 0 28px 55px rgba(19, 23, 32, 0.24);
+    }
+
+    .plan--ultra .plan__positioning,
+    .plan--ultra .period,
+    .plan--ultra .trial,
+    .plan--ultra .billing-detail,
+    .plan--ultra .features li { color: #b9c0cb; }
+
+    .plan--ultra .features strong,
+    .plan--ultra .feature-label { color: white; }
+
+    .plan--ultra .features li::before {
+      border-color: #70df93;
+      color: #70df93;
+    }
+
+    .plan--ultra .cta {
+      color: var(--ink);
+      background: white;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
+    }
+
+    .reaction {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+      align-items: stretch;
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .pick {
+      padding: 12px 20px;
+      border: 1px solid var(--line-strong);
+      border-radius: 14px;
+      color: var(--ink);
+      background: white;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .pick[aria-pressed="true"] {
+      border-color: #57c879;
+      color: #1e5e32;
+      background: var(--green-soft);
+      box-shadow: inset 0 0 0 1px #57c879;
+    }
+
+    .reaction label {
+      position: relative;
+      display: block;
+    }
+
+    .reaction label span {
+      position: absolute;
+      left: 13px;
+      top: 8px;
+      color: var(--muted-2);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .reaction textarea {
+      width: 100%;
+      height: 68px;
+      resize: vertical;
+      padding: 25px 13px 9px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--ink);
+      background: #f8fafc;
+      line-height: 1.3;
+    }
+
+    .direction--twin .stage {
+      max-width: 980px;
+      margin-inline: auto;
+      padding: 26px;
+      border-radius: 30px;
+    }
+
+    .direction--twin .stage__bar { margin-bottom: 18px; }
+
+    .direction--twin .plans {
+      grid-template-columns: 1fr 1.05fr;
+      align-items: stretch;
+      gap: 14px;
+    }
+
+    .direction--twin .plan {
+      padding: 24px 26px;
+      border-radius: 22px;
+    }
+
+    .direction--twin .plan__topline {
+      min-height: 24px;
+      margin-bottom: 14px;
+    }
+
+    .direction--twin .plan__name { font-size: 17px; }
+
+    .direction--twin .plan__badge {
+      padding: 5px 8px;
+      font-size: 9px;
+    }
+
+    .direction--twin .plan__positioning {
+      min-height: 42px;
+      margin-bottom: 16px;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .direction--twin .price-row { min-height: 58px; }
+
+    .direction--twin .price {
+      font-size: clamp(46px, 5vw, 60px);
+    }
+
+    .direction--twin .price.price--pending {
+      max-width: 190px;
+      font-size: 30px;
+    }
+
+    .direction--twin .trial {
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .direction--twin .cta {
+      min-height: 44px;
+      margin: 18px 0 16px;
+      padding: 11px 16px;
+      font-size: 14px;
+    }
+
+    .direction--twin .feature-label {
+      margin-bottom: 10px;
+      font-size: 10px;
+    }
+
+    .direction--twin .features { gap: 9px; }
+
+    .direction--twin .features li {
+      padding-left: 24px;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .direction--twin .features li::before {
+      width: 17px;
+      height: 17px;
+      font-size: 9px;
+    }
+
+    .direction--twin .plan--ultra {
+      transform: translateY(-5px);
+      box-shadow: 0 18px 38px rgba(19, 23, 32, 0.2);
+    }
+
+    .direction--twin .plan--max { margin-bottom: 5px; }
+
+    .compact-shared {
+      display: grid;
+      grid-template-columns: 140px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+      margin-top: 14px;
+      padding: 15px 18px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .compact-shared p {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .compact-shared ul {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .compact-shared li {
+      position: relative;
+      padding-left: 15px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .compact-shared li::before {
+      content: "·";
+      position: absolute;
+      left: 2px;
+      color: #42a862;
+      font-weight: 700;
+    }
+
+    .switcher-wrap {
+      position: relative;
+      padding: clamp(24px, 4vw, 48px);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: white;
+      overflow: hidden;
+    }
+
+    .switcher-wrap[data-active-plan="ultra"] {
+      color: white;
+      border-color: transparent;
+      background:
+        radial-gradient(circle at 88% 18%, rgba(87, 132, 255, 0.24), transparent 23%),
+        radial-gradient(circle at 62% 110%, rgba(255, 91, 173, 0.16), transparent 29%),
+        var(--ultra);
+    }
+
+    .switcher-wrap[data-active-plan="ultra"] .plan-switch {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .switcher-wrap[data-active-plan="ultra"] .plan-switch button { color: #aeb5c0; }
+
+    .switcher-wrap[data-active-plan="ultra"] .plan-switch button[aria-pressed="true"] {
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .switcher-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+
+    .switcher-head p {
+      margin: 0;
+      color: #9ba4b1;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .focus-plan {
+      display: grid;
+      grid-template-columns: minmax(240px, 0.76fr) 1.24fr;
+      gap: clamp(34px, 6vw, 78px);
+      align-items: start;
+    }
+
+    .focus-plan__price h3 {
+      margin: 8px 0 24px;
+      font-size: clamp(38px, 5vw, 62px);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+    }
+
+    .focus-eyebrow {
+      margin: 0;
+      color: #8d96a3;
+      font-size: 14px;
+    }
+
+    .focus-plan__price .price { font-size: clamp(61px, 8vw, 94px); }
+
+    .focus-plan__price .cta { max-width: 280px; }
+
+    .switcher-wrap[data-active-plan="ultra"] .focus-plan__price .cta {
+      color: var(--ink);
+      background: white;
+    }
+
+    .focus-plan__features {
+      display: grid;
+      gap: 18px;
+    }
+
+    .feature-band {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #f7f9fc;
+    }
+
+    .switcher-wrap[data-active-plan="ultra"] .feature-band {
+      border-color: rgba(255, 255, 255, 0.11);
+      background: rgba(255, 255, 255, 0.055);
+    }
+
+    .feature-band h4 {
+      margin: 0 0 15px;
+      font-size: 16px;
+    }
+
+    .feature-band__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+    }
+
+    .feature-band__grid span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .switcher-wrap[data-active-plan="ultra"] .feature-band__grid span { color: #b9c0cb; }
+
+    .ultra-extras {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .ultra-extra {
+      min-height: 118px;
+      padding: 18px;
+      border: 1px solid rgba(112, 223, 147, 0.26);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(112, 223, 147, 0.1), rgba(103, 120, 255, 0.08));
+    }
+
+    .ultra-extra span {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      margin-bottom: 20px;
+      border-radius: 9px;
+      color: #b9f5ca;
+      background: rgba(87, 200, 121, 0.16);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .ultra-extra strong { display: block; font-size: 14px; }
+
+    .ultra-extra small { color: #9fa8b5; }
+
+    .power-stage {
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(244, 248, 253, 0.88)),
+        white;
+    }
+
+    .power-stack {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      align-items: stretch;
+      padding: 8px 0 24px;
+    }
+
+    .core-card {
+      z-index: 1;
+      padding: clamp(28px, 4vw, 46px);
+      border: 1px solid var(--line);
+      border-radius: 30px 0 0 30px;
+      background: white;
+    }
+
+    .core-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 16px;
+      margin-bottom: 38px;
+    }
+
+    .core-card h3,
+    .boost-card h3 {
+      margin: 5px 0 0;
+      font-size: clamp(33px, 4vw, 48px);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .mini-kicker {
+      margin: 0;
+      color: var(--muted-2);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .core-price {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .core-price .price { font-size: clamp(48px, 6vw, 68px); }
+
+    .outcome-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .outcome {
+      padding: 16px;
+      border-radius: 16px;
+      background: #f4f7fa;
+    }
+
+    .outcome strong { display: block; margin-bottom: 5px; }
+
+    .outcome span { color: var(--muted); font-size: 13px; }
+
+    .core-card .cta { max-width: 260px; margin-bottom: 0; }
+
+    .boost-card {
+      position: relative;
+      z-index: 2;
+      margin: 34px 0 -12px -20px;
+      padding: clamp(28px, 4vw, 42px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 4px solid var(--green);
+      border-radius: 24px 30px 30px 24px;
+      color: white;
+      background:
+        radial-gradient(circle at 95% 0, rgba(75, 119, 255, 0.24), transparent 27%),
+        var(--ultra);
+      box-shadow: 0 28px 58px rgba(22, 28, 39, 0.26);
+    }
+
+    .boost-card .mini-kicker { color: #85e9a3; }
+
+    .boost-price {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      margin: 26px 0 24px;
+    }
+
+    .boost-price .price { font-size: clamp(53px, 6vw, 70px); }
+
+    .boost-price .period { color: #aeb6c1; }
+
+    .boost-card .features { gap: 17px; }
+
+    .boost-card .features li { color: #c0c6cf; }
+
+    .boost-card .features li::before { color: #77e197; border-color: #77e197; }
+
+    .boost-card .features strong { color: white; }
+
+    .boost-card .cta { color: var(--ink); background: white; margin-bottom: 0; }
+
+    .decision-summary {
+      position: relative;
+      margin: 20px auto 100px;
+      padding: clamp(28px, 5vw, 58px);
+      border-radius: 34px;
+      color: white;
+      background:
+        radial-gradient(circle at 90% 0, rgba(56, 126, 255, 0.22), transparent 28%),
+        radial-gradient(circle at 10% 120%, rgba(255, 86, 171, 0.14), transparent 31%),
+        #14171c;
+      box-shadow: 0 30px 80px rgba(16, 20, 27, 0.25);
+      overflow: hidden;
+    }
+
+    .decision-summary::after {
+      content: "∞";
+      position: absolute;
+      right: 30px;
+      top: -52px;
+      color: rgba(255, 255, 255, 0.035);
+      font-size: 220px;
+      font-weight: 700;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .decision-summary .eyebrow { color: #81e69f; }
+
+    .decision-summary h2 {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 12px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .decision-summary > p {
+      max-width: 650px;
+      margin: 0 0 28px;
+      color: #aeb6c2;
+    }
+
+    #combined-brief {
+      position: relative;
+      z-index: 1;
+      display: block;
+      min-height: 100px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      color: #dce2eb;
+      background: rgba(255, 255, 255, 0.055);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .copy-brief {
+      margin-top: 15px;
+      padding: 11px 17px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      color: white;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .copy-brief:hover { background: rgba(255, 255, 255, 0.13); }
+
+    .footer-note {
+      padding: 0 20px 50px;
+      color: var(--muted-2);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 900px) {
+      .direction__intro { grid-template-columns: 64px 1fr; }
+      .direction__note { grid-column: 2; }
+      .reaction { grid-template-columns: 1fr 1fr; }
+      .reaction .pick { grid-column: 1 / -1; }
+      .ultra-extras { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 24px, 1180px); }
+      .review-hero { min-height: 620px; padding: 72px 0 56px; }
+      .direction { margin-bottom: 84px; }
+      .direction::before { inset-inline: -5px; }
+      .direction__intro { grid-template-columns: 48px 1fr; gap: 14px; }
+      .direction__number { width: 44px; height: 44px; border-radius: 14px; }
+      .direction__note { grid-column: 1 / -1; }
+      .stage { padding: 13px; border-radius: 27px; }
+      .stage__bar { align-items: flex-start; flex-direction: column; }
+      .billing-toggle { width: 100%; }
+      .billing-toggle button { flex: 1; padding-inline: 9px; }
+      .direction--twin .plans,
+      .focus-plan,
+      .power-stack { grid-template-columns: 1fr; }
+      .direction--twin .plan--ultra { order: -1; transform: none; }
+      .direction--twin .plan--max { margin-bottom: 0; }
+      .direction--twin .stage { padding: 13px; }
+      .compact-shared { grid-template-columns: 1fr; }
+      .compact-shared ul { grid-template-columns: 1fr 1fr; }
+      .switcher-head { align-items: flex-start; flex-direction: column; }
+      .plan-switch { width: 100%; }
+      .plan-switch button { flex: 1; }
+      .feature-band__grid { grid-template-columns: 1fr; }
+      .reaction { grid-template-columns: 1fr; }
+      .reaction .pick { grid-column: auto; }
+      .core-card { border-radius: 26px 26px 14px 14px; }
+      .boost-card { margin: -8px 0 0; border-left-width: 1px; border-top: 4px solid var(--green); border-radius: 14px 14px 26px 26px; }
+      .core-card__header { flex-direction: column; }
+      .core-price { text-align: left; }
+      .outcome-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .cta,
+      .pick,
+      .billing-toggle button,
+      .plan-switch button { transition: transform 160ms ease, background 160ms ease, border-color 160ms ease; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="review-hero shell">
+      <div class="hero-mark" aria-hidden="true">∞</div>
+      <p class="eyebrow">Infinite pricing · design review</p>
+      <h1>Choose how <span>Max and Ultra</span> should meet.</h1>
+      <p>Three genuinely different pricing systems. Pick a whole direction, or steal the best parts from each.</p>
+      <nav class="jump-links" aria-label="Pricing directions">
+        <a href="#twin">01 · Twin cards</a>
+        <a href="#switcher">02 · Plan switcher</a>
+        <a href="#power-up">03 · Base + power-up</a>
+      </nav>
+    </header>
+
+    <section class="direction shell direction--twin" data-direction="twin" id="twin" aria-labelledby="twin-title">
+      <header class="direction__intro">
+        <span class="direction__number">01</span>
+        <div class="direction__title">
+          <p>Selected direction · compact v2</p>
+          <h2 id="twin-title">Twin plan cards</h2>
+        </div>
+        <p class="direction__note">A tighter conversion-first layout: compact decision cards up top, shared capabilities in one slim band below.</p>
+      </header>
+
+      <div class="stage">
+        <div class="stage__bar">
+          <span class="stage__label">Pricing preview</span>
+          <div class="billing-toggle" role="group" aria-label="Twin cards billing period">
+            <button type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
+            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
+          </div>
+        </div>
+
+        <div class="plans">
+          <article class="plan plan--max">
+            <div class="plan__topline"><h3 class="plan__name">Infinite Max</h3></div>
+            <p class="plan__positioning">Find demand, plan growth, and ship the work.</p>
+            <div class="price-row"><p class="price" data-price="max">$60</p><span class="period" data-period>/month</span></div>
+            <p class="billing-detail" data-billing-note="max">Billed monthly</p>
+            <p class="trial"><strong>7-day free trial.</strong> Then cancel anytime.</p>
+            <button class="cta" type="button">Start free with Max</button>
+            <p class="feature-label">Core outcomes</p>
+            <ul class="features">
+              <li><strong>Find buyer signals</strong> across your market</li>
+              <li><strong>Turn signals into briefs</strong> and experiments</li>
+              <li><strong>Ship with AI context</strong> already attached</li>
+            </ul>
+          </article>
+
+          <article class="plan plan--ultra">
+            <div class="plan__topline"><h3 class="plan__name">Infinite Ultra</h3><span class="plan__badge">Most powerful</span></div>
+            <p class="plan__positioning">See more, create more, and track every move.</p>
+            <div class="price-row"><p class="price" data-price="ultra">$200</p><span class="period" data-period>/month</span></div>
+            <p class="billing-detail" data-billing-note="ultra">Billed monthly</p>
+            <p class="trial"><strong>7-day free trial.</strong> Then cancel anytime.</p>
+            <button class="cta" type="button">Start free with Ultra</button>
+            <p class="feature-label">Everything in Max, plus</p>
+            <ul class="features">
+              <li><strong>AI Visibility</strong> across AI answers</li>
+              <li><strong>Reels</strong> from winning market signals</li>
+              <li><strong>Competitor Tracking</strong> across content, pricing, and ads</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="compact-shared">
+          <p>Included in both</p>
+          <ul>
+            <li>Buyer-intent monitoring</li>
+            <li>SEO + GEO briefs</li>
+            <li>Claude Code + Codex context</li>
+            <li>Landing-page experiments</li>
+            <li>Organic content angles</li>
+            <li>Growth-stack integrations</li>
+          </ul>
+        </div>
+      </div>
+
+      <aside class="reaction" aria-label="React to twin plan cards">
+        <button class="pick" type="button" data-pick-direction="Twin plan cards" aria-pressed="true">Direction selected ✓</button>
+        <label><span>Details to steal</span><textarea data-steal aria-label="Details to steal from twin plan cards" placeholder="e.g. the dark Ultra card"></textarea></label>
+        <label><span>Details to reject</span><textarea data-reject aria-label="Details to reject from twin plan cards" placeholder="e.g. too much repeated copy"></textarea></label>
+      </aside>
+    </section>
+
+    <section class="direction shell direction--switcher" data-direction="switcher" id="switcher" aria-labelledby="switcher-title">
+      <header class="direction__intro">
+        <span class="direction__number">02</span>
+        <div class="direction__title">
+          <p>Focused exploration</p>
+          <h2 id="switcher-title">Interactive plan switcher</h2>
+        </div>
+        <p class="direction__note">One plan owns the stage at a time. Switching to Ultra changes the whole surface and reveals its exclusive capabilities.</p>
+      </header>
+
+      <div class="stage">
+        <div class="stage__bar">
+          <span class="stage__label">Pricing preview</span>
+          <div class="billing-toggle" role="group" aria-label="Switcher billing period">
+            <button type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
+            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
+          </div>
+        </div>
+
+        <article class="switcher-wrap" data-active-plan="ultra">
+          <header class="switcher-head">
+            <p>Select a plan to explore</p>
+            <div class="plan-switch" role="group" aria-label="Choose plan">
+              <button type="button" data-plan="max" aria-pressed="false">Infinite Max</button>
+              <button type="button" data-plan="ultra" aria-pressed="true">Infinite Ultra</button>
+            </div>
+          </header>
+
+          <div class="focus-plan">
+            <div class="focus-plan__price">
+              <p class="focus-eyebrow" data-focus-eyebrow>See more. Create more. Track everything.</p>
+              <h3 data-focus-name>Infinite Ultra</h3>
+              <div class="price-row"><p class="price" data-focus-price data-price="ultra">$200</p><span class="period" data-period>/month</span></div>
+              <p class="billing-detail" data-focus-billing-note data-billing-note="ultra">Billed monthly</p>
+              <p class="trial"><strong>7-day free trial.</strong> Cancel anytime.</p>
+              <button class="cta" type="button">Start free</button>
+            </div>
+
+            <div class="focus-plan__features">
+              <section class="feature-band">
+                <h4>Everything you get in Max</h4>
+                <div class="feature-band__grid">
+                  <span>✓ Buyer-intent monitoring</span><span>✓ SEO + GEO briefs</span>
+                  <span>✓ Shipping context</span><span>✓ Content + experiments</span>
+                  <span>✓ Growth integrations</span><span>✓ Always-on workflows</span>
+                </div>
+              </section>
+              <section data-ultra-extras>
+                <p class="feature-label">Ultra unlocks</p>
+                <div class="ultra-extras">
+                  <div class="ultra-extra"><span>AI</span><strong>AI Visibility</strong><small>Know where you show up.</small></div>
+                  <div class="ultra-extra"><span>▶</span><strong>Reels</strong><small>Turn signals into video.</small></div>
+                  <div class="ultra-extra"><span>↗</span><strong>Competitor Tracking</strong><small>Content, pricing, and ads.</small></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="reaction" aria-label="React to interactive plan switcher">
+        <button class="pick" type="button" data-pick-direction="Interactive plan switcher" aria-pressed="false">Choose this direction</button>
+        <label><span>Details to steal</span><textarea data-steal aria-label="Details to steal from interactive plan switcher" placeholder="e.g. the Ultra transformation"></textarea></label>
+        <label><span>Details to reject</span><textarea data-reject aria-label="Details to reject from interactive plan switcher" placeholder="e.g. comparison takes a click"></textarea></label>
+      </aside>
+    </section>
+
+    <section class="direction shell direction--power-up" data-direction="power-up" id="power-up" aria-labelledby="power-title">
+      <header class="direction__intro">
+        <span class="direction__number">03</span>
+        <div class="direction__title">
+          <p>Upgrade narrative</p>
+          <h2 id="power-title">Base + power-up</h2>
+        </div>
+        <p class="direction__note">Max is the complete foundation. Ultra attaches as a high-value expansion, making the extra $150 feel tied to three clear outcomes.</p>
+      </header>
+
+      <div class="stage power-stage">
+        <div class="stage__bar">
+          <span class="stage__label">Pricing preview</span>
+          <div class="billing-toggle" role="group" aria-label="Base and power-up billing period">
+            <button type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
+            <button type="button" data-billing="annual" aria-pressed="false">Annual <small>Lower monthly rate</small></button>
+          </div>
+        </div>
+
+        <div class="power-stack">
+          <article class="core-card">
+            <header class="core-card__header">
+              <div><p class="mini-kicker">The complete growth OS</p><h3>Infinite Max</h3></div>
+              <div class="core-price"><p class="price" data-price="max">$60</p><span class="period" data-period>/month</span><p class="billing-detail" data-billing-note="max">Billed monthly</p></div>
+            </header>
+            <div class="outcome-grid">
+              <div class="outcome"><strong>Find demand</strong><span>Buyer signals from the places your market talks.</span></div>
+              <div class="outcome"><strong>Plan growth</strong><span>SEO, GEO, content, and experiment briefs.</span></div>
+              <div class="outcome"><strong>Ship changes</strong><span>Claude Code and Codex receive the right context.</span></div>
+              <div class="outcome"><strong>Connect the stack</strong><span>Analytics, ads, social, and commerce integrations.</span></div>
+            </div>
+            <p class="trial"><strong>7-day free trial.</strong> Cancel anytime.</p>
+            <button class="cta" type="button">Start free with Max</button>
+          </article>
+
+          <article class="boost-card">
+            <p class="mini-kicker">Everything in Max, plus</p>
+            <h3>Infinite Ultra</h3>
+            <div class="boost-price"><p class="price" data-price="ultra">$200</p><span class="period" data-period>/month</span></div>
+            <p class="billing-detail" data-billing-note="ultra">Billed monthly</p>
+            <ul class="features">
+              <li><strong>Own AI discovery</strong><br>AI Visibility shows where your brand wins and disappears.</li>
+              <li><strong>Turn insight into Reels</strong><br>Create short-form video from proven market signals.</li>
+              <li><strong>Track every competitor move</strong><br>Follow content, pricing, and ads in one view.</li>
+            </ul>
+            <p class="trial"><strong>7-day free trial.</strong> Cancel anytime.</p>
+            <button class="cta" type="button">Start free with Ultra</button>
+          </article>
+        </div>
+      </div>
+
+      <aside class="reaction" aria-label="React to base and power-up">
+        <button class="pick" type="button" data-pick-direction="Base + power-up" aria-pressed="false">Choose this direction</button>
+        <label><span>Details to steal</span><textarea data-steal aria-label="Details to steal from base and power-up" placeholder="e.g. everything in Max, plus"></textarea></label>
+        <label><span>Details to reject</span><textarea data-reject aria-label="Details to reject from base and power-up" placeholder="e.g. Ultra feels like an add-on"></textarea></label>
+      </aside>
+    </section>
+
+    <section class="decision-summary shell" aria-labelledby="decision-title">
+      <p class="eyebrow">Your decision</p>
+      <h2 id="decision-title">Build a combined direction.</h2>
+      <p>Choose a concept and leave any steal/reject notes above. This brief updates automatically so you can paste it straight back into the conversation.</p>
+      <output id="combined-brief" aria-live="polite">No direction selected yet. Choose one above, or add notes to start shaping a combined direction.</output>
+      <button class="copy-brief" type="button" data-copy-brief>Copy review brief</button>
+    </section>
+  </main>
+
+  <footer class="footer-note">Design review only · monthly and annual amounts reflect the live Stripe price catalog</footer>
+
+  <script>
+    const planCopy = {
+      max: {
+        name: "Infinite Max",
+        eyebrow: "The complete growth operating system.",
+        monthly: { price: "$60", period: "/month", note: "Billed monthly" },
+        annual: { price: "$50", period: "/month", note: "Billed $600/year" },
+      },
+      ultra: {
+        name: "Infinite Ultra",
+        eyebrow: "See more. Create more. Track everything.",
+        monthly: { price: "$200", period: "/month", note: "Billed monthly" },
+        annual: { price: "$180", period: "/month", note: "Billed $2,160/year" },
+      },
+    };
+
+    document.querySelectorAll("[data-direction]").forEach((direction) => {
+      direction.querySelectorAll("[data-billing]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const billing = button.dataset.billing;
+          direction.querySelectorAll("[data-billing]").forEach((peer) => {
+            peer.setAttribute("aria-pressed", String(peer === button));
+          });
+          direction.querySelectorAll("[data-price]").forEach((price) => {
+            price.textContent = planCopy[price.dataset.price][billing].price;
+            price.classList.remove("price--pending");
+          });
+          direction.querySelectorAll("[data-period]").forEach((period) => {
+            const plan = period.closest("article, .switcher-wrap").querySelector("[data-price]").dataset.price;
+            period.textContent = planCopy[plan][billing].period;
+          });
+          direction.querySelectorAll("[data-billing-note]").forEach((note) => {
+            note.textContent = planCopy[note.dataset.billingNote][billing].note;
+          });
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-plan]").forEach((button) => {
+      button.addEventListener("click", () => renderFocusPlan(button.dataset.plan));
+    });
+
+    function renderFocusPlan(plan) {
+      const panel = document.querySelector(".switcher-wrap");
+      const button = document.querySelector(`[data-plan="${plan}"]`);
+      const activeBilling = panel.closest("[data-direction]").querySelector('[data-billing][aria-pressed="true"]');
+      const billing = activeBilling.dataset.billing;
+      const price = panel.querySelector("[data-focus-price]");
+      const billingNote = panel.querySelector("[data-focus-billing-note]");
+
+      panel.dataset.activePlan = plan;
+      panel.querySelector("[data-focus-name]").textContent = planCopy[plan].name;
+      panel.querySelector("[data-focus-eyebrow]").textContent = planCopy[plan].eyebrow;
+      price.dataset.price = plan;
+      price.textContent = planCopy[plan][billing].price;
+      price.classList.remove("price--pending");
+      billingNote.dataset.billingNote = plan;
+      billingNote.textContent = planCopy[plan][billing].note;
+      panel.querySelector("[data-ultra-extras]").hidden = plan !== "ultra";
+      document.querySelectorAll("[data-plan]").forEach((peer) => {
+        peer.setAttribute("aria-pressed", String(peer === button));
+      });
+    }
+
+    document.querySelectorAll("[data-pick-direction]").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("[data-pick-direction]").forEach((peer) => {
+          const selected = peer === button;
+          peer.setAttribute("aria-pressed", String(selected));
+          peer.textContent = selected ? "Direction selected ✓" : "Choose this direction";
+        });
+        updateBrief();
+      });
+    });
+
+    document.querySelectorAll("[data-steal], [data-reject]").forEach((field) => {
+      field.addEventListener("input", updateBrief);
+    });
+
+    function updateBrief() {
+      const chosen = document.querySelector('[data-pick-direction][aria-pressed="true"]')?.dataset.pickDirection;
+      const notes = [...document.querySelectorAll("[data-direction]")].map((direction) => ({
+        label: direction.querySelector("[data-pick-direction]").dataset.pickDirection,
+        steal: direction.querySelector("[data-steal]").value.trim(),
+        reject: direction.querySelector("[data-reject]").value.trim(),
+      })).filter((note) => note.steal || note.reject);
+
+      const lines = [
+        chosen ? `Preferred direction: ${chosen}.` : "Preferred direction: not selected yet.",
+        ...notes.map((note) => `${note.label} — steal: ${note.steal || "nothing noted"}; reject: ${note.reject || "nothing noted"}.`),
+        "Keep Infinite Ultra visually emphasized. Both plans include a 7-day free trial. Max is $60 monthly or $600/year ($50/month equivalent). Ultra is $200 monthly or $2,160/year ($180/month equivalent).",
+      ];
+      document.querySelector("#combined-brief").textContent = lines.join("\n");
+    }
+
+    updateBrief();
+
+    document.querySelector("[data-copy-brief]").addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      const brief = document.querySelector("#combined-brief").textContent;
+      try {
+        await navigator.clipboard.writeText(brief);
+        button.textContent = "Copied ✓";
+      } catch {
+        button.textContent = "Select and copy the brief above";
+      }
+      window.setTimeout(() => { button.textContent = "Copy review brief"; }, 1800);
+    });
+  </script>
+</body>
+</html>
