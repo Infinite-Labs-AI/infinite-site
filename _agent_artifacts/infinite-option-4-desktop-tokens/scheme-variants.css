@@ -4241,13 +4241,17 @@ html[data-scheme="wrangle"] .pricing-plan .pricing-cta {
 }
 
 html[data-scheme="wrangle"] .pricing-plan--ultra .pricing-cta {
-  color: #171717;
-  background: #ffffff;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+  color: #171717 !important;
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22) !important;
 }
 
 html[data-scheme="wrangle"] .pricing-plan--ultra .pricing-cta:hover {
   color: #171717 !important;
+  background: #f4f7fa !important;
+  border-color: #f4f7fa !important;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.26) !important;
 }
 
 html[data-scheme="wrangle"] .pricing-feature-label {

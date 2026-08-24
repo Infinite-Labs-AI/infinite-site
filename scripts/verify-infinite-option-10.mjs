@@ -270,6 +270,18 @@ if (wrangleHtml) {
     if (!wrangleStyles.includes(snippet)) failures.push(`Missing homepage style snippet: ${snippet}`);
   }
 
+  const ultraCtaRule = wrangleStyles.match(/\.pricing-plan--ultra \.pricing-cta\s*\{([^}]*)\}/)?.[1] ?? "";
+  for (const declaration of [
+    "color: #171717 !important;",
+    "background: #ffffff !important;",
+    "border-color: #ffffff !important;",
+    "box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22) !important;",
+  ]) {
+    if (!ultraCtaRule.includes(declaration)) {
+      failures.push(`Ultra pricing CTA must override the global dark CTA: ${declaration}`);
+    }
+  }
+
   const wrangleSource = `${wrangleHtml}\n${wrangleStyles}`;
   for (const snippet of forbiddenWrangleSnippets) {
     if (wrangleSource.toLowerCase().includes(snippet.toLowerCase())) {
