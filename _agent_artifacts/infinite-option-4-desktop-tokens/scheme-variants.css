@@ -4412,3 +4412,349 @@ html[data-scheme="wrangle"] .pricing-package > .pricing-cancel {
     grid-template-columns: 1fr;
   }
 }
+
+/* Expanded, always-visible Max + Ultra capability matrix. */
+html[data-scheme="wrangle"] .pricing-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+html[data-scheme="wrangle"] .pricing-proof-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+html[data-scheme="wrangle"] .pricing-proof-strip > div {
+  display: flex;
+  min-height: 72px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+  padding: 16px;
+  border: 1px solid #dfe5ed;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+html[data-scheme="wrangle"] .pricing-proof-strip strong {
+  color: #171717;
+  font-family: "Hanken Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+}
+
+html[data-scheme="wrangle"] .pricing-proof-strip span {
+  color: #626b73;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+html[data-scheme="wrangle"] .pricing-comparison {
+  margin-top: 28px;
+}
+
+html[data-scheme="wrangle"] .pricing-comparison-intro {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  max-width: 690px;
+  margin: 0 auto 24px;
+  text-align: center;
+}
+
+html[data-scheme="wrangle"] .pricing-comparison-intro .pricing-feature-label {
+  margin: 0;
+  color: #0f773d;
+}
+
+html[data-scheme="wrangle"] .pricing-comparison-intro h3 {
+  margin: 0;
+  color: #171717;
+  font-family: "Hanken Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+html[data-scheme="wrangle"] .pricing-comparison-intro > p:last-child {
+  max-width: 610px;
+  margin: 0;
+  color: #626b73;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix {
+  border: 1px solid #dbe2eb;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 42px rgba(31, 72, 112, 0.07);
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-header,
+html[data-scheme="wrangle"] .pricing-matrix-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px 112px;
+  align-items: stretch;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-header {
+  position: sticky;
+  z-index: 6;
+  top: 76px;
+  overflow: hidden;
+  border-bottom: 1px solid #dbe2eb;
+  border-radius: 19px 19px 0 0;
+  background: rgba(248, 250, 252, 0.96);
+  box-shadow: 0 8px 18px rgba(31, 72, 112, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-header > span {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  color: #626b73;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-header > span:first-child {
+  justify-content: flex-start;
+  padding-left: 18px;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-header .pricing-matrix-ultra-head {
+  color: #ffffff;
+  background: #17191f;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-group {
+  display: block;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-group-title {
+  margin: 0;
+  padding: 20px 18px 9px;
+  border-top: 1px solid #e3e8ef;
+  color: #0f773d;
+  background: #f8fbf9;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-group:first-of-type .pricing-matrix-group-title {
+  border-top: 0;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-row {
+  min-height: 50px;
+  border-top: 1px solid #edf0f4;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-group .pricing-matrix-row:nth-child(odd) {
+  background: #fbfcfd;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-feature {
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  color: #343a40;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.32;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-cell {
+  position: relative;
+  display: flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #edf0f4;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-cell--ultra {
+  background: linear-gradient(135deg, rgba(255, 114, 182, 0.055), rgba(125, 200, 255, 0.08));
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-check {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1.5px solid #23c56d;
+  border-radius: 50%;
+  color: #159550;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-dash {
+  color: #a8afb8;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-row--ultra {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(248, 239, 255, 0.72));
+}
+
+html[data-scheme="wrangle"] .pricing-matrix-row--ultra .pricing-matrix-feature {
+  color: #171717;
+  font-weight: 800;
+}
+
+html[data-scheme="wrangle"] .pricing-ultra-pill {
+  display: inline-flex;
+  min-height: 25px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #17191f;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 5px 14px rgba(23, 25, 31, 0.14);
+}
+
+html[data-scheme="wrangle"] .pricing-closing-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #dbe2eb;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+html[data-scheme="wrangle"] .pricing-closing-cta > div {
+  display: grid;
+  gap: 2px;
+  min-height: 52px;
+  align-content: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #f5f7fa;
+}
+
+html[data-scheme="wrangle"] .pricing-closing-cta > div span {
+  color: #626b73;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-scheme="wrangle"] .pricing-closing-cta > div strong {
+  color: #171717;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+html[data-scheme="wrangle"] .pricing-closing-cta .pricing-closing-cta-ultra {
+  background: linear-gradient(135deg, rgba(255, 114, 182, 0.1), rgba(125, 200, 255, 0.13));
+}
+
+html[data-scheme="wrangle"] .pricing-closing-cta .hero-cta {
+  min-height: 48px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  html[data-scheme="wrangle"] .pricing-proof-strip {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-scheme="wrangle"] .pricing-proof-strip > div {
+    min-height: 58px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-comparison {
+    margin-top: 22px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-comparison-intro h3 {
+    font-size: 30px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-matrix-header {
+    display: none;
+    position: static;
+  }
+
+  html[data-scheme="wrangle"] .pricing-matrix-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 11px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-matrix-feature {
+    min-height: 38px;
+    padding: 5px 7px 10px;
+    font-size: 14px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-matrix-cell {
+    min-height: 38px;
+    justify-content: space-between;
+    padding: 7px 10px;
+    border: 1px solid #e6eaf0;
+    border-radius: 10px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-matrix-cell + .pricing-matrix-cell {
+    margin-top: 6px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-matrix-cell::before {
+    color: #737b85;
+    content: "Max";
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  html[data-scheme="wrangle"] .pricing-matrix-cell--ultra::before {
+    content: "Ultra";
+  }
+
+  html[data-scheme="wrangle"] .pricing-matrix-group-title {
+    padding: 18px 16px 9px;
+  }
+
+  html[data-scheme="wrangle"] .pricing-closing-cta {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-scheme="wrangle"] .pricing-closing-cta .hero-cta {
+    width: 100%;
+  }
+}

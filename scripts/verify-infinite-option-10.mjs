@@ -203,7 +203,6 @@ if (wrangleHtml) {
     'data-pricing-value="ultra"',
     "Infinite Max",
     "Infinite Ultra",
-    "Included in both",
     "AI Visibility",
     "Reels",
     "Competitor Tracking",
@@ -327,6 +326,80 @@ if (wrangleHtml) {
     if (JSON.stringify(pricingCatalog) !== JSON.stringify(expectedPricingCatalog)) {
       failures.push(`Homepage pricing catalog mismatch: ${JSON.stringify(pricingCatalog)}`);
     }
+  }
+
+  for (const [label, pattern] of [
+    ["21 product surfaces", />21<\/strong><span>product surfaces<\/span>/],
+    ["79 agent tools", />79<\/strong><span>agent tools<\/span>/],
+    ["One growth operating system", />One<\/strong><span>growth operating system<\/span>/],
+  ]) {
+    if (!pattern.test(wrangleHtml)) failures.push(`Missing pricing proof: ${label}`);
+  }
+
+  if (!wrangleHtml.includes("data-pricing-proof")) failures.push("Missing pricing proof strip contract");
+  if (!wrangleHtml.includes("data-pricing-matrix")) failures.push("Missing expanded pricing matrix contract");
+  if (!wrangleHtml.includes("data-pricing-closing-cta")) failures.push("Missing closing pricing CTA contract");
+
+  const pricingGroupIds = [...wrangleHtml.matchAll(/data-pricing-group="([^"]+)"/g)].map((match) => match[1]);
+  const expectedPricingGroupIds = [
+    "operator",
+    "leads",
+    "seo",
+    "ads",
+    "content",
+    "conversion",
+    "analytics",
+    "brand",
+    "competitive",
+  ];
+  if (JSON.stringify(pricingGroupIds) !== JSON.stringify(expectedPricingGroupIds)) {
+    failures.push(`Pricing group mismatch: ${JSON.stringify(pricingGroupIds)}`);
+  }
+
+  const pricingFeatureIds = [...wrangleHtml.matchAll(/data-pricing-feature="([^"]+)"/g)].map((match) => match[1]);
+  if (pricingFeatureIds.length !== 46) {
+    failures.push(`Expected exactly 46 pricing feature rows, found ${pricingFeatureIds.length}`);
+  }
+  if (new Set(pricingFeatureIds).size !== pricingFeatureIds.length) {
+    failures.push("Pricing feature row IDs must be unique");
+  }
+
+  const ultraOnlyFeatureIds = [...wrangleHtml.matchAll(/data-pricing-feature="([^"]+)"[^>]*data-ultra-only="true"/g)]
+    .map((match) => match[1]);
+  const expectedUltraOnlyFeatureIds = [
+    "ai-visibility",
+    "faceless-youtube",
+    "reels",
+    "landing-page-ab-testing",
+    "competitor-tracking",
+  ];
+  if (JSON.stringify(ultraOnlyFeatureIds) !== JSON.stringify(expectedUltraOnlyFeatureIds)) {
+    failures.push(`Ultra-only pricing feature mismatch: ${JSON.stringify(ultraOnlyFeatureIds)}`);
+  }
+
+  for (const label of [
+    "AI Visibility and citation monitoring",
+    "Faceless YouTube video generation",
+    "Reels creation",
+    "Landing-page A/B testing",
+    "Competitor Tracking across content, pricing, and ads",
+  ]) {
+    if (!wrangleHtml.includes(label)) failures.push(`Missing Ultra-only pricing label: ${label}`);
+  }
+
+  if (/<details[^>]*class="[^"]*pricing-matrix/.test(wrangleHtml) || wrangleHtml.includes("data-pricing-collapsed")) {
+    failures.push("Expanded pricing matrix must never collapse");
+  }
+
+  const desktopMatrixRowRule = wrangleStyles.match(/\.pricing-matrix-row\s*\{([^}]*)\}/)?.[1] ?? "";
+  if (!desktopMatrixRowRule.includes("grid-template-columns: minmax(0, 1fr) 92px 112px;")) {
+    failures.push("Missing three-column desktop pricing matrix row contract");
+  }
+  if (!/@media \(max-width: 760px\)[\s\S]*?\.pricing-matrix-row\s*\{[^}]*grid-template-columns: 1fr;/.test(wrangleStyles)) {
+    failures.push("Missing one-column mobile pricing matrix row contract");
+  }
+  if (/\.pricing-matrix[^}]*overflow-x:\s*auto/.test(wrangleStyles)) {
+    failures.push("Pricing matrix must not use horizontal scrolling");
   }
 }
 
