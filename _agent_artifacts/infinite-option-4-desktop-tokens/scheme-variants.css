@@ -4433,11 +4433,11 @@ html[data-scheme="wrangle"] .pricing-proof-strip {
 }
 
 html[data-scheme="wrangle"] .pricing-proof-strip > div {
-  display: flex;
-  min-height: 72px;
-  align-items: baseline;
-  justify-content: center;
-  gap: 7px;
+  display: grid;
+  min-height: 104px;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
   padding: 16px;
   border: 1px solid #dfe5ed;
   border-radius: 16px;
@@ -4448,12 +4448,14 @@ html[data-scheme="wrangle"] .pricing-proof-strip > div {
 html[data-scheme="wrangle"] .pricing-proof-strip strong {
   color: #171717;
   font-family: "Hanken Grotesk", "IBM Plex Sans", system-ui, sans-serif;
-  font-size: 24px;
+  font-size: clamp(38px, 5vw, 56px);
   font-weight: 850;
+  line-height: 0.92;
   letter-spacing: -0.04em;
 }
 
 html[data-scheme="wrangle"] .pricing-proof-strip span {
+  display: block;
   color: #626b73;
   font-size: 13px;
   font-weight: 700;
@@ -4693,7 +4695,7 @@ html[data-scheme="wrangle"] .pricing-closing-cta .hero-cta {
   }
 
   html[data-scheme="wrangle"] .pricing-proof-strip > div {
-    min-height: 58px;
+    min-height: 92px;
   }
 
   html[data-scheme="wrangle"] .pricing-comparison {

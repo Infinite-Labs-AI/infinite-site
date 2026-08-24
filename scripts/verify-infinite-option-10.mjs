@@ -436,6 +436,21 @@ if (wrangleHtml) {
   if (/\.pricing-matrix[^}]*overflow-x:\s*auto/.test(wrangleStyles)) {
     failures.push("Pricing matrix must not use horizontal scrolling");
   }
+
+  const pricingProofCardRule = wrangleStyles.match(/\.pricing-proof-strip > div\s*\{([^}]*)\}/)?.[1] ?? "";
+  for (const declaration of [
+    "display: grid;",
+    "justify-items: center;",
+    "align-content: center;",
+  ]) {
+    if (!pricingProofCardRule.includes(declaration)) {
+      failures.push(`Pricing proof values must stack above their labels: ${declaration}`);
+    }
+  }
+  const pricingProofValueRule = wrangleStyles.match(/\.pricing-proof-strip strong\s*\{([^}]*)\}/)?.[1] ?? "";
+  if (!pricingProofValueRule.includes("font-size: clamp(38px, 5vw, 56px);")) {
+    failures.push("Pricing proof values must use the larger display scale");
+  }
 }
 
 if (!/id="price-value"[^>]*>\$50</.test(html)) {

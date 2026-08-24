@@ -162,6 +162,7 @@ Every Max capability is also included in Ultra. `Ultra only` means the Max cell 
 ## Visual design
 
 - Keep the comparison inside the same 980-pixel maximum width as the compact pricing package.
+- Stack each proof-strip value above its descriptor and use a larger display scale for `79` and `One`.
 - Use a three-column desktop grid: feature name, Max, Ultra.
 - Give the Ultra column a subtle blue/pink tint and a dark Ultra header, not a full-height black slab.
 - Group headings use the existing mono eyebrow treatment and remain visually distinct from feature rows.
