@@ -1,7 +1,52 @@
+# The explicit groups below are exact mirrors of the wildcard. Under RFC 9309 a crawler obeys the
+# MOST SPECIFIC group that names it, so they change nothing today — they exist as a deliberate
+# opt-in signal for crawlers that are opt-OUT by default (Google-Extended, Applebot-Extended).
+# If you ever add a Disallow to the wildcard, add it to every group below too, or these bots will
+# silently keep the old rules.
+
 User-agent: *
 Allow: /
 
+# ── OpenAI ──
 User-agent: OAI-SearchBot
 Allow: /
 
+User-agent: GPTBot
+Allow: /
+
+# ── Anthropic ──
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+# ── Perplexity ──
+User-agent: PerplexityBot
+Allow: /
+
+# ── Google (opt-out by default) ──
+User-agent: Google-Extended
+Allow: /
+
+# ── Apple (opt-out by default) ──
+User-agent: Applebot-Extended
+Allow: /
+
+# ── Common Crawl ──
+User-agent: CCBot
+Allow: /
+
+# ── xAI. NOTE: xAI publishes no crawler documentation — no UA list, no ranges. These tokens are
+# observed in the wild and cited by third-party directories, not operator-published. Inviting them
+# costs nothing; correct them here if xAI ever ships a bot page.
+User-agent: GrokBot
+Allow: /
+
+User-agent: xAI-Bot
+Allow: /
+
 Sitemap: https://infinite.fast/sitemap.xml
+
+# AI crawlers: see /llms.txt for structured product information.
+# The blog is a separate host and serves its own: https://hub.infinite.fast/llms.txt
