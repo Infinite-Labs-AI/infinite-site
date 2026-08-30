@@ -4,20 +4,9 @@
 import { createHmac, randomUUID } from "node:crypto";
 import process from "node:process";
 
-const PAGES = [
-  "/",
-  "/privacy/",
-  "/terms/",
-  "/tools/",
-  "/tools/high-intent-lead-finder-template/",
-  "/tools/seo-geo-brief-generator/",
-  "/tools/landing-page-ab-test-ideas-generator/",
-  "/tools/founder-content-ideas-generator/",
-  "/compare/",
-  "/compare/infinite-vs-okara/",
-  "/compare/infinite-vs-ploy/",
-  "/compare/infinite-vs-blaze/",
-];
+import { KNOWN_DOCUMENT_PATHS } from "./lib/public-site-manifest.mjs";
+
+const PAGES = [...KNOWN_DOCUMENT_PATHS];
 
 const SITE_BASE_URL = firstNonEmpty(process.env.SITE_BASE_URL, "https://infinite.fast").replace(/\/+$/, "");
 const EXPECTED_POSTHOG_TOKEN = firstNonEmpty(

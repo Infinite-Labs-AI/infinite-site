@@ -4,6 +4,7 @@ import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import { serveDatasetFixture } from "./fixtures/launch-videos-dataset.mjs";
+import { KNOWN_DOCUMENT_PATHS as MANIFEST_DOCUMENT_PATHS } from "../../scripts/lib/public-site-manifest.mjs";
 
 const repoRoot = new URL("../..", import.meta.url).pathname;
 const distDir = join(repoRoot, "dist");
@@ -117,6 +118,11 @@ try {
   // adding (or removing) a page without updating middleware.js breaks CI here, not
   // the production pageview lane.
   const { KNOWN_DOCUMENT_PATHS } = await import(new URL("../../middleware.js", import.meta.url));
+  assert.deepEqual(
+    [...KNOWN_DOCUMENT_PATHS].sort(),
+    [...MANIFEST_DOCUMENT_PATHS].sort(),
+    "middleware.js KNOWN_DOCUMENT_PATHS must be imported from the public site manifest",
+  );
   assert.deepEqual(
     [...KNOWN_DOCUMENT_PATHS].sort(),
     htmlDocumentPaths(distDir).sort(),

@@ -117,6 +117,12 @@ execFileSync(process.execPath, [path.join(repoRoot, "scripts/build-launch-videos
   stdio: "inherit",
 });
 
+execFileSync(process.execPath, [path.join(repoRoot, "scripts/apply-site-graph.mjs"), distDir], {
+  cwd: repoRoot,
+  env: process.env,
+  stdio: "inherit",
+});
+
 execFileSync(process.execPath, [path.join(repoRoot, ".github/scripts/inject-analytics.cjs")], {
   cwd: repoRoot,
   env: process.env,

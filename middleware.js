@@ -1,4 +1,5 @@
 import { next } from "@vercel/functions";
+import { KNOWN_DOCUMENT_PATHS as MANIFEST_DOCUMENT_PATHS } from "./scripts/lib/public-site-manifest.mjs";
 
 const BOT_UA = /bot|crawler|spider|preview|headless|lighthouse|curl|wget/i;
 // CLI/tooling agents (mirrors the drain's learned list, 2026-08-04): classified before BOT_UA
@@ -11,27 +12,9 @@ const PRODUCTION_HOSTS = new Set(
     .filter(Boolean),
 );
 // The exact set of REAL document pages the static deploy serves, as normalizedPath()
-// canonicalizes them. The middleware logs BEFORE routing, so without this manifest any
-// scanner sweep of a non-existent path with browser-shaped headers counted as a pageview.
+// canonicalizes them. The route/footer/sitemap/llms manifest is the single source of truth.
 // /download stays excluded: its redirect is counted by the server redirect lane.
-// Guardrail: test-prepare-static-deploy.mjs fails whenever this set and the built dist's
-// HTML page set disagree — update BOTH together when adding or removing a page.
-export const KNOWN_DOCUMENT_PATHS = new Set([
-  "/",
-  "/agents/",
-  "/compare/",
-  "/compare/infinite-vs-blaze/",
-  "/compare/infinite-vs-okara/",
-  "/compare/infinite-vs-ploy/",
-  "/privacy/",
-  "/startup-launch-videos/",
-  "/terms/",
-  "/tools/",
-  "/tools/founder-content-ideas-generator/",
-  "/tools/high-intent-lead-finder-template/",
-  "/tools/landing-page-ab-test-ideas-generator/",
-  "/tools/seo-geo-brief-generator/",
-]);
+export const KNOWN_DOCUMENT_PATHS = new Set(MANIFEST_DOCUMENT_PATHS);
 
 function normalizedPath(rawUrl) {
   const collapsed = new URL(rawUrl).pathname.replace(/\/{2,}/g, "/");
