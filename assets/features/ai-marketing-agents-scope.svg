@@ -29,8 +29,8 @@
     <text x="28" y="53" fill="#64748b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="14">Not a screenshot</text>
   </g>
 
-  <g transform="translate(96 230)" filter="url(#soft-ai)">
-    <rect width="510" height="548" rx="34" fill="#ffffff" stroke="#dde7ef"/>
+  <g data-card="scope" transform="translate(96 230)" filter="url(#soft-ai)">
+    <rect data-card-box="true" width="510" height="548" rx="34" fill="#ffffff" stroke="#dde7ef"/>
     <rect x="28" y="28" width="454" height="76" rx="24" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="54" y="62" fill="#0f172a" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="800">Scope</text>
     <text x="54" y="88" fill="#64748b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">Define who should be surfaced before scanning.</text>
@@ -65,8 +65,8 @@
     <text x="28" y="28" fill="#1d4ed8" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="800">rank</text>
   </g>
 
-  <g transform="translate(834 230)" filter="url(#soft-ai)">
-    <rect width="510" height="548" rx="34" fill="#ffffff" stroke="#dde7ef"/>
+  <g data-card="lead-inbox" transform="translate(834 230)" filter="url(#soft-ai)">
+    <rect data-card-box="true" width="510" height="548" rx="34" fill="#ffffff" stroke="#dde7ef"/>
     <rect x="28" y="28" width="454" height="76" rx="24" fill="#111827"/>
     <text x="54" y="62" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="800">Ranked lead inbox</text>
     <text x="54" y="88" fill="#cbd5e1" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">Sorted by evidence strength, not raw volume.</text>
