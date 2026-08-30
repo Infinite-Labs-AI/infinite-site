@@ -153,10 +153,10 @@
             },
             {
               "@type": "Question",
-              "name": "What does Infinite OS require me to confirm?",
+              "name": "How do Infinite OS action confirmations work?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Infinite OS exposes governed tools. Live or destructive actions invoked through those tools require operator confirmation plus local policy checks. Reviewable drafts and background jobs may be created directly from your request; separate open-source agents document their own run modes."
+                "text": "Infinite OS's built-in/native action registry exposes typed actions. Live or destructive native actions pass native authority and policy checks and require operator confirmation before execution. Scoped app/MCP tools follow a separate boundary: the operator-authorized host supplies their schemas and owns their semantic validation and confirmation. A scoped tool or proposal can be invoked before the host or tool result requests follow-up confirmation. The built-in/native catalog has no arbitrary shell or code runner; a host may intentionally expose broader capabilities through scoped tools."
               }
             },
             {
@@ -4122,8 +4122,8 @@
               <p>It starts by finding high-intent leads, SEO/GEO gaps, landing-page conversion issues, and organic content angles. The goal is to build your first customer pipeline before adding more automation.</p>
             </details>
             <details class="faq-item">
-              <summary>What does Infinite OS require me to confirm?</summary>
-              <p>Infinite OS exposes governed tools. Live or destructive actions invoked through those tools require operator confirmation plus local policy checks. Reviewable drafts and background jobs may be created directly from your request; separate open-source agents document their own run modes.</p>
+              <summary>How do Infinite OS action confirmations work?</summary>
+              <p>Infinite OS's built-in/native action registry exposes typed actions. Live or destructive native actions pass native authority and policy checks and require operator confirmation before execution. Scoped app/MCP tools follow a separate boundary: the operator-authorized host supplies their schemas and owns their semantic validation and confirmation. A scoped tool or proposal can be invoked before the host or tool result requests follow-up confirmation. The built-in/native catalog has no arbitrary shell or code runner; a host may intentionally expose broader capabilities through scoped tools.</p>
             </details>
             <details class="faq-item">
               <summary>Where do my data, credentials, and model prompts go?</summary>

@@ -196,8 +196,8 @@ async function checkDownloadRedirect(failures) {
         headers: probeHeaders("infinite-analytics-guardrail-bot/2.0"),
       });
       const location = response.headers.get("location");
-      if (![307, 308].includes(response.status) || location !== DOWNLOAD_DESTINATION) {
-        failures.push(`[download] ${method} expected 307/308 to ${DOWNLOAD_DESTINATION}, received ${response.status} to ${location}`);
+      if (response.status !== 307 || location !== DOWNLOAD_DESTINATION) {
+        failures.push(`[download] ${method} expected 307 to ${DOWNLOAD_DESTINATION}, received ${response.status} to ${location}`);
         console.log(`  FAIL  /download ${method} ${response.status}`);
         continue;
       }

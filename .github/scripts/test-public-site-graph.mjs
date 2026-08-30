@@ -123,6 +123,9 @@ function assertClaimTruth() {
     /Test ran/i,
     /Winner found/i,
     /Variant B beat control/i,
+    /Infinite OS exposes governed tools\. Live or destructive actions invoked through those tools require operator confirmation/i,
+    /Live or destructive tool actions require operator confirmation plus local policy checks/i,
+    /It does not grant a model arbitrary shell or code execution/i,
   ]) {
     assert.doesNotMatch(publicClaims, unsupported, `unsupported landing-page execution claim must be absent: ${unsupported}`);
   }
@@ -134,10 +137,11 @@ function assertClaimTruth() {
     /Infinite OS stores synced growth data in your local Postgres[\s\S]*connector credentials are encrypted at rest[\s\S]*prompts and relevant tool context go to the Codex or Anthropic provider you choose/i,
     "homepage must distinguish local data/credentials from chosen-provider inference",
   );
-  assert.match(
-    homepage,
-    /Infinite OS[\s\S]*governed tools[\s\S]*live or destructive actions[\s\S]*operator confirmation[\s\S]*local policy checks/i,
-    "homepage must scope confirmations to Infinite OS governed-tool writes",
+  assertNativeScopedToolBoundary(homepage, "homepage");
+  assert.equal(
+    (homepage.match(/Scoped app\/MCP tools follow a separate boundary/g) ?? []).length,
+    2,
+    "homepage must carry the scoped-tool boundary once in visible FAQ copy and once in matching JSON-LD",
   );
   assert.match(
     agents,
@@ -148,6 +152,25 @@ function assertClaimTruth() {
   assert.match(llms, /Infinite OS stores synced growth data in your local Postgres[\s\S]*connector credentials are encrypted at rest/i, "machine-readable copy must scope local data and credential storage to Infinite OS");
   assert.match(llms, /chosen Codex or Anthropic provider/i, "machine-readable copy must disclose chosen-provider inference");
   assert.match(llms, /Press Agent dry-run never submits or spends a Qwoted credit/i, "machine-readable copy must state Press Agent submission risk");
+  assertNativeScopedToolBoundary(llms, "llms.txt");
+}
+
+function assertNativeScopedToolBoundary(body, label) {
+  assert.match(
+    body,
+    /built-in\/native action registry[\s\S]*typed actions[\s\S]*native authority and policy checks[\s\S]*operator confirmation before execution/i,
+    `${label}: native live/destructive actions must carry typed-registry, native-policy, pre-execution confirmation semantics`,
+  );
+  assert.match(
+    body,
+    /Scoped app\/MCP tools follow a separate boundary[\s\S]*host supplies their schemas and owns their semantic validation and confirmation[\s\S]*tool or proposal can be invoked before[\s\S]*follow-up confirmation/i,
+    `${label}: scoped app/MCP tools must preserve host-owned post-invocation confirmation semantics`,
+  );
+  assert.match(
+    body,
+    /built-in\/native catalog has no arbitrary shell or code runner[\s\S]*host may intentionally expose broader capabilities through scoped tools/i,
+    `${label}: no-arbitrary-execution copy must stay scoped to the native catalog`,
+  );
 }
 
 function assertManifest() {
@@ -245,6 +268,16 @@ function assertSourceFooterShapes() {
 function assertBuiltGraph(targetDir) {
   const htmlPaths = htmlDocumentPaths(targetDir);
   assert.deepEqual(htmlPaths, expectedRoutes, "built dist HTML routes must exactly match the manifest");
+
+  const builtHomepage = readFileSync(join(targetDir, "index.html"), "utf8");
+  const builtLlms = readFileSync(join(targetDir, "llms.txt"), "utf8");
+  assertNativeScopedToolBoundary(builtHomepage, "dist/index.html");
+  assert.equal(
+    (builtHomepage.match(/Scoped app\/MCP tools follow a separate boundary/g) ?? []).length,
+    2,
+    "dist/index.html must preserve matching visible and JSON-LD scoped-tool boundaries",
+  );
+  assertNativeScopedToolBoundary(builtLlms, "dist/llms.txt");
 
   for (const file of walkFiles(targetDir)) {
     if (![".html", ".xml", ".txt"].includes(extname(file))) continue;

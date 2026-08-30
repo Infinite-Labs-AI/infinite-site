@@ -64,7 +64,11 @@ assert.doesNotMatch(analyticsInjector, /appDownloadTrackingSnippet|link_text|tex
 const homepage = readFileSync(pages[0][1], "utf8");
 assert.match(homepage, /Meet Infinite, your AI CMO/i);
 assert.match(homepage, /Find leads, automate SEO, plan landing-page CRO tests, and uncover trending content\./i);
-assert.match(homepage, /operator confirmation plus local policy checks/i);
+assert.match(homepage, /native authority and policy checks and require operator confirmation before execution/i);
+assert.match(homepage, /Scoped app\/MCP tools follow a separate boundary[\s\S]*host supplies their schemas and owns their semantic validation and confirmation/i);
+assert.match(homepage, /tool or proposal can be invoked before[\s\S]*follow-up confirmation/i);
+assert.match(homepage, /built-in\/native catalog has no arbitrary shell or code runner[\s\S]*host may intentionally expose broader capabilities/i);
+assert.doesNotMatch(homepage, /Live or destructive actions invoked through those tools require operator confirmation/i);
 assert.match(homepage, /test ideas for existing pages/i);
 assert.doesNotMatch(homepage, /A\/B test landing pages|landing-page creation|split live traffic[^<]*\bdoes\b(?! not)/i);
 

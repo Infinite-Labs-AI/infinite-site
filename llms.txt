@@ -39,7 +39,7 @@ Infinite is built for solo founders and small teams who have no marketing hire. 
 
 ## Open source and agent install paths
 
-- [Infinite OS](https://github.com/Infinite-Labs-AI/infinite-os): Public open-source local engine and governed typed tools. Live or destructive tool actions require operator confirmation plus local policy checks.
+- [Infinite OS](https://github.com/Infinite-Labs-AI/infinite-os): Public open-source local engine. Its built-in/native action registry exposes typed actions; live or destructive native actions pass native authority and policy checks and require operator confirmation before execution.
 - [Infinite Skills](https://github.com/Infinite-Labs-AI/infinite-skills): Public agent skills repository.
 - [Infinite Press Agent](https://github.com/Infinite-Labs-AI/infinite-press-agent): Public press-agent repository. Press Agent dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.
 - [Infinite Labs AI GitHub](https://github.com/Infinite-Labs-AI): Public GitHub organization.
@@ -48,7 +48,8 @@ Infinite is built for solo founders and small teams who have no marketing hire. 
 
 - Infinite OS stores synced growth data in your local Postgres, and its connector credentials are encrypted at rest.
 - Orchestration runs locally. Prompts and relevant tool context go to your chosen Codex or Anthropic provider for inference, using your own account or credentials.
-- Infinite OS confirmation applies to its governed native/tool actions: live or destructive actions require operator confirmation plus local policy checks. It does not grant a model arbitrary shell or code execution.
+- Scoped app/MCP tools follow a separate boundary: the operator-authorized host supplies their schemas and owns their semantic validation and confirmation. A scoped tool or proposal can be invoked before the host or tool result requests follow-up confirmation.
+- The built-in/native catalog has no arbitrary shell or code runner; a host may intentionally expose broader capabilities through scoped tools.
 - Press Agent has a separate run contract: dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.
 
 ## Company
