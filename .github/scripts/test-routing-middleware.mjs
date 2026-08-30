@@ -183,6 +183,7 @@ try {
   const attempt = parseAttempt(attemptLine);
   assert.match(attempt.attemptKey, /^[a-f0-9]{64}$/, "attemptKey must be an HMAC-SHA256 hex digest");
   assert.equal(attempt.uaFamily, "browser");
+  assert.equal(attempt.installerVersion, undefined, "ordinary browsers must not gain installer metadata");
   assert.equal(attempt.utmSource, null);
   assert.equal(attempt.utmMedium, null);
   assert.equal(attempt.utmCampaign, null);
@@ -286,11 +287,28 @@ try {
   assert.deepEqual(docBare.logs, [marker("/privacy/")], "a fingerprint failure must still emit the bare document marker");
   Date.now = () => 1_755_513_000_000;
 
-  // 4) Coarse UA families: cli beats bot for curl (both regexes match), and the 307 is served to
-  //    every family — delivery never depends on classification (the drain decides what counts).
+  // 4) Coarse UA families: the exact bounded Infinite installer identifies itself without raw-UA
+  //    storage; generic curl remains CLI, and delivery never depends on classification.
+  const installer = await runAsync(
+    request("https://infinite.fast/download", { headers: { "user-agent": "Infinite-Installer/1.0.0" } }),
+  );
+  assertServedRedirect(installer.response);
+  const installerAttempt = parseAttempt(installer.logs[0]);
+  assert.equal(installerAttempt.uaFamily, "installer");
+  assert.equal(installerAttempt.installerVersion, "1.0.0");
+  assert.ok(!installer.logs[0].includes("Infinite-Installer/"), "the marker must never carry the raw installer user agent");
+  const installerImpostor = await runAsync(
+    request("https://infinite.fast/download", { headers: { "user-agent": "Infinite-Installer/latest" } }),
+  );
+  const installerImpostorAttempt = parseAttempt(installerImpostor.logs[0]);
+  assert.equal(installerImpostorAttempt.uaFamily, "unknown", "an unversioned near-match must not claim the installer family");
+  assert.equal(installerImpostorAttempt.installerVersion, undefined, "an invalid installer version must never enter the marker");
+
   const curl = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "curl/8.0" } }));
   assertServedRedirect(curl.response);
-  assert.equal(parseAttempt(curl.logs[0]).uaFamily, "cli");
+  const curlAttempt = parseAttempt(curl.logs[0]);
+  assert.equal(curlAttempt.uaFamily, "cli");
+  assert.equal(curlAttempt.installerVersion, undefined, "generic curl must not be promoted to the Infinite installer family");
   const bot = await runAsync(request("https://infinite.fast/download", { headers: { "user-agent": "Googlebot/2.1" } }));
   assert.equal(parseAttempt(bot.logs[0]).uaFamily, "bot");
 
@@ -327,6 +345,11 @@ try {
   const head = await runAsync(request("https://infinite.fast/download", { method: "HEAD" }));
   assertServedRedirect(head.response);
   assert.deepEqual(head.logs, [], "HEAD must return the release redirect without emitting an attempt marker");
+  const installerHead = await runAsync(
+    request("https://infinite.fast/download", { method: "HEAD", headers: { "user-agent": "Infinite-Installer/1.0.0" } }),
+  );
+  assertServedRedirect(installerHead.response);
+  assert.deepEqual(installerHead.logs, [], "installer HEAD must never emit or count as a download attempt");
 
   // 7) Non-qualifying /download requests PASS THROUGH and emit nothing: POST, preview env,
   //    foreign host. Only production GET/HEAD are owned by this middleware branch.
