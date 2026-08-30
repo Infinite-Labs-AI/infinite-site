@@ -135,7 +135,7 @@
           "@type": "SoftwareSourceCode",
           "@id": "https://infinite.fast/#infinite-os",
           "name": "Infinite OS",
-          "description": "MIT-licensed local-first growth analytics engine and CLI for Claude and Codex.",
+          "description": "MIT-licensed source for the signed macOS app and Terminal companion for Claude and Codex.",
           "url": "https://github.com/Infinite-Labs-AI/infinite-os",
           "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-os",
           "license": "https://github.com/Infinite-Labs-AI/infinite-os/blob/main/LICENSE",
@@ -189,7 +189,7 @@
               "name": "Where do my data, credentials, and model prompts go?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Infinite OS stores synced growth data in your local Postgres, and its connector credentials are encrypted at rest. Orchestration runs locally; prompts and relevant tool context go to the Codex or Anthropic provider you choose for inference, using your own account or credentials."
+                "text": "The signed macOS app keeps local orchestration data in PGlite and encrypts connector credentials at rest. Prompts and relevant tool context go to the Codex or Anthropic provider you choose for inference, using your own account or credentials."
               }
             },
             {
@@ -4184,7 +4184,7 @@
             </details>
             <details class="faq-item">
               <summary>Where do my data, credentials, and model prompts go?</summary>
-              <p>Infinite OS stores synced growth data in your local Postgres, and its connector credentials are encrypted at rest. Orchestration runs locally; prompts and relevant tool context go to the Codex or Anthropic provider you choose for inference, using your own account or credentials.</p>
+              <p>The signed macOS app keeps local orchestration data in PGlite and encrypts connector credentials at rest. Prompts and relevant tool context go to the Codex or Anthropic provider you choose for inference, using your own account or credentials.</p>
             </details>
             <details class="faq-item">
               <summary>Is this for pre-revenue founders?</summary>
@@ -4205,9 +4205,9 @@
         <h2 id="final-title">You shipped the app. Now let Infinite get you customers.</h2>
         <a class="hero-cta" href="/download" data-download-location="final-cta">Download for Mac</a>
         <aside class="agent-install-panel" data-agent-install aria-labelledby="agent-install-title">
-          <p class="agent-install-kicker">Open-source engine</p>
-          <h3 id="agent-install-title">Install Infinite for your terminal agent.</h3>
-          <p>Run the local engine with Claude or Codex. Synced growth data stays in your local Postgres, connector credentials are encrypted at rest, and prompts plus relevant tool context go only to the provider you choose.</p>
+          <p class="agent-install-kicker">Mac app + Terminal</p>
+          <h3 id="agent-install-title">Install the signed Mac app, then use Infinite your way.</h3>
+          <p><code>npx infinite-os@latest</code> downloads and verifies the signed Mac app. Sign in and finish setup in the app, then use the same account, workspace, and agent from <kbd>⌘L</kbd> or Terminal. Same account. Same workspace. Same agent.</p>
           <div class="agent-install-command">
             <code>npx infinite-os@latest</code>
             <button type="button" data-copy-agent-install aria-label="Copy the Infinite OS install command">Copy</button>

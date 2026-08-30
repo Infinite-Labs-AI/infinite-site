@@ -297,6 +297,14 @@ try {
   assert.equal(installerAttempt.uaFamily, "installer");
   assert.equal(installerAttempt.installerVersion, "1.0.0");
   assert.ok(!installer.logs[0].includes("Infinite-Installer/"), "the marker must never carry the raw installer user agent");
+  const futureInstaller = await runAsync(
+    request("https://infinite.fast/download", { headers: { "user-agent": "Infinite-Installer/1.24.3-rc.2" } }),
+  );
+  assertServedRedirect(futureInstaller.response);
+  const futureInstallerAttempt = parseAttempt(futureInstaller.logs[0]);
+  assert.equal(futureInstallerAttempt.uaFamily, "installer", "a bounded future installer release remains classified as the product installer");
+  assert.equal(futureInstallerAttempt.installerVersion, "1.24.3-rc.2");
+  assert.ok(!futureInstaller.logs[0].includes("Infinite-Installer/"), "future installer markers must never carry the raw user agent");
   const installerImpostor = await runAsync(
     request("https://infinite.fast/download", { headers: { "user-agent": "Infinite-Installer/latest" } }),
   );

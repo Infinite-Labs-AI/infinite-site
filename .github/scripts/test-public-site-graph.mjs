@@ -173,7 +173,7 @@ function assertClaimTruth() {
   assert.match(homepage, /landing-page CRO planning/i, "homepage must name the shipped landing-page CRO planning boundary");
   assert.match(
     homepage,
-    /Infinite OS stores synced growth data in your local Postgres[\s\S]*connector credentials are encrypted at rest[\s\S]*prompts and relevant tool context go to the Codex or Anthropic provider you choose/i,
+    /signed macOS app keeps local orchestration data in PGlite[\s\S]*encrypts connector credentials at rest[\s\S]*prompts and relevant tool context go to the Codex or Anthropic provider you choose/i,
     "homepage must distinguish local data/credentials from chosen-provider inference",
   );
   assertNativeScopedToolBoundary(homepage, "homepage");
@@ -188,7 +188,7 @@ function assertClaimTruth() {
     "Press Agent must state its own dry-run/submission boundary instead of borrowing Infinite OS confirmation semantics",
   );
   assert.match(llms, /test ideas for existing pages/i, "machine-readable copy must keep the landing-page claim bounded");
-  assert.match(llms, /Infinite OS stores synced growth data in your local Postgres[\s\S]*connector credentials are encrypted at rest/i, "machine-readable copy must scope local data and credential storage to Infinite OS");
+  assert.match(llms, /signed macOS app keeps local orchestration data in PGlite[\s\S]*encrypts connector credentials at rest/i, "machine-readable copy must describe app-owned local orchestration and credential storage");
   assert.match(llms, /chosen Codex or Anthropic provider/i, "machine-readable copy must disclose chosen-provider inference");
   assert.match(llms, /Press Agent dry-run never submits or spends a Qwoted credit/i, "machine-readable copy must state Press Agent submission risk");
   assertNativeScopedToolBoundary(llms, "llms.txt");
