@@ -4,9 +4,12 @@ import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { extname, join, relative, sep } from "node:path";
 
 import {
+  DOWNLOAD_PATH,
   FOOTER_COLUMNS,
   KNOWN_DOCUMENT_PATHS,
-  PUBLIC_SITE_ROUTES,
+  PUBLIC_ROUTES,
+  SITEMAP_ROUTES,
+  assertPublicSiteManifest,
 } from "../../scripts/lib/public-site-manifest.mjs";
 import { renderLlmsText, renderSitemapXml } from "../../scripts/lib/site-graph-renderers.mjs";
 import { serveDatasetFixture } from "./fixtures/launch-videos-dataset.mjs";
@@ -30,33 +33,113 @@ const expectedRoutes = [
   "/terms/",
 ];
 const siteFooterLegacyClass = /\b(?:wrangle-footer|seo-footer)\b/;
+const expectedRouteFields = [
+  "documentLog",
+  "footer",
+  "id",
+  "indexable",
+  "llmsSummary",
+  "owner",
+  "path",
+  "sitemap",
+  "source",
+  "title",
+];
+const expectedFooterColumns = Object.freeze([
+  footerColumn("Agents & Open Source", [
+    footerLink("Agent Ecosystem", "/agents/", "agents"),
+    footerLink("Infinite OS", "https://github.com/Infinite-Labs-AI/infinite-os", "infinite-os-github"),
+    footerLink("Infinite Skills", "https://github.com/Infinite-Labs-AI/infinite-skills", "infinite-skills-github"),
+    footerLink("Press Agent", "https://github.com/Infinite-Labs-AI/infinite-press-agent", "press-agent-github"),
+    footerLink("GitHub", "https://github.com/Infinite-Labs-AI", "github-org"),
+    specialFooterLink("llms.txt", "/llms.txt"),
+  ]),
+  footerColumn("Free Tools", [
+    footerLink("All Tools", "/tools/", "tools"),
+    footerLink("Lead Finder", "/tools/high-intent-lead-finder-template/", "tool-lead-finder"),
+    footerLink("SEO + GEO Brief", "/tools/seo-geo-brief-generator/", "tool-seo-geo"),
+    footerLink("A/B Test Ideas", "/tools/landing-page-ab-test-ideas-generator/", "tool-ab-ideas"),
+    footerLink("Founder Content Ideas", "/tools/founder-content-ideas-generator/", "tool-content-ideas"),
+  ]),
+  footerColumn("Resources", [
+    footerLink("Growth Hub", "https://hub.infinite.fast/", "growth-hub"),
+    footerLink("Research", "https://hub.infinite.fast/research", "hub-research"),
+    footerLink("Launch Videos", "/startup-launch-videos/", "launch-videos"),
+    footerLink("Launch Video Study", "https://hub.infinite.fast/research/launch-videos", "launch-video-study"),
+    footerLink("Hub RSS", "https://hub.infinite.fast/feed.xml", "hub-rss"),
+  ]),
+  footerColumn("Compare", [
+    footerLink("All Comparisons", "/compare/", "compare"),
+    footerLink("Infinite vs Blaze", "/compare/infinite-vs-blaze/", "compare-blaze"),
+    footerLink("Infinite vs Okara", "/compare/infinite-vs-okara/", "compare-okara"),
+    footerLink("Infinite vs Ploy", "/compare/infinite-vs-ploy/", "compare-ploy"),
+  ]),
+  footerColumn("Company", [
+    {
+      label: "Download for Mac",
+      href: "/download",
+      ctaId: "download-mac",
+      ctaLocation: "site-footer",
+      downloadLocation: "site-footer",
+    },
+    {
+      label: "Pricing",
+      href: "/#pricing",
+      ctaId: "home",
+      ctaLocation: "site-footer",
+      requiredFragment: "pricing",
+    },
+    footerLink("Privacy", "/privacy/", "privacy"),
+    footerLink("Terms", "/terms/", "terms"),
+    specialFooterLink("Sitemap", "/sitemap.xml"),
+  ]),
+]);
 
 export function assertPublicSiteGraph(targetDir) {
+  assertPublicSiteManifest();
   assertManifest();
+  assertSourceFooterShapes();
   assertRootSnapshots();
   assertBuiltGraph(targetDir);
 }
 
 function assertManifest() {
   assert.deepEqual(
-    PUBLIC_SITE_ROUTES.map((route) => route.path),
+    PUBLIC_ROUTES.map((route) => route.path),
     expectedRoutes,
     "manifest must contain exactly the 14 existing public document routes in canonical order",
+  );
+  assert.deepEqual(
+    SITEMAP_ROUTES.map((route) => route.path),
+    expectedRoutes,
+    "sitemap route export must be derived from the same 14-route manifest",
   );
   assert.deepEqual(
     [...KNOWN_DOCUMENT_PATHS],
     expectedRoutes,
     "middleware document path export must come from the same 14-route manifest",
   );
-  assert.equal(new Set(PUBLIC_SITE_ROUTES.map((route) => route.path)).size, expectedRoutes.length, "route paths must be unique");
+  assert.equal(DOWNLOAD_PATH, "/download", "manifest must export the server-owned download path");
+  assert.equal(new Set(PUBLIC_ROUTES.map((route) => route.path)).size, expectedRoutes.length, "route paths must be unique");
 
-  for (const route of PUBLIC_SITE_ROUTES) {
+  for (const route of PUBLIC_ROUTES) {
+    assert.deepEqual(Object.keys(route).sort(), expectedRouteFields, `${route.path}: route must expose the binding manifest fields`);
     assert.equal(route.path.startsWith("/"), true, `${route.path}: route path must be absolute`);
     assert.equal(route.path === "/" || route.path.endsWith("/"), true, `${route.path}: document route must have trailing slash`);
     assert.doesNotMatch(route.path, /\/{2,}/, `${route.path}: route path must not contain duplicate slashes`);
+    assert.match(route.id, /^[a-z0-9-]+$/, `${route.path}: route id must be bounded kebab-case`);
+    assert.equal(typeof route.source, "string", `${route.path}: route must name its source`);
+    assert.equal(typeof route.owner, "string", `${route.path}: route must name its owner`);
+    assert.equal(route.indexable, true, `${route.path}: Task 2 routes must be indexable`);
+    assert.equal(route.documentLog, true, `${route.path}: Task 2 routes must be document-loggable`);
+    assert.equal(route.footer, true, `${route.path}: Task 2 routes must receive the site footer`);
     assert.equal(typeof route.title, "string");
     assert.ok(route.title.length > 0, `${route.path}: route must have a title`);
-    assert.match(route.lastmod, /^\d{4}-\d{2}-\d{2}$/, `${route.path}: route must carry an ISO lastmod`);
+    assert.equal(typeof route.llmsSummary, "string");
+    assert.ok(route.llmsSummary.length > 0, `${route.path}: route must have an llmsSummary`);
+    assert.match(route.sitemap.lastmod, /^\d{4}-\d{2}-\d{2}$/, `${route.path}: route must carry an ISO sitemap.lastmod`);
+    assert.match(route.sitemap.changefreq, /^(daily|weekly|monthly|yearly)$/, `${route.path}: route must carry a valid sitemap.changefreq`);
+    assert.match(route.sitemap.priority, /^(?:0\.[0-9]|1\.0)$/, `${route.path}: route must carry a valid sitemap.priority`);
   }
 
   assert.equal(
@@ -64,16 +147,18 @@ function assertManifest() {
     false,
     "Task 2 foundation footer must omit Product until feature pages exist",
   );
-  assert.equal(new Set(FOOTER_COLUMNS.map((column) => column.label)).size, FOOTER_COLUMNS.length, "footer column labels must be unique");
+  assert.deepEqual(FOOTER_COLUMNS, expectedFooterColumns, "Task 2 footer columns must equal the binding final footer with Product omitted");
+  assert.ok(Object.isFrozen(FOOTER_COLUMNS), "footer column array must be frozen");
 
   const routePaths = new Set(expectedRoutes);
   for (const column of FOOTER_COLUMNS) {
+    assert.ok(Object.isFrozen(column), `${column.label}: footer column object must be frozen`);
     assert.ok(column.links.length > 0, `${column.label}: footer column must not be empty`);
+    assert.ok(Object.isFrozen(column.links), `${column.label}: footer links array must be frozen`);
     for (const link of column.links) {
-      assert.equal(typeof link.label, "string");
-      assert.ok(link.label.length > 0, `${column.label}: footer link must have a label`);
+      assert.ok(Object.isFrozen(link), `${column.label} > ${link.label}: footer link object must be frozen`);
       assertFooterHref(link.href, routePaths, `${column.label} > ${link.label}`);
-      if (link.href === "/download" || link.href.startsWith("https://github.com/")) {
+      if (link.ctaId) {
         assert.match(link.ctaId ?? "", /^[a-z0-9_-]{1,64}$/, `${column.label} > ${link.label}: tracked CTA must have bounded ctaId`);
         assert.match(link.ctaLocation ?? "", /^[a-z0-9_-]{1,64}$/, `${column.label} > ${link.label}: tracked CTA must have bounded ctaLocation`);
       }
@@ -82,7 +167,7 @@ function assertManifest() {
 }
 
 function assertFooterHref(href, routePaths, label) {
-  if (href === "/download" || href === "/sitemap.xml" || href === "/#pricing") return;
+  if (href === "/download" || href === "/llms.txt" || href === "/sitemap.xml" || href === "/#pricing") return;
   if (href.startsWith("/")) {
     assert.ok(routePaths.has(href), `${label}: internal footer href must point at an existing manifest route: ${href}`);
     return;
@@ -98,8 +183,16 @@ function assertFooterHref(href, routePaths, label) {
 function assertRootSnapshots() {
   const sitemap = readFileSync(join(repoRoot, "sitemap.xml"), "utf8");
   const llms = readFileSync(join(repoRoot, "llms.txt"), "utf8");
-  assert.equal(sitemap, renderSitemapXml(PUBLIC_SITE_ROUTES), "tracked sitemap.xml must be generated from the manifest");
-  assert.equal(llms, renderLlmsText({ routes: PUBLIC_SITE_ROUTES }), "tracked llms.txt must be generated from the manifest");
+  assertPublicSiteManifest();
+  assert.equal(sitemap, renderSitemapXml(SITEMAP_ROUTES), "tracked sitemap.xml must be generated from the manifest");
+  assert.equal(llms, renderLlmsText({ routes: PUBLIC_ROUTES }), "tracked llms.txt must be generated from the manifest");
+}
+
+function assertSourceFooterShapes() {
+  for (const route of PUBLIC_ROUTES.filter((candidate) => candidate.source.endsWith(".html"))) {
+    const body = readFileSync(join(repoRoot, route.source), "utf8");
+    assertFooterShape(route.path, body, route.source);
+  }
 }
 
 function assertBuiltGraph(targetDir) {
@@ -112,14 +205,41 @@ function assertBuiltGraph(targetDir) {
     assert.doesNotMatch(body, /blog\.infinite\.fast/, `${relative(targetDir, file)} must not contain the retired Blog host`);
   }
 
-  for (const route of PUBLIC_SITE_ROUTES) {
+  for (const route of PUBLIC_ROUTES) {
     const file = join(targetDir, route.path, "index.html");
     const body = readFileSync(file, "utf8");
-    const canonicalFooterCount = (body.match(/<footer\b[^>]*data-site-footer="public-route-graph-v1"/g) ?? []).length;
-    assert.equal(canonicalFooterCount, 1, `${route.path}: must have exactly one canonical site footer`);
-    assert.doesNotMatch(body, siteFooterLegacyClass, `${route.path}: legacy site footer classes must be removed`);
-    assert.match(body, /© 2026 Infinite Labs, Inc\./, `${route.path}: legal footer text must be retained`);
+    assertFooterShape(route.path, body, relative(targetDir, file));
   }
+}
+
+function assertFooterShape(routePath, body, label) {
+  const totalFooterCount = (body.match(/<footer\b/g) ?? []).length;
+  const canonicalFooterCount = (body.match(/<footer\b[^>]*data-site-footer="public-route-graph-v1"/g) ?? []).length;
+  assert.equal(canonicalFooterCount, 1, `${label}: must have exactly one canonical site footer`);
+  assert.doesNotMatch(body, siteFooterLegacyClass, `${label}: legacy site footer classes must be removed`);
+  assert.match(body, /© 2026 Ultima AI, Inc\./, `${label}: legal footer text must use the verified legal entity`);
+  if (routePath === "/") {
+    assert.equal(totalFooterCount, 2, `${label}: homepage must preserve its testimonial/content footer plus one canonical site footer`);
+    assert.match(
+      body,
+      /<footer><span>RK<\/span><b>River, SaaS founder<\/b><\/footer>/,
+      `${label}: homepage testimonial/content footer must survive site footer replacement`,
+    );
+  } else {
+    assert.equal(totalFooterCount, 1, `${label}: must have exactly one semantic footer`);
+  }
+}
+
+function footerColumn(label, links) {
+  return { label, links };
+}
+
+function footerLink(label, href, ctaId) {
+  return { label, href, ctaId, ctaLocation: "site-footer" };
+}
+
+function specialFooterLink(label, href) {
+  return { label, href };
 }
 
 function htmlDocumentPaths(dir, prefix = "/") {

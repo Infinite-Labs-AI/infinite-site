@@ -4,7 +4,9 @@
 import { createHmac, randomUUID } from "node:crypto";
 import process from "node:process";
 
-import { KNOWN_DOCUMENT_PATHS } from "./lib/public-site-manifest.mjs";
+import { KNOWN_DOCUMENT_PATHS, assertPublicSiteManifest } from "./lib/public-site-manifest.mjs";
+
+assertPublicSiteManifest();
 
 const PAGES = [...KNOWN_DOCUMENT_PATHS];
 

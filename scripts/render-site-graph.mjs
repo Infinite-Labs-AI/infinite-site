@@ -2,11 +2,13 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { PUBLIC_SITE_ROUTES } from "./lib/public-site-manifest.mjs";
+import { PUBLIC_ROUTES, SITEMAP_ROUTES, assertPublicSiteManifest } from "./lib/public-site-manifest.mjs";
 import { renderLlmsText, renderSitemapXml } from "./lib/site-graph-renderers.mjs";
 
 const repoRoot = new URL("..", import.meta.url).pathname;
 const mode = process.argv[2];
+
+assertPublicSiteManifest();
 
 if (!["--write", "--check"].includes(mode)) {
   console.error("Usage: node scripts/render-site-graph.mjs --write|--check");
@@ -14,8 +16,8 @@ if (!["--write", "--check"].includes(mode)) {
 }
 
 const outputs = new Map([
-  ["sitemap.xml", renderSitemapXml(PUBLIC_SITE_ROUTES)],
-  ["llms.txt", renderLlmsText({ routes: PUBLIC_SITE_ROUTES })],
+  ["sitemap.xml", renderSitemapXml(SITEMAP_ROUTES)],
+  ["llms.txt", renderLlmsText({ routes: PUBLIC_ROUTES })],
 ]);
 
 let failed = false;

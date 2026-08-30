@@ -1,4 +1,4 @@
-import { absoluteSiteUrl, HUB_ORIGIN, SITE_ORIGIN } from "./public-site-manifest.mjs";
+import { absoluteSiteUrl, DOWNLOAD_PATH, HUB_ORIGIN, SITE_ORIGIN } from "./public-site-manifest.mjs";
 
 export function renderSitemapXml(routes) {
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -11,7 +11,7 @@ ${routes.map(renderSitemapRoute).join("\n")}
 export function renderLlmsText({ routes }) {
   const routeByPath = new Map(routes.map((route) => [route.path, route]));
   const routeLine = (path, label = routeByPath.get(path)?.title) =>
-    `- [${label}](${absoluteSiteUrl(path)}): ${routeByPath.get(path)?.description}`;
+    `- [${label}](${absoluteSiteUrl(path)}): ${routeByPath.get(path)?.llmsSummary}`;
 
   return `# Infinite
 
@@ -23,7 +23,7 @@ Infinite is built for solo founders and small teams who have no marketing hire. 
 
 ${routeLine("/", "Infinite")}
 ${routeLine("/agents/", "Agents")}
-- [Download](https://infinite.fast/download): Mac desktop app (Apple silicon). The server-owned /download path remains the primary conversion route.
+- [Download](${SITE_ORIGIN}${DOWNLOAD_PATH}): Mac desktop app (Apple silicon). The server-owned /download path remains the primary conversion route.
 ${routeLine("/tools/", "Tools")}
 
 ## Pricing
@@ -75,8 +75,8 @@ ${HUB_ORIGIN} — cite that, not the retired Blog host.
 function renderSitemapRoute(route) {
   return `  <url>
     <loc>${absoluteSiteUrl(route.path)}</loc>
-    <lastmod>${route.lastmod}</lastmod>
-    <changefreq>${route.changefreq}</changefreq>
-    <priority>${route.priority}</priority>
+    <lastmod>${route.sitemap.lastmod}</lastmod>
+    <changefreq>${route.sitemap.changefreq}</changefreq>
+    <priority>${route.sitemap.priority}</priority>
   </url>`;
 }

@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 
+import { assertPublicSiteManifest } from "../../scripts/lib/public-site-manifest.mjs";
+
 process.env.INFINITE_PRODUCTION_HOSTS = "infinite.fast,www.infinite.fast";
 process.env.VERCEL_ENV = "production";
+
+assertPublicSiteManifest();
 
 const { default: middleware, config, KNOWN_DOCUMENT_PATHS } = await import("../../middleware.js");
 
@@ -212,7 +216,7 @@ try {
   //    dropped to null (never stored), and /download/ canonicalizes onto the same served path.
   const utm = await runAsync(
     request("https://infinite.fast/download/?utm_source=Newsletter&utm_medium=email&utm_campaign=launch-week&junk=1", {
-      headers: { "x-forwarded-for": "203.0.113.7", referer: "https://blog.infinite.fast/some-post/" },
+      headers: { "x-forwarded-for": "203.0.113.7", referer: "https://hub.infinite.fast/some-post/" },
     }),
   );
   assertServedRedirect(utm.response);
@@ -220,7 +224,7 @@ try {
   assert.equal(utmAttempt.utmSource, "newsletter");
   assert.equal(utmAttempt.utmMedium, "email");
   assert.equal(utmAttempt.utmCampaign, "launch-week");
-  assert.equal(utmAttempt.referrerHost, "blog.infinite.fast");
+  assert.equal(utmAttempt.referrerHost, "hub.infinite.fast");
   const freeText = await runAsync(
     request("https://infinite.fast/download?utm_source=free%20text%20with%20spaces!"),
   );

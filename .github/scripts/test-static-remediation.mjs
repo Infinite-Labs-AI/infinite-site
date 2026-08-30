@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
-import { PUBLIC_SITE_ROUTES } from "../../scripts/lib/public-site-manifest.mjs";
+import { PUBLIC_ROUTES, SITEMAP_ROUTES, assertPublicSiteManifest } from "../../scripts/lib/public-site-manifest.mjs";
 import { renderLlmsText, renderSitemapXml } from "../../scripts/lib/site-graph-renderers.mjs";
 
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
+
+assertPublicSiteManifest();
 
 const MAIN_SITE_FILES = [
   "robots.txt",
@@ -29,16 +31,16 @@ const robots = read("robots.txt");
 assert.match(robots, /^Sitemap: https:\/\/infinite\.fast\/sitemap\.xml$/m);
 
 const llms = read("llms.txt");
-assert.equal(llms, renderLlmsText({ routes: PUBLIC_SITE_ROUTES }), "llms.txt must be generated from the public site manifest");
+assert.equal(llms, renderLlmsText({ routes: PUBLIC_ROUTES }), "llms.txt must be generated from the public site manifest");
 assert.match(llms, /\[Growth Hub\]\(https:\/\/hub\.infinite\.fast\/\)/);
 assert.match(llms, /\[Download\]\(https:\/\/infinite\.fast\/download\)/);
 assert.doesNotMatch(llms, /blog\.infinite\.fast/);
 
 const sitemap = read("sitemap.xml");
 assert.doesNotMatch(sitemap, /https:\/\/www\.infinite\.fast/);
-assert.equal(sitemap, renderSitemapXml(PUBLIC_SITE_ROUTES), "sitemap.xml must be generated from the public site manifest");
+assert.equal(sitemap, renderSitemapXml(SITEMAP_ROUTES), "sitemap.xml must be generated from the public site manifest");
 
-const expectedLastmodByPath = new Map(PUBLIC_SITE_ROUTES.map((route) => [route.path, route.lastmod]));
+const expectedLastmodByPath = new Map(SITEMAP_ROUTES.map((route) => [route.path, route.sitemap.lastmod]));
 
 const urlBlocks = [...sitemap.matchAll(/<url>\s*<loc>(https:\/\/infinite\.fast[^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
 assert.equal(urlBlocks.length, expectedLastmodByPath.size, "sitemap should contain exactly the expected apex URLs");

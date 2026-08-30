@@ -13,7 +13,7 @@ export function renderSiteFooter({ status = "Public route graph" } = {}) {
     ${FOOTER_COLUMNS.map(renderColumn).join("\n    ")}
   </div>
   <div class="public-site-footer-bottom">
-    <span>© 2026 Infinite Labs, Inc.</span>
+    <span>© 2026 Ultima AI, Inc.</span>
     <span>${escapeHtml(status)}</span>
   </div>
 </footer>`;

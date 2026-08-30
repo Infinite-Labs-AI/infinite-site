@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { renderInfiniteBrowserTag } from "infinite-tag";
 
-import { PUBLIC_SITE_ROUTES } from "./lib/public-site-manifest.mjs";
+import { PUBLIC_ROUTES } from "./lib/public-site-manifest.mjs";
 
 const origin = "https://infinite.fast";
 const sourceFileByPath = new Map([
   ["/", "_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html"],
   ["/startup-launch-videos/", null],
 ]);
-const pages = PUBLIC_SITE_ROUTES.filter((route) => route.path !== "/startup-launch-videos/").map((route) => [
+const pages = PUBLIC_ROUTES.filter((route) => route.path !== "/startup-launch-videos/").map((route) => [
   route.path,
   sourceFileByPath.get(route.path) ?? `${route.path.slice(1)}index.html`,
 ]);
@@ -37,7 +37,7 @@ const sitemap = readFileSync("sitemap.xml", "utf8");
 const sitemapUrls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]);
 assert.deepEqual(
   [...sitemapUrls].sort(),
-  PUBLIC_SITE_ROUTES.map((route) => `${origin}${route.path}`).sort(),
+  PUBLIC_ROUTES.map((route) => `${origin}${route.path}`).sort(),
   "sitemap URLs must exactly match the manifest apex canonical pages",
 );
 assert.doesNotMatch(sitemap, /blog\.infinite\.fast|www\.infinite\.fast/);
