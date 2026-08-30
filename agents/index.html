@@ -130,14 +130,38 @@
             <p>Install 25 marketing skills plus the Goal skill for research, positioning, distribution, copy, analytics, and operator work.</p>
             <div class="ag-proof" aria-label="Live GitHub proof"><span><strong data-proof="skills-stars">&mdash;</strong> GitHub stars</span><span><strong data-proof="skills-forks">&mdash;</strong> forks</span></div>
             <div class="ag-command-wrap">
-              <pre class="ag-command" aria-label="Complete Infinite Skills install command"><code>if [ -d ~/.codex/infinite-skills/.git ]; then
-  git -C ~/.codex/infinite-skills pull --ff-only
+              <pre class="ag-command" aria-label="Complete Infinite Skills install command"><code>set -eu
+repo_url="${INFINITE_SKILLS_REPO_URL:-https://github.com/Infinite-Labs-AI/infinite-skills.git}"
+checkout="$HOME/.codex/infinite-skills"
+skills_dir="$HOME/.codex/skills"
+if [ -e "$checkout" ] || [ -L "$checkout" ]; then
+  if [ ! -d "$checkout/.git" ]; then
+    printf 'Cannot install: %s exists and is not an Infinite Skills git checkout.\n' "$checkout"
+    exit 1
+  fi
+  git -C "$checkout" pull --ff-only
 else
-  git clone https://github.com/Infinite-Labs-AI/infinite-skills.git ~/.codex/infinite-skills
+  mkdir -p "$HOME/.codex"
+  git clone "$repo_url" "$checkout"
 fi
-mkdir -p ~/.codex/skills
-for skill in ~/.codex/infinite-skills/skills/*; do
-  ln -sfn "$skill" ~/.codex/skills/"$(basename "$skill")"
+mkdir -p "$skills_dir"
+for skill in "$checkout"/skills/*; do
+  [ -d "$skill" ] || continue
+  name="$(basename "$skill")"
+  target="$skills_dir/$name"
+  if [ -L "$target" ]; then
+    current="$(readlink "$target")"
+    if [ "$current" = "$skill" ]; then
+      printf 'Already installed: %s\n' "$name"
+    else
+      printf 'Skipped %s: symlink points to %s; left untouched. Remove it and rerun to install this skill.\n' "$name" "$current"
+    fi
+  elif [ -e "$target" ]; then
+    printf 'Skipped %s: destination exists; left untouched. Move it and rerun to install this skill.\n' "$name"
+  else
+    ln -s "$skill" "$target"
+    printf 'Installed: %s\n' "$name"
+  fi
 done</code></pre>
               <button type="button" data-copy-skills-install aria-label="Copy the complete Infinite Skills install command">Copy install</button>
             </div>
