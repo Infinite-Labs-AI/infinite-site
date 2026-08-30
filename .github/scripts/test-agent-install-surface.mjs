@@ -17,6 +17,7 @@ const repositories = {
 
 assertHomepage(read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html"), "homepage source");
 assertAgents(read("agents/index.html"), "Agents source");
+assertAgentStyles(read("assets/agents-pages.css"));
 assertLlms(read("llms.txt"), "llms source");
 assertReadme(read("README.md"));
 
@@ -106,6 +107,12 @@ function assertAgents(html, label) {
 
   assert.match(html, new RegExp(escapeRegExp(installCommand)), `${label}: OS installer is visible`);
   assert.match(html, /git clone https:\/\/github\.com\/Infinite-Labs-AI\/infinite-skills\.git/, `${label}: Skills install path is visible`);
+  assert.match(html, /git -C ~\/\.codex\/infinite-skills pull --ff-only/, `${label}: existing Skills checkout updates safely`);
+  assert.match(html, /mkdir -p ~\/\.codex\/skills/, `${label}: Codex discovery directory is created`);
+  assert.match(html, /for skill in ~\/\.codex\/infinite-skills\/skills\/\*/, `${label}: every published skill is installed`);
+  assert.match(html, /ln -sfn "\$skill" ~\/\.codex\/skills\//, `${label}: Skills are linked into Codex discovery`);
+  assert.match(html, /data-copy-skills-install/, `${label}: complete Skills install command is copyable`);
+  assert.match(html, /Restart Codex after installation/, `${label}: discovery restart is explicit`);
   assert.match(html, /25 marketing skills plus the Goal skill/, `${label}: audited Skills count is precise`);
   assert.match(html, /press-agent run --once --dry-run/, `${label}: safe Press first run is visible`);
   assert.match(html, /Dry-run never submits or spends a Qwoted credit/, `${label}: Press dry-run boundary is visible`);
@@ -144,6 +151,20 @@ function assertAgents(html, label) {
       `${label}: planned ${name} must not be a structured shipped entity`,
     );
   }
+}
+
+function assertAgentStyles(css) {
+  const mutedHex = css.match(/--ag-muted:\s*(#[0-9a-f]{6})/i)?.[1];
+  assert.ok(mutedHex, "Agents CSS defines the accessible muted token");
+  assert.match(
+    css,
+    /\.ag-planned-grid p\s*\{[^}]*color:\s*var\(--ag-muted\)/s,
+    "planned-specialist body copy must use the shared accessible muted token",
+  );
+
+  const cardBackground = composite(rgb("#ffffff"), rgb("#f7f9fb"), 0.68);
+  const ratio = contrastRatio(rgb(mutedHex), cardBackground);
+  assert.ok(ratio >= 4.5, `planned-specialist normal text contrast must be >= 4.5:1, got ${ratio.toFixed(2)}:1`);
 }
 
 function assertLlms(text, label) {
@@ -200,4 +221,25 @@ function read(path) {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function rgb(hex) {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+}
+
+function composite(foreground, background, alpha) {
+  return foreground.map((channel, index) => Math.round(channel * alpha + background[index] * (1 - alpha)));
+}
+
+function contrastRatio(left, right) {
+  const [lighter, darker] = [luminance(left), luminance(right)].sort((a, b) => b - a);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function luminance(color) {
+  return color
+    .map((channel) => channel / 255)
+    .map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4))
+    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
 }

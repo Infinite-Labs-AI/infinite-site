@@ -129,7 +129,19 @@
             <h3>Infinite Skills</h3>
             <p>Install 25 marketing skills plus the Goal skill for research, positioning, distribution, copy, analytics, and operator work.</p>
             <div class="ag-proof" aria-label="Live GitHub proof"><span><strong data-proof="skills-stars">&mdash;</strong> GitHub stars</span><span><strong data-proof="skills-forks">&mdash;</strong> forks</span></div>
-            <div class="ag-command" aria-label="Infinite Skills install command"><code>git clone https://github.com/Infinite-Labs-AI/infinite-skills.git ~/.codex/infinite-skills</code></div>
+            <div class="ag-command-wrap">
+              <pre class="ag-command" aria-label="Complete Infinite Skills install command"><code>if [ -d ~/.codex/infinite-skills/.git ]; then
+  git -C ~/.codex/infinite-skills pull --ff-only
+else
+  git clone https://github.com/Infinite-Labs-AI/infinite-skills.git ~/.codex/infinite-skills
+fi
+mkdir -p ~/.codex/skills
+for skill in ~/.codex/infinite-skills/skills/*; do
+  ln -sfn "$skill" ~/.codex/skills/"$(basename "$skill")"
+done</code></pre>
+              <button type="button" data-copy-skills-install aria-label="Copy the complete Infinite Skills install command">Copy install</button>
+            </div>
+            <p class="ag-command-note">Restart Codex after installation so the new skills are discovered.</p>
             <div class="ag-actions"><a class="ag-primary" href="https://github.com/Infinite-Labs-AI/infinite-skills" data-analytics-cta-id="infinite-skills-github" data-analytics-cta-location="agents-directory">Browse skills</a><a href="https://github.com/Infinite-Labs-AI/infinite-skills#install-for-codex">Install guide</a></div>
           </article>
 
@@ -173,6 +185,34 @@
       .then(function (response) { return response.ok ? response.json() : null; })
       .then(function (data) { if (data) { fillProof("skills-stars", data.stargazers_count); fillProof("skills-forks", data.forks_count); } })
       .catch(function () {});
+
+    document.querySelectorAll("[data-copy-skills-install]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var command = button.parentElement.querySelector("code").textContent.trim();
+        var copied = function () {
+          button.textContent = "Copied";
+          window.setTimeout(function () { button.textContent = "Copy install"; }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(command).then(copied, function () { fallbackCopy(command); copied(); });
+        } else {
+          fallbackCopy(command);
+          copied();
+        }
+      });
+    });
+
+    function fallbackCopy(text) {
+      var area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand("copy");
+      document.body.removeChild(area);
+    }
   })();
   </script>
 
