@@ -59,7 +59,7 @@
           "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-os",
           "license": "https://github.com/Infinite-Labs-AI/infinite-os/blob/main/LICENSE",
           "programmingLanguage": "TypeScript",
-          "runtimePlatform": ["macOS", "Linux"]
+          "runtimePlatform": ["macOS"]
         },
         {
           "@type": "SoftwareSourceCode",
@@ -120,7 +120,7 @@
             <div class="ag-card-topline"><span>Local engine + CLI</span><span>MIT</span></div>
             <h3>Infinite OS</h3>
             <p>Connect growth sources to a local Postgres and give Claude or Codex governed typed tools. Live or destructive native actions require operator confirmation.</p>
-            <div class="ag-command" aria-label="Infinite OS install command"><code>curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash</code></div>
+            <div class="ag-command" aria-label="Infinite OS install command"><code>npx infinite-os@latest</code></div>
             <div class="ag-actions"><a class="ag-primary" href="https://github.com/Infinite-Labs-AI/infinite-os" data-analytics-cta-id="infinite-os-github" data-analytics-cta-location="agents-directory">View source</a><a href="https://github.com/Infinite-Labs-AI/infinite-os/blob/main/SECURITY.md">Security model</a></div>
           </article>
 
@@ -130,40 +130,8 @@
             <p>Install 25 marketing skills plus the Goal skill for research, positioning, distribution, copy, analytics, and operator work.</p>
             <div class="ag-proof" aria-label="Live GitHub proof"><span><strong data-proof="skills-stars">&mdash;</strong> GitHub stars</span><span><strong data-proof="skills-forks">&mdash;</strong> forks</span></div>
             <div class="ag-command-wrap">
-              <pre class="ag-command" aria-label="Complete Infinite Skills install command"><code>set -eu
-repo_url="${INFINITE_SKILLS_REPO_URL:-https://github.com/Infinite-Labs-AI/infinite-skills.git}"
-checkout="$HOME/.codex/infinite-skills"
-skills_dir="$HOME/.codex/skills"
-if [ -e "$checkout" ] || [ -L "$checkout" ]; then
-  if [ ! -d "$checkout/.git" ]; then
-    printf 'Cannot install: %s exists and is not an Infinite Skills git checkout.\n' "$checkout"
-    exit 1
-  fi
-  git -C "$checkout" pull --ff-only
-else
-  mkdir -p "$HOME/.codex"
-  git clone "$repo_url" "$checkout"
-fi
-mkdir -p "$skills_dir"
-for skill in "$checkout"/skills/*; do
-  [ -d "$skill" ] || continue
-  name="$(basename "$skill")"
-  target="$skills_dir/$name"
-  if [ -L "$target" ]; then
-    current="$(readlink "$target")"
-    if [ "$current" = "$skill" ]; then
-      printf 'Already installed: %s\n' "$name"
-    else
-      printf 'Skipped %s: symlink points to %s; left untouched. Remove it and rerun to install this skill.\n' "$name" "$current"
-    fi
-  elif [ -e "$target" ]; then
-    printf 'Skipped %s: destination exists; left untouched. Move it and rerun to install this skill.\n' "$name"
-  else
-    ln -s "$skill" "$target"
-    printf 'Installed: %s\n' "$name"
-  fi
-done</code></pre>
-              <button type="button" data-copy-skills-install aria-label="Copy the complete Infinite Skills install command">Copy install</button>
+              <pre class="ag-command" aria-label="Infinite Skills install command"><code>npx -y skills add Infinite-Labs-AI/infinite-skills -g -a codex -y</code></pre>
+              <button type="button" data-copy-skills-install aria-label="Copy the Infinite Skills install command">Copy install</button>
             </div>
             <p class="ag-command-note">Restart Codex after installation so the new skills are discovered.</p>
             <div class="ag-actions"><a class="ag-primary" href="https://github.com/Infinite-Labs-AI/infinite-skills" data-analytics-cta-id="infinite-skills-github" data-analytics-cta-location="agents-directory">Browse skills</a><a href="https://github.com/Infinite-Labs-AI/infinite-skills#install-for-codex">Install guide</a></div>
@@ -242,7 +210,7 @@ done</code></pre>
 
 <footer class="public-site-footer" data-site-footer="public-route-graph-v1">
   <div class="public-site-footer-inner">
-    <div class="public-site-footer-brand"><span class="public-site-footer-mark" aria-hidden="true"><img src="/logos/infinite-ring-clean-96.webp" width="26" height="26" alt="" loading="lazy" decoding="async"></span><strong>Infinite</strong><p>AI CMO workspace for founders and small teams. The public graph links only to shipped routes and verified public resources.</p></div>
+    <div class="public-site-footer-brand"><span class="public-site-footer-mark" aria-hidden="true"><img src="/logos/infinite-ring-clean-96.webp" width="26" height="26" alt="" loading="lazy" decoding="async"></span><strong>Infinite</strong><p>AI CMO workspace for founders and small teams.</p></div>
     <nav aria-label="Agents &amp; Open Source"><span class="public-site-footer-column-label">Agents &amp; Open Source</span><a href="/agents/" data-analytics-cta-id="agents" data-analytics-cta-location="site-footer">Agent Ecosystem</a><a href="https://github.com/Infinite-Labs-AI/infinite-os" rel="noopener" data-analytics-cta-id="infinite-os-github" data-analytics-cta-location="site-footer">Infinite OS</a><a href="https://github.com/Infinite-Labs-AI/infinite-skills" rel="noopener" data-analytics-cta-id="infinite-skills-github" data-analytics-cta-location="site-footer">Infinite Skills</a><a href="https://github.com/Infinite-Labs-AI/infinite-press-agent" rel="noopener" data-analytics-cta-id="press-agent-github" data-analytics-cta-location="site-footer">Press Agent</a><a href="https://github.com/Infinite-Labs-AI" rel="noopener" data-analytics-cta-id="github-org" data-analytics-cta-location="site-footer">GitHub</a><a href="/llms.txt">llms.txt</a></nav>
     <nav aria-label="Free Tools"><span class="public-site-footer-column-label">Free Tools</span><a href="/tools/" data-analytics-cta-id="tools" data-analytics-cta-location="site-footer">All Tools</a><a href="/tools/high-intent-lead-finder-template/" data-analytics-cta-id="tool-lead-finder" data-analytics-cta-location="site-footer">Lead Finder</a><a href="/tools/seo-geo-brief-generator/" data-analytics-cta-id="tool-seo-geo" data-analytics-cta-location="site-footer">SEO + GEO Brief</a><a href="/tools/landing-page-ab-test-ideas-generator/" data-analytics-cta-id="tool-ab-ideas" data-analytics-cta-location="site-footer">A/B Test Ideas</a><a href="/tools/founder-content-ideas-generator/" data-analytics-cta-id="tool-content-ideas" data-analytics-cta-location="site-footer">Founder Content Ideas</a></nav>
     <nav aria-label="Resources"><span class="public-site-footer-column-label">Resources</span><a href="https://hub.infinite.fast/" rel="noopener" data-analytics-cta-id="growth-hub" data-analytics-cta-location="site-footer">Growth Hub</a><a href="https://hub.infinite.fast/research" rel="noopener" data-analytics-cta-id="hub-research" data-analytics-cta-location="site-footer">Research</a><a href="/startup-launch-videos/" data-analytics-cta-id="launch-videos" data-analytics-cta-location="site-footer">Launch Videos</a><a href="https://hub.infinite.fast/research/launch-videos" rel="noopener" data-analytics-cta-id="launch-video-study" data-analytics-cta-location="site-footer">Launch Video Study</a><a href="https://hub.infinite.fast/feed.xml" rel="noopener" data-analytics-cta-id="hub-rss" data-analytics-cta-location="site-footer">Hub RSS</a></nav>

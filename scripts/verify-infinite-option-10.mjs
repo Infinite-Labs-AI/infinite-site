@@ -207,7 +207,6 @@ if (wrangleHtml) {
     "Reels",
     "Competitor Tracking",
     "Billed monthly",
-    "Dashboard metrics use demo data.",
     "Demo data",
     'class="footer-label"',
   ];

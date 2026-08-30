@@ -200,8 +200,8 @@ try {
     assertFeaturePage(read(builtFile), page, `build ${page.path}`);
   }
   assertHubStatuses(read("dist/features/index.html"), "build hub");
-  assert.match(read("dist/features/index.html"), /labelled product status pages and verified public resources/i, "built footer describes mixed shipped/availability destinations honestly");
-  assert.doesNotMatch(read("dist/features/index.html"), /links only to shipped routes/i, "built footer must not call availability pages shipped");
+  assert.match(read("dist/features/index.html"), /AI CMO workspace for founders and small teams\./i, "built footer keeps the useful product description");
+  assert.doesNotMatch(read("dist/features/index.html"), /The public graph links/i, "built footer omits rejected public-graph copy");
   assertHomepageLinks(read("dist/index.html"), "build homepage");
   assertLlmsRoles(read("dist/llms.txt"), "build llms.txt");
 } finally {
