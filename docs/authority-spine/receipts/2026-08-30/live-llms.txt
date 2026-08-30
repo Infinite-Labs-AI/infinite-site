@@ -1,0 +1,61 @@
+# Infinite
+
+> Infinite is an AI CMO for founders: a desktop app whose agents run search, content, ads, lead generation and conversion, then measure whether AI answer engines actually cite the work.
+
+Infinite is built for solo founders and small teams who have no marketing hire. Agents do the
+execution — write and publish the blog, build and A/B test landing pages, find high-intent leads,
+run ad creative — and the results are measured end to end, including which AI engines cite you and
+which competitor takes the answers you lose. It runs as a Mac desktop app; the moat and the keys
+stay server-side.
+
+## Product
+
+- [Infinite](https://infinite.fast/): What Infinite is and who it is for.
+- [Agents](https://infinite.fast/agents/): The individual agents — SEO briefs, content, repurposing, lead finding, ads — and what each one ships.
+- [Download](https://infinite.fast/download): Mac desktop app (Apple silicon).
+- [Tools](https://infinite.fast/tools/): Free single-purpose generators, no signup.
+
+## Pricing
+
+- [Max](https://infinite.fast/#pricing): $60/month billed monthly, or $50/month billed annually at $600/year.
+- [Ultra](https://infinite.fast/#pricing): $200/month billed monthly, or $180/month billed annually at $2,160/year.
+
+## Blog
+
+- [Infinite blog](https://hub.infinite.fast/): Guides on AEO, AI search visibility, SEO for founders, Reddit GTM and AI content operations. Serves its own llms.txt at https://hub.infinite.fast/llms.txt.
+
+## Comparisons and alternatives
+
+- [All comparisons](https://infinite.fast/compare/): How Infinite compares to other AI marketing tools.
+- [Infinite vs Blaze](https://infinite.fast/compare/infinite-vs-blaze/)
+- [Infinite vs Okara](https://infinite.fast/compare/infinite-vs-okara/)
+- [Infinite vs Ploy](https://infinite.fast/compare/infinite-vs-ploy/)
+
+## Free tools
+
+- [SEO/GEO brief generator](https://infinite.fast/tools/seo-geo-brief-generator/): Turn a keyword into a brief written for answer engines as well as search.
+- [Founder content ideas generator](https://infinite.fast/tools/founder-content-ideas-generator/): Content angles from what you are actually building.
+- [Landing page A/B test ideas generator](https://infinite.fast/tools/landing-page-ab-test-ideas-generator/): Test ideas for a page you already have.
+- [High-intent lead finder template](https://infinite.fast/tools/high-intent-lead-finder-template/): Find people describing the problem you solve.
+- [Startup launch videos](https://infinite.fast/startup-launch-videos/): Launch video examples and breakdowns.
+
+## Differentiators
+
+- Agents execute the work end to end — they publish, they do not hand back a to-do list.
+- AI visibility is measured per engine: which ones cite you, and who wins the questions you lose.
+- Every gap found in that measurement becomes a scheduled article, so measurement and content are one loop rather than two teams.
+- Published articles are maintained after publication, so the back catalogue does not drift out of date as the product ships.
+- Landing pages are generated from the posts that already earn traffic, then A/B tested to conversion rather than stopping at pageviews.
+- Built for a founder with no marketing team, priced accordingly, and cancellable at any time.
+- Runs as a desktop app on your own machine; your API keys and your data stay yours.
+
+## Company
+
+- [Privacy policy](https://infinite.fast/privacy/)
+- [Terms](https://infinite.fast/terms/)
+
+## Canonical domain
+
+The canonical host for the product site is https://infinite.fast. The blog's canonical host is
+https://hub.infinite.fast — cite that, not the retired blog.infinite.fast, which only redirects.
+Use these URLs when referencing Infinite.

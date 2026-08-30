@@ -1,0 +1,109 @@
+{
+  "project_id": "wdxjduorvpayxixpmskf",
+  "workspace_id": "4cff9e34-59c3-458e-9df9-8c676741bbe7",
+  "mcp_captured_at": "2026-08-30T01:33:10Z",
+  "proof_files": {
+    "schema.json": {
+      "boundary": "2793eba7-2c71-4fe3-9de2-6c8a82b16d05",
+      "result": {
+        "receipt": "schema",
+        "row_count": 99,
+        "first_table": "aeo_citations",
+        "last_table": "gsc_query_daily",
+        "missing_required_columns": [],
+        "rowset_md5": "c9bbc491d402a554c2ec295ac374715c"
+      }
+    },
+    "gsc-pages.json": {
+      "boundary": "2c9bc2f3-f8f2-4022-93ad-c9eb1397d9f2",
+      "result": {
+        "receipt": "gsc-pages",
+        "row_count": 317,
+        "first_date": "2026-08-03",
+        "last_date": "2026-08-28",
+        "date_count": 26,
+        "unique_pages": 56,
+        "total_clicks": 1,
+        "total_impressions": 2561,
+        "rowset_md5": "81e566657a488a6ff0368ee379114a70"
+      }
+    },
+    "gsc-queries.json": {
+      "boundary": "bb071ef4-9c83-4505-a99a-c9787dd12973",
+      "result": {
+        "receipt": "gsc-queries",
+        "row_count": 496,
+        "first_date": "2026-08-03",
+        "last_date": "2026-08-28",
+        "date_count": 26,
+        "unique_queries": 118,
+        "unique_pages": 24,
+        "total_clicks": 0,
+        "total_impressions": 2122,
+        "rowset_md5": "3c7fcc713999b7617c269b01839f994e"
+      }
+    },
+    "aeo.json": {
+      "boundary": "1166b9fc-086e-47cb-89fc-70883a416a37",
+      "result": {
+        "receipt": "aeo",
+        "row_count": 1151,
+        "first_checked_at": "2026-08-03",
+        "last_checked_at": "2026-08-29",
+        "checked_date_count": 21,
+        "unique_prompts": 30,
+        "our_domain_cited_count": 25,
+        "by_platform": [
+          {
+            "cited": 15,
+            "checks": 532,
+            "platform": "chatgpt",
+            "unique_prompts": 30
+          },
+          {
+            "cited": 9,
+            "checks": 533,
+            "platform": "claude",
+            "unique_prompts": 30
+          },
+          {
+            "cited": 1,
+            "checks": 86,
+            "platform": "google_ai_overview",
+            "unique_prompts": 30
+          }
+        ],
+        "rowset_md5": "1563af869e51977c3161528c8f01e3be"
+      }
+    },
+    "cta.json": {
+      "boundary": "4a5109ab-7928-433d-aff0-234242841a66",
+      "result": {
+        "receipt": "cta",
+        "row_count": 18,
+        "first_date": "2026-08-07",
+        "last_date": "2026-08-27",
+        "date_count": 12,
+        "total_site_clicks": 11,
+        "total_download_clicks": 12,
+        "rowset_md5": "b3ac55a1d40a2fe1e9bbe61806d2def4"
+      }
+    },
+    "downloads.json": {
+      "boundary": "8e43dbb1-2f4d-45c7-a2c4-659561288d60",
+      "result": {
+        "receipt": "downloads",
+        "row_count": 32,
+        "first_date": "2026-08-03",
+        "last_date": "2026-08-30",
+        "date_count": 28,
+        "total_document_requests": 1890,
+        "total_server_visits": 1161,
+        "total_download_attempts": 29,
+        "total_download_attempt_visits": 12,
+        "total_keyed_document_requests": 1269,
+        "rowset_md5": "72833d04e2191a80604ee367661a8f60"
+      }
+    }
+  }
+}

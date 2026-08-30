@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Infinite: Your AI CMO for Content, SEO, Landing Pages and Ads</title>
-  <meta name="description" content="Meet Infinite, your AI CMO. Find high-intent leads, automate SEO and GEO, A/B test landing pages, and uncover organic content ideas.">
+  <title>Infinite: Your AI CMO for Content, SEO, CRO and Ads</title>
+  <meta name="description" content="Meet Infinite, your AI CMO. Find high-intent leads, automate SEO and GEO, plan landing-page CRO tests, and uncover organic content ideas.">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="author" content="Infinite">
   <meta name="application-name" content="Infinite">
@@ -18,21 +18,21 @@
   <meta property="og:site_name" content="Infinite">
   <meta property="og:locale" content="en_GB">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Infinite: Your AI CMO for Content, SEO, Landing Pages and Ads">
-  <meta property="og:description" content="Find high-intent leads, automate SEO and GEO, A/B test landing pages, and uncover organic content ideas with Infinite.">
+  <meta property="og:title" content="Infinite: Your AI CMO for Content, SEO, CRO and Ads">
+  <meta property="og:description" content="Find high-intent leads, automate SEO and GEO, plan landing-page CRO tests, and uncover organic content ideas with Infinite.">
   <meta property="og:url" content="https://infinite.fast/">
   <meta property="og:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
   <meta property="og:image:secure_url" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Infinite: Your AI CMO for Content, SEO, Landing Pages and Ads">
+  <meta property="og:image:alt" content="Infinite: Your AI CMO for Content, SEO, CRO and Ads">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Infinite: Your AI CMO for Content, SEO, Landing Pages and Ads">
-  <meta name="twitter:description" content="Find high-intent leads, automate SEO and GEO, A/B test landing pages, and uncover organic content ideas with Infinite.">
+  <meta name="twitter:title" content="Infinite: Your AI CMO for Content, SEO, CRO and Ads">
+  <meta name="twitter:description" content="Find high-intent leads, automate SEO and GEO, plan landing-page CRO tests, and uncover organic content ideas with Infinite.">
   <meta name="twitter:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
-  <meta name="twitter:image:alt" content="Infinite: Your AI CMO for Content, SEO, Landing Pages and Ads">
+  <meta name="twitter:image:alt" content="Infinite: Your AI CMO for Content, SEO, CRO and Ads">
 
   <script type="application/ld+json">
     {
@@ -67,11 +67,11 @@
         },
         {
           "@type": "SoftwareApplication",
-          "@id": "https://infinite.fast/#software",
+          "@id": "https://infinite.fast/#desktop",
           "name": "Infinite",
           "url": "https://infinite.fast/",
           "downloadUrl": "https://infinite.fast/download",
-          "description": "Meet Infinite, your AI CMO. Find high-intent leads, automate SEO and GEO, A/B test landing pages, and uncover organic content ideas.",
+          "description": "Meet Infinite, your AI CMO. Find high-intent leads, automate SEO and GEO, plan landing-page CRO tests, and uncover organic content ideas.",
           "applicationCategory": "BusinessApplication",
           "applicationSubCategory": "Marketing automation software",
           "operatingSystem": "macOS",
@@ -120,7 +120,7 @@
           "featureList": [
             "Find high-intent leads",
             "Automate SEO and GEO",
-            "A/B test landing pages",
+            "Plan landing-page CRO tests",
             "Uncover organic content ideas"
           ],
           "image": "https://infinite.fast/assets/infinite/ai-cmo-social-preview.png",
@@ -130,6 +130,31 @@
           "isPartOf": {
             "@id": "https://infinite.fast/#website"
           }
+        },
+        {
+          "@type": "SoftwareSourceCode",
+          "@id": "https://infinite.fast/#infinite-os",
+          "name": "Infinite OS",
+          "description": "MIT-licensed local-first growth analytics engine and CLI for Claude and Codex.",
+          "url": "https://github.com/Infinite-Labs-AI/infinite-os",
+          "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-os",
+          "license": "https://github.com/Infinite-Labs-AI/infinite-os/blob/main/LICENSE",
+          "programmingLanguage": "TypeScript",
+          "runtimePlatform": ["macOS", "Linux"],
+          "author": { "@id": "https://infinite.fast/#organization" },
+          "isPartOf": { "@id": "https://infinite.fast/#website" }
+        },
+        {
+          "@type": "SoftwareSourceCode",
+          "@id": "https://infinite.fast/#infinite-skills",
+          "name": "Infinite Skills",
+          "description": "Twenty-five marketing skills plus the Goal skill for Codex.",
+          "url": "https://github.com/Infinite-Labs-AI/infinite-skills",
+          "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-skills",
+          "license": "https://github.com/Infinite-Labs-AI/infinite-skills/blob/main/LICENSE",
+          "runtimePlatform": "Codex",
+          "author": { "@id": "https://infinite.fast/#organization" },
+          "isPartOf": { "@id": "https://infinite.fast/#website" }
         },
         {
           "@type": "FAQPage",
@@ -153,18 +178,18 @@
             },
             {
               "@type": "Question",
-              "name": "Does it post, send, or change my site automatically?",
+              "name": "How do Infinite OS action confirmations work?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. The default flow is review-first. Infinite prepares replies, briefs, tests, and changes with context attached, then you approve what ships."
+                "text": "Infinite OS's built-in/native action registry exposes typed actions. Live or destructive native actions pass native authority and policy checks and require operator confirmation before execution. Scoped app/MCP tools follow a separate boundary: the operator-authorized host supplies their schemas and owns their semantic validation and confirmation. A scoped tool or proposal can be invoked before the host or tool result requests follow-up confirmation. The built-in/native catalog has no arbitrary shell or code runner; a host may intentionally expose broader capabilities through scoped tools."
               }
             },
             {
               "@type": "Question",
-              "name": "What tools does it connect to?",
+              "name": "Where do my data, credentials, and model prompts go?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "The current direction includes Google Analytics, PostHog, Facebook Ads, Claude Code, Codex, TikTok, X, Shopify, and the growth sources founders already check manually."
+                "text": "Infinite OS stores synced growth data in your local Postgres, and its connector credentials are encrypted at rest. Orchestration runs locally; prompts and relevant tool context go to the Codex or Anthropic provider you choose for inference, using your own account or credentials."
               }
             },
             {
@@ -2550,6 +2575,31 @@
       }
     }
 
+    .authority-spine-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      padding: 16px;
+      color: var(--paper);
+    }
+
+    .authority-spine-links span,
+    .authority-spine-links a {
+      color: inherit;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .authority-spine-links a:focus-visible {
+      outline: 3px solid #f6bf4f;
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
     .faq-section {
       background: #050505;
     }
@@ -2986,7 +3036,7 @@
   <link rel="stylesheet" href="../shared/glaze-hero.css">
   <style>
     :root {
-      /* 1bu-1 desktop glass token pass: mapped from apps/desktop renderer tokens. */
+      /* Desktop glass token pass: mapped from the renderer token set. */
       --background: #0a0c16;
       --foreground: #fff;
       --card: rgba(10, 13, 24, 0.55);
@@ -3509,6 +3559,8 @@
   <link rel="stylesheet" href="light-sky.css">
   <link rel="stylesheet" href="light-sky-polish.css?v=final-polish2">
   <link rel="stylesheet" href="scheme-variants.css?v=mobile-hero1-belowhero1">
+  <link rel="stylesheet" href="/assets/site-footer.css" media="print" onload="this.media='all';this.onload=null">
+  <noscript><link rel="stylesheet" href="/assets/site-footer.css"></noscript>
 </head>
 <body>
   <header class="site-header">
@@ -3519,7 +3571,7 @@
         <a href="#leads">Stack</a>
         <a href="#proof">Proof</a>
         <a href="#pricing" data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation">Pricing</a>
-        <a href="https://blog.infinite.fast/">Blog</a>
+        <a href="https://hub.infinite.fast/">Blog</a>
         <a href="#faq">FAQ</a>
       </div>
       <a class="nav-cta" href="/download" data-download-location="navigation">Get Infinite</a>
@@ -3534,7 +3586,7 @@
           Works with Claude Code and Codex
         </div>
         <h1 id="hero-title">Meet Infinite, your AI CMO.</h1>
-        <p>Find leads, automate SEO, A/B test landing pages, and uncover trending content.</p>
+        <p>Find leads, automate SEO, plan landing-page CRO tests, and uncover trending content.</p>
         <a class="wrangle-hero-cta" href="/download" data-download-location="hero">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path fill="currentColor" d="M16.7 12.7c0-2.2 1.8-3.3 1.9-3.4-1.1-1.5-2.7-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8s-1.8-.8-3-.8c-1.5 0-2.9.9-3.7 2.2-1.6 2.8-.4 6.9 1.1 9.1.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.2-2.4 1.2-2.5 0 0-2.6-1-2.6-3.8ZM14.5 6.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.7-1 2.8 1 0 2.1-.5 2.8-1.3Z"/>
@@ -3558,7 +3610,7 @@
         <li class="is-label">Automate:</li>
         <li>Ad Creatives</li>
         <li>SEO Publishing</li>
-        <li>Landing Page Testing</li>
+        <li>Landing-page CRO planning</li>
         <li>Organic Content</li>
       </ul>
     </section>
@@ -3640,7 +3692,7 @@
                     <div class="citation-engines">
                       <div class="citation-engine"><strong>ChatGPT</strong><i><span></span></i><b>74%</b></div>
                       <div class="citation-engine"><strong>Claude</strong><i><span></span></i><b>52%</b></div>
-                      <div class="citation-engine"><strong>Perplexity</strong><i><span></span></i><b>68%</b></div>
+                      <div class="citation-engine"><strong>Prompt sample</strong><i><span></span></i><b>68%</b></div>
                       <div class="citation-engine"><strong>Google AI</strong><i><span></span></i><b>31%</b></div>
                     </div>
                     <div class="citation-mini-side">
@@ -3666,7 +3718,7 @@
                       <div class="lp-button-row"><i></i><i></i></div>
                       <div class="lp-tile-row"><span></span><span></span><span></span></div>
                       <span class="lp-line"></span><span class="lp-line lp-short"></span>
-                      <div class="lp-fan-score"><span>A</span><b>2.4%</b></div>
+                      <div class="lp-fan-score"><span>Page</span><b>Current</b></div>
                     </div>
                   </div>
                   <div class="lp-fan-card lp-fan-b">
@@ -3675,22 +3727,22 @@
                       <div class="lp-button-row"><i></i><i></i></div>
                       <div class="lp-tile-row"><span></span><span></span><span></span></div>
                       <span class="lp-line"></span><span class="lp-line lp-short"></span>
-                      <div class="lp-fan-score"><span>B</span><b>4.1%</b></div>
+                      <div class="lp-fan-score"><span>Idea</span><b>Review</b></div>
                     </div>
                   </div>
                   <div class="lp-fan-insights">
-                    <div><span>Test ran</span><b>7 days</b></div>
-                    <div><span>Visitors</span><b>2,418</b></div>
-                    <div><span>Lift</span><b>+38%</b></div>
+                    <div><span>Evidence</span><b>Pricing exit</b></div>
+                    <div><span>Change</span><b>Hero promise</b></div>
+                    <div><span>Measure</span><b>Signup CVR</b></div>
                   </div>
                   <div class="lp-fan-badge">
-                    <span>Winner found</span>
-                    <strong>Variant B beat control.</strong>
+                    <span>Plan ready</span>
+                    <strong>Test this idea on your existing page.</strong>
                   </div>
                 </div>
               </div>
-              <h3>A/B test your landing page</h3>
-              <p>Infinite turns weak messages into sharper variants, tracks what converts, and keeps improving the page that turns visitors into customers.</p>
+              <h3>Plan your next landing-page test</h3>
+              <p>Infinite turns conversion evidence into landing-page CRO planning and test ideas for existing pages. It does not build variants or split live traffic.</p>
             </article>
             <article class="cap-card overnight-card">
               <div class="overnight-visual content-visual" aria-hidden="true">
@@ -3728,6 +3780,15 @@
               <p>Winning formats, hooks, and competitor angles become a repeatable content queue you can adapt without guessing what to post next.</p>
             </article>
           </div>
+          <nav class="authority-spine-links" aria-label="Explore Infinite feature details">
+            <span>Explore the workflows</span>
+            <a href="/features/ai-marketing-agents/" data-analytics-cta-id="feature-ai-marketing-agents" data-analytics-cta-location="homepage-capabilities">AI Marketing Agents</a>
+            <a href="/features/seo-aeo/" data-analytics-cta-id="feature-seo-aeo" data-analytics-cta-location="homepage-capabilities">SEO + AEO</a>
+            <a href="/features/x-instagram-content/" data-analytics-cta-id="feature-x-instagram-content" data-analytics-cta-location="homepage-capabilities">X + Instagram Content</a>
+            <a href="/features/ads/" data-analytics-cta-id="feature-ads" data-analytics-cta-location="homepage-capabilities">AI Ads</a>
+            <a href="/features/email/" data-analytics-cta-id="feature-email" data-analytics-cta-location="homepage-capabilities">Email — availability</a>
+            <a href="/features/websites-ab-testing/" data-analytics-cta-id="feature-websites-ab-testing" data-analytics-cta-location="homepage-capabilities">Websites + A/B Ideas</a>
+          </nav>
         </div>
       </div>
     </section>
@@ -3745,7 +3806,6 @@
             <div class="integration-logo" role="img" aria-label="Facebook Ads"><span class="logo-mark"><img src="logos/facebook-96.webp" width="96" height="96" alt="" loading="lazy" decoding="async"></span></div>
             <div class="integration-logo" role="img" aria-label="Claude Code"><span class="logo-mark"><img src="logos/claude-96.webp" width="96" height="96" alt="" loading="lazy" decoding="async"></span></div>
             <div class="integration-logo" role="img" aria-label="Codex"><span class="logo-mark"><img src="logos/codex-96.webp" width="96" height="96" alt="" loading="lazy" decoding="async"></span></div>
-            <div class="integration-logo" role="img" aria-label="TikTok"><span class="logo-mark"><img src="logos/tiktok-black.svg" alt="" loading="lazy" decoding="async"></span></div>
             <div class="integration-logo" role="img" aria-label="X"><span class="logo-mark"><img src="logos/x-96.webp" width="96" height="96" alt="" loading="lazy" decoding="async"></span></div>
             <div class="integration-logo" role="img" aria-label="Shopify"><span class="logo-mark"><img src="logos/shopify-96.webp" width="96" height="96" alt="" loading="lazy" decoding="async"></span></div>
           </div>
@@ -3780,19 +3840,19 @@
             <p>Claude Code and Codex get the same growth context your analytics and campaigns see, so the work starts from evidence instead of a blank prompt.</p>
             <div class="stack-card-demo" aria-hidden="true">
               <div class="demo-agent-box">
-                <div class="agent-prompt">Build a landing-page variant for founders who reached pricing but did not book.</div>
+                <div class="agent-prompt">Plan test ideas for the existing pricing page after founders visit but do not book.</div>
                 <div class="agent-tools"><span>Codex</span><span>Claude Code</span><span>PostHog</span></div>
               </div>
             </div>
           </article>
           <article class="stack-card">
             <h3>Ship the next move.</h3>
-            <p>Signals become ads to test, pages to publish, content angles to copy, and conversion fixes to approve before momentum disappears.</p>
+            <p>Signals become ads to test, SEO drafts to review, content angles to copy, and CRO ideas to evaluate before momentum disappears.</p>
             <div class="stack-card-demo" aria-hidden="true">
               <div class="demo-output-stack">
                 <div class="output-item">SEO + GEO brief <span>Queued</span></div>
-                <div class="output-item">TikTok angle <span>Drafted</span></div>
-                <div class="output-item">Landing test <span>Ready</span></div>
+                <div class="output-item">X content angle <span>Drafted</span></div>
+                <div class="output-item">CRO test idea <span>Ready</span></div>
               </div>
             </div>
           </article>
@@ -3805,7 +3865,7 @@
         <div class="effect-copy">
           <p class="section-pill">The outcome</p>
           <h2 id="work-title">The Infinite Effect</h2>
-          <p>Your customer pipeline starts compounding: revenue moves, subscribers appear, landing pages improve, and the next move is already packaged.</p>
+          <p>Your customer pipeline starts compounding: revenue moves, subscribers appear, landing-page decisions get sharper, and the next move is already packaged.</p>
         </div>
         <div class="effect-stack" aria-label="Infinite growth outcome preview">
           <article class="effect-window effect-revenue-card">
@@ -4042,13 +4102,13 @@
                 <span class="pricing-matrix-cell" role="cell"><span class="pricing-matrix-check" aria-hidden="true">✓</span><span class="pricing-sr-only">Included in Max</span></span>
                 <span class="pricing-matrix-cell pricing-matrix-cell--ultra" role="cell"><span class="pricing-matrix-check" aria-hidden="true">✓</span><span class="pricing-sr-only">Included in Ultra</span></span>
               </div>
-              <div class="pricing-matrix-row" data-pricing-feature="links-landing-pages" role="row">
-                <span class="pricing-matrix-feature" role="rowheader">Tracked links, UTMs, and landing-page creation</span>
+              <div class="pricing-matrix-row" data-pricing-feature="links-utms" role="row">
+                <span class="pricing-matrix-feature" role="rowheader">Tracked links and UTMs</span>
                 <span class="pricing-matrix-cell" role="cell"><span class="pricing-matrix-check" aria-hidden="true">✓</span><span class="pricing-sr-only">Included in Max</span></span>
                 <span class="pricing-matrix-cell pricing-matrix-cell--ultra" role="cell"><span class="pricing-matrix-check" aria-hidden="true">✓</span><span class="pricing-sr-only">Included in Ultra</span></span>
               </div>
-              <div class="pricing-matrix-row pricing-matrix-row--ultra" data-pricing-feature="landing-page-ab-testing" data-ultra-only="true" role="row">
-                <span class="pricing-matrix-feature" role="rowheader">Landing-page A/B testing</span>
+              <div class="pricing-matrix-row pricing-matrix-row--ultra" data-pricing-feature="landing-page-cro-planning" data-ultra-only="true" role="row">
+                <span class="pricing-matrix-feature" role="rowheader">Landing-page CRO planning and test ideas for existing pages</span>
                 <span class="pricing-matrix-cell" role="cell"><span class="pricing-matrix-dash" aria-hidden="true">—</span><span class="pricing-sr-only">Not included in Max</span></span>
                 <span class="pricing-matrix-cell pricing-matrix-cell--ultra" role="cell"><span class="pricing-ultra-pill">Ultra</span><span class="pricing-sr-only">Included in Ultra</span></span>
               </div>
@@ -4120,12 +4180,12 @@
               <p>It starts by finding high-intent leads, SEO/GEO gaps, landing-page conversion issues, and organic content angles. The goal is to build your first customer pipeline before adding more automation.</p>
             </details>
             <details class="faq-item">
-              <summary>Does it post, send, or change my site automatically?</summary>
-              <p>No. The default flow is review-first. Infinite prepares replies, briefs, tests, and changes with context attached, then you approve what ships.</p>
+              <summary>How do Infinite OS action confirmations work?</summary>
+              <p>Infinite OS's built-in/native action registry exposes typed actions. Live or destructive native actions pass native authority and policy checks and require operator confirmation before execution. Scoped app/MCP tools follow a separate boundary: the operator-authorized host supplies their schemas and owns their semantic validation and confirmation. A scoped tool or proposal can be invoked before the host or tool result requests follow-up confirmation. The built-in/native catalog has no arbitrary shell or code runner; a host may intentionally expose broader capabilities through scoped tools.</p>
             </details>
             <details class="faq-item">
-              <summary>What tools does it connect to?</summary>
-              <p>The current direction includes Google Analytics, PostHog, Facebook Ads, Claude Code, Codex, TikTok, X, Shopify, and the growth sources founders already check manually.</p>
+              <summary>Where do my data, credentials, and model prompts go?</summary>
+              <p>Infinite OS stores synced growth data in your local Postgres, and its connector credentials are encrypted at rest. Orchestration runs locally; prompts and relevant tool context go to the Codex or Anthropic provider you choose for inference, using your own account or credentials.</p>
             </details>
             <details class="faq-item">
               <summary>Is this for pre-revenue founders?</summary>
@@ -4145,55 +4205,29 @@
         <p class="eyebrow section-pill">Start Growing</p>
         <h2 id="final-title">You shipped the app. Now let Infinite get you customers.</h2>
         <a class="hero-cta" href="/download" data-download-location="final-cta">Download for Mac</a>
+        <aside class="agent-install-panel" data-agent-install aria-labelledby="agent-install-title">
+          <p class="agent-install-kicker">Open-source engine</p>
+          <h3 id="agent-install-title">Install Infinite for your terminal agent.</h3>
+          <p>Run the local engine with Claude or Codex. Synced growth data stays in your local Postgres, connector credentials are encrypted at rest, and prompts plus relevant tool context go only to the provider you choose.</p>
+          <div class="agent-install-command">
+            <code>curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash</code>
+            <button type="button" data-copy-agent-install aria-label="Copy the Infinite OS install command">Copy</button>
+          </div>
+          <div class="agent-install-links">
+            <a href="https://github.com/Infinite-Labs-AI/infinite-os" data-analytics-cta-id="infinite-os-github" data-analytics-cta-location="homepage-install">View Infinite OS on GitHub</a>
+            <a href="/agents/">Explore the agent ecosystem</a>
+          </div>
+        </aside>
       </div>
     </section>
   </main>
 
-  <footer class="wrangle-footer">
-    <div class="shell">
-      <div class="wrangle-footer-grid">
-        <div>
-          <span class="wrangle-footer-mark" aria-hidden="true"><img src="logos/infinite-ring-clean-96.webp" width="96" height="96" alt="" loading="lazy" decoding="async"></span>
-        </div>
-        <div>
-          <span class="footer-label">Platform</span>
-          <a href="#command">Buyer intent</a>
-          <a href="#command">SEO + GEO</a>
-          <a href="#command">Landing tests</a>
-          <a href="#command">Content angles</a>
-          <a href="#leads">Claude Code</a>
-        </div>
-        <div>
-          <span class="footer-label">Free tools</span>
-          <a href="/tools/high-intent-lead-finder-template/">Lead finder template</a>
-          <a href="/tools/seo-geo-brief-generator/">SEO + GEO brief generator</a>
-          <a href="/tools/landing-page-ab-test-ideas-generator/">A/B test ideas</a>
-          <a href="/tools/founder-content-ideas-generator/">Content ideas</a>
-        </div>
-        <div>
-          <span class="footer-label">Compare</span>
-          <a href="/compare/infinite-vs-okara/">Infinite vs Okara</a>
-          <a href="/compare/infinite-vs-ploy/">Infinite vs Ploy</a>
-          <a href="/compare/infinite-vs-blaze/">Infinite vs Blaze</a>
-          <a href="/compare/">All comparisons</a>
-        </div>
-        <div>
-          <span class="footer-label">Company</span>
-          <a href="#proof">Proof</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faq">FAQ</a>
-          <a href="https://blog.infinite.fast/">Blog</a>
-          <a href="/privacy/">Privacy Policy</a>
-          <a href="/terms/">Terms of Service</a>
-        </div>
-      </div>
-      <div class="wrangle-footer-bottom">
-        <span>© 2026 Infinite. All rights reserved.</span>
-        <span class="wrangle-status">Static site</span>
-      </div>
-    </div>
-    <div class="wrangle-giant-word" aria-hidden="true">Infinite</div>
-  </footer>
+
+
+
+
+
+
 
   <script>
     const pricingCatalog = {
@@ -4221,7 +4255,74 @@
         });
       });
     });
+
+    const installCommand = "curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash";
+    document.querySelectorAll("[data-copy-agent-install]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(installCommand);
+          button.textContent = "Copied";
+          window.setTimeout(() => { button.textContent = "Copy"; }, 1600);
+        } catch {
+          button.textContent = "Select command";
+        }
+      });
+    });
   </script>
 
+
+<footer class="public-site-footer" data-site-footer="public-route-graph-v1">
+  <div class="public-site-footer-inner">
+    <div class="public-site-footer-brand">
+      <span class="public-site-footer-mark" aria-hidden="true"><img src="/logos/infinite-ring-clean-96.webp" width="26" height="26" alt="" loading="lazy" decoding="async"></span>
+      <strong>Infinite</strong>
+      <p>AI CMO workspace for founders and small teams. The public graph links only to shipped routes and verified public resources.</p>
+    </div>
+    <nav aria-label="Agents &amp; Open Source">
+      <span class="public-site-footer-column-label">Agents &amp; Open Source</span>
+      <a href="/agents/" data-analytics-cta-id="agents" data-analytics-cta-location="site-footer">Agent Ecosystem</a>
+      <a href="https://github.com/Infinite-Labs-AI/infinite-os" rel="noopener" data-analytics-cta-id="infinite-os-github" data-analytics-cta-location="site-footer">Infinite OS</a>
+      <a href="https://github.com/Infinite-Labs-AI/infinite-skills" rel="noopener" data-analytics-cta-id="infinite-skills-github" data-analytics-cta-location="site-footer">Infinite Skills</a>
+      <a href="https://github.com/Infinite-Labs-AI/infinite-press-agent" rel="noopener" data-analytics-cta-id="press-agent-github" data-analytics-cta-location="site-footer">Press Agent</a>
+      <a href="https://github.com/Infinite-Labs-AI" rel="noopener" data-analytics-cta-id="github-org" data-analytics-cta-location="site-footer">GitHub</a>
+      <a href="/llms.txt">llms.txt</a>
+    </nav>
+    <nav aria-label="Free Tools">
+      <span class="public-site-footer-column-label">Free Tools</span>
+      <a href="/tools/" data-analytics-cta-id="tools" data-analytics-cta-location="site-footer">All Tools</a>
+      <a href="/tools/high-intent-lead-finder-template/" data-analytics-cta-id="tool-lead-finder" data-analytics-cta-location="site-footer">Lead Finder</a>
+      <a href="/tools/seo-geo-brief-generator/" data-analytics-cta-id="tool-seo-geo" data-analytics-cta-location="site-footer">SEO + GEO Brief</a>
+      <a href="/tools/landing-page-ab-test-ideas-generator/" data-analytics-cta-id="tool-ab-ideas" data-analytics-cta-location="site-footer">A/B Test Ideas</a>
+      <a href="/tools/founder-content-ideas-generator/" data-analytics-cta-id="tool-content-ideas" data-analytics-cta-location="site-footer">Founder Content Ideas</a>
+    </nav>
+    <nav aria-label="Resources">
+      <span class="public-site-footer-column-label">Resources</span>
+      <a href="https://hub.infinite.fast/" rel="noopener" data-analytics-cta-id="growth-hub" data-analytics-cta-location="site-footer">Growth Hub</a>
+      <a href="https://hub.infinite.fast/research" rel="noopener" data-analytics-cta-id="hub-research" data-analytics-cta-location="site-footer">Research</a>
+      <a href="/startup-launch-videos/" data-analytics-cta-id="launch-videos" data-analytics-cta-location="site-footer">Launch Videos</a>
+      <a href="https://hub.infinite.fast/research/launch-videos" rel="noopener" data-analytics-cta-id="launch-video-study" data-analytics-cta-location="site-footer">Launch Video Study</a>
+      <a href="https://hub.infinite.fast/feed.xml" rel="noopener" data-analytics-cta-id="hub-rss" data-analytics-cta-location="site-footer">Hub RSS</a>
+    </nav>
+    <nav aria-label="Compare">
+      <span class="public-site-footer-column-label">Compare</span>
+      <a href="/compare/" data-analytics-cta-id="compare" data-analytics-cta-location="site-footer">All Comparisons</a>
+      <a href="/compare/infinite-vs-blaze/" data-analytics-cta-id="compare-blaze" data-analytics-cta-location="site-footer">Infinite vs Blaze</a>
+      <a href="/compare/infinite-vs-okara/" data-analytics-cta-id="compare-okara" data-analytics-cta-location="site-footer">Infinite vs Okara</a>
+      <a href="/compare/infinite-vs-ploy/" data-analytics-cta-id="compare-ploy" data-analytics-cta-location="site-footer">Infinite vs Ploy</a>
+    </nav>
+    <nav aria-label="Company">
+      <span class="public-site-footer-column-label">Company</span>
+      <a href="/download" data-analytics-cta-id="download-mac" data-analytics-cta-location="site-footer" data-download-location="site-footer">Download for Mac</a>
+      <a href="/#pricing" data-analytics-cta-id="home" data-analytics-cta-location="site-footer">Pricing</a>
+      <a href="/privacy/" data-analytics-cta-id="privacy" data-analytics-cta-location="site-footer">Privacy</a>
+      <a href="/terms/" data-analytics-cta-id="terms" data-analytics-cta-location="site-footer">Terms</a>
+      <a href="/sitemap.xml">Sitemap</a>
+    </nav>
+  </div>
+  <div class="public-site-footer-bottom">
+    <span>© 2026 Ultima AI, Inc.</span>
+    <span>Infinite — AI CMO for founders</span>
+  </div>
+</footer>
 </body>
 </html>

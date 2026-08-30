@@ -2,41 +2,51 @@ import fs from "node:fs";
 import path from "node:path";
 
 const repoRoot = process.cwd();
-const blogSitemapUrl = "https://blog.infinite.fast/sitemap.xml";
+const hubOrigin = "https://hub.infinite.fast";
+const hubSitemapUrl = `${hubOrigin}/sitemap.xml`;
+const nonArticleHubPaths = new Set([
+  "/",
+  "/feed.xml",
+  "/llms.txt",
+  "/research",
+  "/research/",
+  "/research/launch-videos",
+  "/research/launch-videos/",
+]);
 
 const selectedArticleLinks = [
   {
     page: "tools/seo-geo-brief-generator/index.html",
-    article: "https://blog.infinite.fast/best-ai-seo-tools-for-founders",
+    article: "https://hub.infinite.fast/best-ai-seo-tools-for-founders",
   },
   {
     page: "tools/high-intent-lead-finder-template/index.html",
     article:
-      "https://blog.infinite.fast/pipeline-generation-the-operators-playbook-for-consistent-revenue-flow",
+      "https://hub.infinite.fast/pipeline-generation-the-operators-playbook-for-consistent-revenue-flow",
   },
   {
     page: "tools/founder-content-ideas-generator/index.html",
     article:
-      "https://blog.infinite.fast/best-ai-marketing-tools-ranked-by-use-case-for-lean-teams",
+      "https://hub.infinite.fast/best-ai-marketing-tools-in-2026-what-actually-moves-the-needle",
   },
   {
     page: "compare/infinite-vs-okara/index.html",
     article:
-      "https://blog.infinite.fast/the-best-ai-marketing-platform-for-growing-brands-in-2026-a-complete-guide",
+      "https://hub.infinite.fast/the-best-ai-marketing-platform-for-growing-brands-in-2026-a-complete-guide",
   },
 ];
 
 const failures = [];
-const liveBlogUrls = new Set(extractLocs(await fetchText(blogSitemapUrl)));
+const liveHubUrls = new Set(extractLocs(await fetchText(hubSitemapUrl)));
 
 const mainSitemap = readFile("sitemap.xml");
-const mainSitemapBlogUrls = extractLocs(mainSitemap).filter((url) =>
-  url.startsWith("https://blog.infinite.fast"),
+const mainSitemapHubUrls = extractLocs(mainSitemap).filter((url) =>
+  url.startsWith(hubOrigin),
 );
 
-if (mainSitemapBlogUrls.length > 0) {
+if (mainSitemapHubUrls.length > 0) {
   failures.push(
-    `Main sitemap contains blog host URLs: ${mainSitemapBlogUrls.join(", ")}`,
+    `Main sitemap contains Hub URLs: ${mainSitemapHubUrls.join(", ")}`,
   );
 }
 
@@ -48,19 +58,15 @@ const directArticleLinks = [];
 
 for (const file of mainPageFiles) {
   const html = readFile(file);
-  for (const href of extractHrefs(html).filter((url) =>
-    url.startsWith("https://blog.infinite.fast"),
-  )) {
-    if (href === "https://blog.infinite.fast/") continue;
-
+  for (const href of extractHrefs(html).filter(isHubArticleUrl)) {
     directArticleLinks.push({ page: file, href });
 
-    if (href.startsWith("https://blog.infinite.fast/blog/")) {
+    if (href.startsWith(`${hubOrigin}/blog/`)) {
       failures.push(`${file} uses a non-canonical /blog/ article URL: ${href}`);
     }
 
-    if (!liveBlogUrls.has(href)) {
-      failures.push(`${file} links to an article URL missing from live blog sitemap: ${href}`);
+    if (!liveHubUrls.has(href)) {
+      failures.push(`${file} links to an article URL missing from live Hub sitemap: ${href}`);
     }
   }
 }
@@ -69,15 +75,15 @@ const uniqueArticleLinks = new Set(directArticleLinks.map(({ href }) => href));
 
 if (uniqueArticleLinks.size < 3 || uniqueArticleLinks.size > 5) {
   failures.push(
-    `Expected 3-5 unique direct blog article links across main pages, found ${uniqueArticleLinks.size}`,
+    `Expected 3-5 unique direct Hub article links across main pages, found ${uniqueArticleLinks.size}`,
   );
 }
 
 for (const { page, article } of selectedArticleLinks) {
   const html = readFile(page);
 
-  if (!liveBlogUrls.has(article)) {
-    failures.push(`Expected article is not present in live blog sitemap: ${article}`);
+  if (!liveHubUrls.has(article)) {
+    failures.push(`Expected article is not present in live Hub sitemap: ${article}`);
   }
 
   if (!extractHrefs(html).includes(article)) {
@@ -94,7 +100,7 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `SEO article link verification passed: ${uniqueArticleLinks.size} canonical article links across ${selectedArticleLinks.length} selected pages; main sitemap has no blog host URLs.`,
+  `SEO article link verification passed: ${uniqueArticleLinks.size} canonical article links across ${selectedArticleLinks.length} selected pages; main sitemap has no Hub URLs.`,
 );
 
 function readFile(relativePath) {
@@ -132,6 +138,28 @@ function extractLocs(xml) {
 
 function extractHrefs(html) {
   return [...html.matchAll(/\bhref="([^"]+)"/g)].map((match) => match[1]);
+}
+
+function isHubArticleUrl(href) {
+  try {
+    const url = new URL(href);
+
+    if (url.origin !== hubOrigin) {
+      return false;
+    }
+
+    if (nonArticleHubPaths.has(url.pathname)) {
+      return false;
+    }
+
+    if (/\.(xml|txt)$/i.test(url.pathname)) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function fetchText(url) {

@@ -80,8 +80,8 @@ for (const page of pages) {
   assert(html.includes("Limitations"), `${page.file} is missing limitations content`);
   assert(html.includes("FAQs"), `${page.file} is missing FAQ content`);
   assert(
-    extractHrefs(html).some((href) => href.startsWith("https://blog.infinite.fast/") && href !== "https://blog.infinite.fast/"),
-    `${page.file} is missing a canonical blog article link`,
+    extractHrefs(html).some((href) => href.startsWith("https://hub.infinite.fast/") && href !== "https://hub.infinite.fast/"),
+    `${page.file} is missing a canonical Hub article link`,
   );
   assert(html.includes("#generator-output"), `${page.file} is missing result CTA/link target`);
 

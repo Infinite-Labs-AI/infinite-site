@@ -10,7 +10,8 @@ const receiptToken = "receipt-test-token";
 const drainSecret = "drain-test-secret";
 const received = new Map();
 let observedCollectOrigin = null;
-let observedDownloadUa = null;
+const observedDownloadProbes = [];
+let downloadRedirectStatus = 307;
 let collectRequests = 0;
 let drainRequests = 0;
 let receiptRequests = 0;
@@ -47,8 +48,8 @@ const server = createServer(async (request, response) => {
     return;
   }
   if (url.pathname === "/download") {
-    observedDownloadUa = request.headers["user-agent"];
-    response.writeHead(307, {
+    observedDownloadProbes.push({ method: request.method, userAgent: request.headers["user-agent"] });
+    response.writeHead(downloadRedirectStatus, {
       location: "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg",
     });
     response.end();
@@ -212,6 +213,7 @@ try {
   assert.equal(drainRequests, 0, "missing enabled configuration must fail before Drain calls");
   assert.equal(receiptRequests, 0, "missing enabled configuration must fail before receipt calls");
 
+  observedDownloadProbes.length = 0;
   const result = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
     ...commonEnv,
     REQUIRE_SYNTHETIC_RECEIPTS: "1",
@@ -219,7 +221,8 @@ try {
   assert.equal(result.code, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /PASS\s+same-origin synthetic browser receipt/);
   assert.match(result.stdout, /PASS\s+signed synthetic Drain receipt/);
-  assert.match(result.stdout, /PASS\s+\/download 307/);
+  assert.match(result.stdout, /PASS\s+\/download GET 307/);
+  assert.match(result.stdout, /PASS\s+\/download HEAD 307/);
   assert.match(result.stdout, /PASS\s+CSP report endpoint/);
   assert.equal(observedCollectOrigin, baseUrl);
   assert.equal(collectRequests, 1);
@@ -227,7 +230,23 @@ try {
   // browser page view + human document + redirect + the FLAGGED Googlebot document (count-and-flag).
   assert.equal(receiptRequests, 4);
   assert.equal(forbiddenProbeRequests, 16, "each verification run must probe forbidden tracking and sdk routes");
-  assert.match(observedDownloadUa ?? "", /bot/i, "redirect probe must be bot-classified and excluded from production counts");
+  assert.deepEqual(
+    observedDownloadProbes.map((probe) => probe.method),
+    ["GET", "HEAD"],
+    "live verification must validate GET and HEAD against the same release redirect",
+  );
+  assert.match(observedDownloadProbes[0]?.userAgent ?? "", /bot/i, "GET redirect probe must be bot-classified and excluded from production counts");
+  assert.match(observedDownloadProbes[1]?.userAgent ?? "", /bot/i, "HEAD redirect probe must keep the same uncounted guardrail identity");
+
+  downloadRedirectStatus = 308;
+  const permanentRedirect = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+    ...commonEnv,
+    REQUIRE_SYNTHETIC_RECEIPTS: "0",
+  });
+  assert.notEqual(permanentRedirect.code, 0, "the live verifier must reject a permanent 308 for /download");
+  assert.match(permanentRedirect.stderr, /GET expected 307/);
+  assert.match(permanentRedirect.stderr, /HEAD expected 307/);
+  downloadRedirectStatus = 307;
 
   // ── Browser-led desktop handoff (Wave 2) ─────────────────────────────────────────────────────
   // The site half is two-keyed and ships OFF. The verifier pins BOTH directions, because each has

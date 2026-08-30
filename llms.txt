@@ -2,60 +2,80 @@
 
 > Infinite is an AI CMO for founders: a desktop app whose agents run search, content, ads, lead generation and conversion, then measure whether AI answer engines actually cite the work.
 
-Infinite is built for solo founders and small teams who have no marketing hire. Agents do the
-execution — write and publish the blog, build and A/B test landing pages, find high-intent leads,
-run ad creative — and the results are measured end to end, including which AI engines cite you and
-which competitor takes the answers you lose. It runs as a Mac desktop app; the moat and the keys
-stay server-side.
+Infinite is built for solo founders and small teams who have no marketing hire. The public site graph below is generated from the same manifest that drives the sitemap, middleware document inventory, and sitewide footer.
 
 ## Product
 
-- [Infinite](https://infinite.fast/): What Infinite is and who it is for.
-- [Agents](https://infinite.fast/agents/): The individual agents — SEO briefs, content, repurposing, lead finding, ads — and what each one ships.
-- [Download](https://infinite.fast/download): Mac desktop app (Apple silicon).
-- [Tools](https://infinite.fast/tools/): Free single-purpose generators, no signup.
+- [Infinite](https://infinite.fast/): AI marketing operators, launch systems, and growth tools for solo founders and small teams.
+- [Agents](https://infinite.fast/agents/): Public entry point for Infinite's AI agent surfaces and open-source agent paths.
+- [Download](https://infinite.fast/download): Mac desktop app (Apple silicon). The server-owned /download path remains the primary conversion route.
+- [Tools](https://infinite.fast/tools/): A directory of free founder-facing tools for lead research, SEO briefs, landing-page tests, and content ideas.
+
+## Features and availability
+
+- **Shipped** — [AI Marketing Agents](https://infinite.fast/features/ai-marketing-agents/): Shipped AI CMO workflow for scoped buyer-intent scanning, evidence, scoring, and lead triage.
+- **Shipped** — [SEO + AEO](https://infinite.fast/features/seo-aeo/): Shipped metered research, review, publishing, search reporting, and sampled AI-citation workflow.
+- **Shipped** — [X + Instagram Content](https://infinite.fast/features/x-instagram-content/): Shipped X and Instagram research, bounded drafting, human review, and supported publishing workflow.
+- **Shipped** — [AI Ads](https://infinite.fast/features/ads/): Shipped Meta-first evidence, paused proposals, confirmations, policy guards, Google Ads infrastructure, and history.
+- **Current availability** — [Email](https://infinite.fast/features/email/): Current availability and launch requirements for retained email operations infrastructure; not a public product surface.
+- **CRO + A/B test ideas** — [Websites + A/B Ideas](https://infinite.fast/features/websites-ab-testing/): Landing-page CRO planning and test ideas for existing pages; not a builder or live A/B-test runtime.
 
 ## Pricing
 
 - [Max](https://infinite.fast/#pricing): $60/month billed monthly, or $50/month billed annually at $600/year.
 - [Ultra](https://infinite.fast/#pricing): $200/month billed monthly, or $180/month billed annually at $2,160/year.
 
-## Blog
+## Hub and research
 
-- [Infinite blog](https://hub.infinite.fast/): Guides on AEO, AI search visibility, SEO for founders, Reddit GTM and AI content operations. Serves its own llms.txt at https://hub.infinite.fast/llms.txt.
+- [Growth Hub](https://hub.infinite.fast/): Guides on AEO, AI search visibility, SEO for founders, Reddit GTM and AI content operations.
+- [Research](https://hub.infinite.fast/research): Research index on the Infinite Hub.
+- [Hub llms.txt](https://hub.infinite.fast/llms.txt): Machine-readable hub index.
 
 ## Comparisons and alternatives
 
-- [All comparisons](https://infinite.fast/compare/): How Infinite compares to other AI marketing tools.
-- [Infinite vs Blaze](https://infinite.fast/compare/infinite-vs-blaze/)
-- [Infinite vs Okara](https://infinite.fast/compare/infinite-vs-okara/)
-- [Infinite vs Ploy](https://infinite.fast/compare/infinite-vs-ploy/)
+- [All comparisons](https://infinite.fast/compare/): A hub for comparing Infinite with adjacent AI marketing and content tools.
+- [Infinite vs Okara](https://infinite.fast/compare/infinite-vs-okara/): A focused comparison for founders evaluating Infinite and Okara.
+- [Infinite vs Ploy](https://infinite.fast/compare/infinite-vs-ploy/): A focused comparison for founders evaluating Infinite and Ploy.
+- [Infinite vs Blaze](https://infinite.fast/compare/infinite-vs-blaze/): A focused comparison for founders evaluating Infinite and Blaze.
 
 ## Free tools
 
-- [SEO/GEO brief generator](https://infinite.fast/tools/seo-geo-brief-generator/): Turn a keyword into a brief written for answer engines as well as search.
-- [Founder content ideas generator](https://infinite.fast/tools/founder-content-ideas-generator/): Content angles from what you are actually building.
-- [Landing page A/B test ideas generator](https://infinite.fast/tools/landing-page-ab-test-ideas-generator/): Test ideas for a page you already have.
-- [High-intent lead finder template](https://infinite.fast/tools/high-intent-lead-finder-template/): Find people describing the problem you solve.
-- [Startup launch videos](https://infinite.fast/startup-launch-videos/): Launch video examples and breakdowns.
+- [SEO/GEO brief generator](https://infinite.fast/tools/seo-geo-brief-generator/): A free brief generator for SEO, GEO, and AI-answer visibility planning.
+- [Founder content ideas generator](https://infinite.fast/tools/founder-content-ideas-generator/): A free generator for founder-led content angles and campaign ideas.
+- [Landing page A/B test ideas generator](https://infinite.fast/tools/landing-page-ab-test-ideas-generator/): A free generator for landing-page CRO planning and test ideas for existing pages. It does not build variants or split live traffic.
+- [High-intent lead finder template](https://infinite.fast/tools/high-intent-lead-finder-template/): A free template for turning buyer-intent signals into an actionable lead list.
+- [Startup launch videos](https://infinite.fast/startup-launch-videos/): A public leaderboard and study surface for startup launch videos.
 
-## Differentiators
+## Open source and agent install paths
 
-- Agents execute the work end to end — they publish, they do not hand back a to-do list.
-- AI visibility is measured per engine: which ones cite you, and who wins the questions you lose.
-- Every gap found in that measurement becomes a scheduled article, so measurement and content are one loop rather than two teams.
-- Published articles are maintained after publication, so the back catalogue does not drift out of date as the product ships.
-- Landing pages are generated from the posts that already earn traffic, then A/B tested to conversion rather than stopping at pageviews.
-- Built for a founder with no marketing team, priced accordingly, and cancellable at any time.
-- Runs as a desktop app on your own machine; your API keys and your data stay yours.
+- [Infinite OS](https://github.com/Infinite-Labs-AI/infinite-os): Public open-source local engine. Its built-in/native action registry exposes typed actions; live or destructive native actions pass native authority and policy checks and require operator confirmation before execution.
+- [Infinite Skills](https://github.com/Infinite-Labs-AI/infinite-skills): Public repository with 25 marketing skills plus the Goal skill for Codex.
+- [Infinite Press Agent](https://github.com/Infinite-Labs-AI/infinite-press-agent): Public press-agent repository. Press Agent dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.
+- [Infinite Labs AI GitHub](https://github.com/Infinite-Labs-AI): Public GitHub organization.
+
+## Install Infinite OS
+
+Requires Git, Node 20 or newer, and npm. The installer provisions the repository's pinned pnpm privately when needed:
+
+    curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash
+
+Then run `infinite local setup` and ask a first question with `infinite local "how many page views in the last 7 days"`.
+
+## Data and execution boundaries
+
+- Infinite OS stores synced growth data in your local Postgres, and its connector credentials are encrypted at rest.
+- Orchestration runs locally. Prompts and relevant tool context go to your chosen Codex or Anthropic provider for inference, using your own account or credentials.
+- Scoped app/MCP tools follow a separate boundary: the operator-authorized host supplies their schemas and owns their semantic validation and confirmation. A scoped tool or proposal can be invoked before the host or tool result requests follow-up confirmation.
+- The built-in/native catalog has no arbitrary shell or code runner; a host may intentionally expose broader capabilities through scoped tools.
+- Press Agent has a separate run contract. Dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.
 
 ## Company
 
-- [Privacy policy](https://infinite.fast/privacy/)
-- [Terms](https://infinite.fast/terms/)
+- [Privacy policy](https://infinite.fast/privacy/): Infinite's public privacy policy and analytics preference entry point.
+- [Terms](https://infinite.fast/terms/): Infinite's public terms of service.
+- [Sitemap](https://infinite.fast/sitemap.xml): Generated from the public site manifest.
 
 ## Canonical domain
 
-The canonical host for the product site is https://infinite.fast. The blog's canonical host is
-https://hub.infinite.fast — cite that, not the retired blog.infinite.fast, which only redirects.
-Use these URLs when referencing Infinite.
+The canonical host for the product site is https://infinite.fast. The editorial hub's canonical host is
+https://hub.infinite.fast — cite that, not the retired Blog host.

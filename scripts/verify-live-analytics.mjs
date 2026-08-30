@@ -4,20 +4,11 @@
 import { createHmac, randomUUID } from "node:crypto";
 import process from "node:process";
 
-const PAGES = [
-  "/",
-  "/privacy/",
-  "/terms/",
-  "/tools/",
-  "/tools/high-intent-lead-finder-template/",
-  "/tools/seo-geo-brief-generator/",
-  "/tools/landing-page-ab-test-ideas-generator/",
-  "/tools/founder-content-ideas-generator/",
-  "/compare/",
-  "/compare/infinite-vs-okara/",
-  "/compare/infinite-vs-ploy/",
-  "/compare/infinite-vs-blaze/",
-];
+import { KNOWN_DOCUMENT_PATHS, assertPublicSiteManifest } from "./lib/public-site-manifest.mjs";
+
+assertPublicSiteManifest();
+
+const PAGES = [...KNOWN_DOCUMENT_PATHS];
 
 const SITE_BASE_URL = firstNonEmpty(process.env.SITE_BASE_URL, "https://infinite.fast").replace(/\/+$/, "");
 const EXPECTED_POSTHOG_TOKEN = firstNonEmpty(
@@ -190,31 +181,38 @@ async function checkPosthogProxy(failures) {
 }
 
 async function checkDownloadRedirect(failures) {
-  try {
-    // /download is the ONE probe the middleware always observes: its branch serves the 307 itself
-    // and logs `INFINITE_DOWNLOAD_ATTEMPT_V1` for every production GET — it never calls
-    // `isPrefetch()` (middleware.js `isProductionDownloadGet` = production + host + GET). So the
-    // load-bearing exclusion here is the BOT-SHAPED USER AGENT, not the header: the middleware
-    // files this request as `uaFamily: "bot"` and the drain keeps browser-family markers only, so
-    // a guardrail run can never become a Download. DO NOT drop "bot" from this user agent — that
-    // literal substring is what keeps CI out of the download numbers.
-    // `Purpose: prefetch` rides along as the same declaration of intent every other probe makes,
-    // and holds the line if /download ever grows a prefetch gate.
-    const response = await fetch(`${SITE_BASE_URL}/download`, {
-      redirect: "manual",
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: probeHeaders("infinite-analytics-guardrail-bot/2.0"),
-    });
-    const location = response.headers.get("location");
-    if (![307, 308].includes(response.status) || location !== DOWNLOAD_DESTINATION) {
-      failures.push(`[download] expected 307/308 to ${DOWNLOAD_DESTINATION}, received ${response.status} to ${location}`);
-      console.log(`  FAIL  /download ${response.status}`);
-      return;
+  // GET and HEAD must resolve to the SAME signed release location. GET is the only conversion:
+  // it reaches the attempt-marker lane, so the guardrail uses a bot-shaped UA that the drain drops.
+  // HEAD is served by the middleware too, but `logDownloadAttempt()` returns on method before it can
+  // emit a marker or missing-key diagnostic. Purpose: prefetch declares both probes as checks.
+  const methods = ["GET", "HEAD"];
+  const locations = new Map();
+  for (const method of methods) {
+    try {
+      const response = await fetch(`${SITE_BASE_URL}/download`, {
+        method,
+        redirect: "manual",
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: probeHeaders("infinite-analytics-guardrail-bot/2.0"),
+      });
+      const location = response.headers.get("location");
+      if (response.status !== 307 || location !== DOWNLOAD_DESTINATION) {
+        failures.push(`[download] ${method} expected 307 to ${DOWNLOAD_DESTINATION}, received ${response.status} to ${location}`);
+        console.log(`  FAIL  /download ${method} ${response.status}`);
+        continue;
+      }
+      locations.set(method, location);
+      console.log(
+        `  PASS  /download ${method} ${response.status}`
+        + (method === "GET" ? " (bot-classified, excluded from production redirect metrics)" : " (validation only; no attempt marker)"),
+      );
+    } catch (error) {
+      failures.push(`[download] ${method} route check failed: ${error.message}`);
+      console.log(`  FAIL  /download ${method} route check`);
     }
-    console.log(`  PASS  /download ${response.status} (bot-classified, excluded from production redirect metrics)`);
-  } catch (error) {
-    failures.push(`[download] route check failed: ${error.message}`);
-    console.log("  FAIL  /download route check");
+  }
+  if (locations.size === methods.length && locations.get("GET") !== locations.get("HEAD")) {
+    failures.push(`[download] GET and HEAD locations differ: ${locations.get("GET")} vs ${locations.get("HEAD")}`);
   }
 }
 

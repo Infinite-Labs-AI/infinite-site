@@ -1,0 +1,98 @@
+{
+  "captured_at": "2026-08-30T01:17:00Z",
+  "site_worktree_base_sha": "e8e0117ef0e23be55fc43067d27d3c12e5848a05",
+  "site_main_sha": "e8e0117ef0e23be55fc43067d27d3c12e5848a05",
+  "verified_production_sha": "unverified: VERCEL_TOKEN or VERCEL_PROJECT_ID is missing; deploy API was not called",
+  "checks": [
+    {
+      "id": "site-base-equals-main",
+      "passed": true
+    },
+    {
+      "id": "verified-production-sha-not-faked",
+      "passed": true
+    },
+    {
+      "id": "live-sitemap-has-14-routes",
+      "passed": true,
+      "observed": 14
+    },
+    {
+      "id": "download-get-307",
+      "passed": true,
+      "observed": 307
+    },
+    {
+      "id": "download-get-location-github-dmg",
+      "passed": true,
+      "observed": "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg"
+    },
+    {
+      "id": "download-head-404-preserved",
+      "passed": true,
+      "observed": 404
+    },
+    {
+      "id": "installer-pr-merged",
+      "passed": true,
+      "observed": "MERGED"
+    },
+    {
+      "id": "installer-smoke-success",
+      "passed": true,
+      "observed": "completed/success"
+    },
+    {
+      "id": "installer-smoke-head-matches-merge",
+      "passed": true,
+      "observed": {
+        "smoke": "855d4502c8739e4870766a74b48f4613ed555bac",
+        "merge": "855d4502c8739e4870766a74b48f4613ed555bac"
+      }
+    },
+    {
+      "id": "schema-selected-columns-present",
+      "passed": true
+    },
+    {
+      "id": "supabase-prod-project-recorded",
+      "passed": true
+    },
+    {
+      "id": "supabase-receipts-not-unmeasured",
+      "passed": true
+    },
+    {
+      "id": "mcp-proof-consistency",
+      "passed": true,
+      "observed": {
+        "provenance_and_summary_checks": "57/57",
+        "normalized_cli_pairs": "6/6",
+        "gsc_pages_rowset_equality": "verified by reproduced PostgreSQL-jsonb MD5"
+      }
+    },
+    {
+      "id": "supabase-primary-receipts-use-mcp",
+      "passed": true
+    },
+    {
+      "id": "supabase-primary-receipts-have-retained-cli-row-dumps",
+      "passed": true
+    },
+    {
+      "id": "gsc-pages-mcp-cli-normalized-rowset-equality",
+      "passed": true,
+      "observed": {
+        "row_count": 317,
+        "canonical_cli_sha256": "ea263d0aa4167f0c2a1f05939594e63e3c674d779ec5f79cee166abee751fd9b",
+        "mcp_and_postgres_compatible_cli_md5": "81e566657a488a6ff0368ee379114a70"
+      }
+    },
+    {
+      "id": "other-mcp-cli-pairs-have-no-unsupported-row-equality-claim",
+      "passed": true,
+      "observed": "schema, gsc-queries, aeo, cta, and downloads are summary-verified only because their historical MCP raw rows were not retained"
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,381 @@
+{
+  "route_count": 14,
+  "html_receipt_count": 7,
+  "link_instance_count": 473,
+  "unique_link_count": 233,
+  "unique_href_by_host": {
+    "same-page-anchor": 6,
+    "relative": 35,
+    "1x.tech": 1,
+    "poke.com": 1,
+    "adaptive.ai": 1,
+    "cero.finance": 1,
+    "deveillance.com": 1,
+    "hark.com": 1,
+    "heyparker.ai": 1,
+    "intelligence.ai": 1,
+    "lifespan.com": 1,
+    "moda.app": 1,
+    "openmind.com": 1,
+    "rabbit.tech": 1,
+    "tau-robotics.com": 1,
+    "tr.ee": 1,
+    "usefastlane.ai": 1,
+    "wabi.ai": 1,
+    "www.alterego.io": 1,
+    "www.palmier.io": 1,
+    "www.projectread.ai": 1,
+    "api.ultima.inc": 2,
+    "aside.com": 1,
+    "blink.new": 1,
+    "blog.infinite.fast": 1,
+    "chatcut.io": 1,
+    "creativecommons.org": 1,
+    "crosspost.app": 1,
+    "developers.google.com": 1,
+    "github.com": 2,
+    "higgsfield.ai": 1,
+    "hub.infinite.fast": 2,
+    "infinite.fast": 7,
+    "kapso.com": 1,
+    "link.context.dev": 1,
+    "lumeria.skin": 1,
+    "mosaic.so": 1,
+    "myaccount.google.com": 1,
+    "okara.ai": 1,
+    "omanta.com": 1,
+    "open-design.ai": 1,
+    "reactor.inc": 1,
+    "saperly.com": 1,
+    "studio.osmo.inc": 1,
+    "twin.so": 1,
+    "www.anything.com": 1,
+    "www.cognee.ai": 1,
+    "www.fastcompany.com": 1,
+    "www.getbluma.com": 1,
+    "x.com": 134,
+    "x.getstanley.ai": 1,
+    "yutori.com": 1
+  },
+  "retired_blog_link_instances": 7,
+  "hub_link_instances": 4,
+  "download_link_instances": 10,
+  "footer_summary": [
+    {
+      "file": "live-agents.html",
+      "footer_count": 1,
+      "footer_link_count": 11,
+      "links": [
+        {
+          "href": "/",
+          "label": "infinite"
+        },
+        {
+          "href": "/#command",
+          "label": "Work"
+        },
+        {
+          "href": "/#leads",
+          "label": "Stack"
+        },
+        {
+          "href": "/#pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/agents/",
+          "label": "Press Agent"
+        },
+        {
+          "href": "/tools/",
+          "label": "Tools"
+        },
+        {
+          "href": "/compare/infinite-vs-okara/",
+          "label": "Infinite vs Okara"
+        },
+        {
+          "href": "/compare/infinite-vs-ploy/",
+          "label": "Infinite vs Ploy"
+        },
+        {
+          "href": "/compare/infinite-vs-blaze/",
+          "label": "Infinite vs Blaze"
+        },
+        {
+          "href": "/privacy/",
+          "label": "Privacy"
+        },
+        {
+          "href": "/terms/",
+          "label": "Terms"
+        }
+      ]
+    },
+    {
+      "file": "live-compare.html",
+      "footer_count": 0,
+      "footer_link_count": 0,
+      "links": []
+    },
+    {
+      "file": "live-home.html",
+      "footer_count": 2,
+      "footer_link_count": 19,
+      "links": [
+        {
+          "href": "#command",
+          "label": "Buyer intent"
+        },
+        {
+          "href": "#command",
+          "label": "SEO + GEO"
+        },
+        {
+          "href": "#command",
+          "label": "Landing tests"
+        },
+        {
+          "href": "#command",
+          "label": "Content angles"
+        },
+        {
+          "href": "#leads",
+          "label": "Claude Code"
+        },
+        {
+          "href": "/tools/high-intent-lead-finder-template/",
+          "label": "Lead finder template"
+        },
+        {
+          "href": "/tools/seo-geo-brief-generator/",
+          "label": "SEO + GEO brief generator"
+        },
+        {
+          "href": "/tools/landing-page-ab-test-ideas-generator/",
+          "label": "A/B test ideas"
+        },
+        {
+          "href": "/tools/founder-content-ideas-generator/",
+          "label": "Content ideas"
+        },
+        {
+          "href": "/compare/infinite-vs-okara/",
+          "label": "Infinite vs Okara"
+        },
+        {
+          "href": "/compare/infinite-vs-ploy/",
+          "label": "Infinite vs Ploy"
+        },
+        {
+          "href": "/compare/infinite-vs-blaze/",
+          "label": "Infinite vs Blaze"
+        },
+        {
+          "href": "/compare/",
+          "label": "All comparisons"
+        },
+        {
+          "href": "#proof",
+          "label": "Proof"
+        },
+        {
+          "href": "#pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "#faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "https://blog.infinite.fast/",
+          "label": "Blog"
+        },
+        {
+          "href": "/privacy/",
+          "label": "Privacy Policy"
+        },
+        {
+          "href": "/terms/",
+          "label": "Terms of Service"
+        }
+      ]
+    },
+    {
+      "file": "live-privacy.html",
+      "footer_count": 1,
+      "footer_link_count": 2,
+      "links": [
+        {
+          "href": "../",
+          "label": "Home"
+        },
+        {
+          "href": "../terms/",
+          "label": "Terms"
+        }
+      ]
+    },
+    {
+      "file": "live-startup-launch-videos.html",
+      "footer_count": 1,
+      "footer_link_count": 21,
+      "links": [
+        {
+          "href": "/#command",
+          "label": "Buyer intent"
+        },
+        {
+          "href": "/#command",
+          "label": "SEO + GEO"
+        },
+        {
+          "href": "/#command",
+          "label": "Landing tests"
+        },
+        {
+          "href": "/#leads",
+          "label": "Claude Code"
+        },
+        {
+          "href": "https://hub.infinite.fast/research/launch-videos",
+          "label": "The Launch Video Index"
+        },
+        {
+          "href": "/startup-launch-videos/",
+          "label": "Launch video leaderboard"
+        },
+        {
+          "href": "https://api.ultima.inc/api/launch-videos",
+          "label": "Dataset (JSON)"
+        },
+        {
+          "href": "https://api.ultima.inc/api/launch-videos/csv",
+          "label": "Dataset (CSV)"
+        },
+        {
+          "href": "/tools/high-intent-lead-finder-template/",
+          "label": "Lead finder template"
+        },
+        {
+          "href": "/tools/seo-geo-brief-generator/",
+          "label": "SEO + GEO brief generator"
+        },
+        {
+          "href": "/tools/founder-content-ideas-generator/",
+          "label": "Content ideas"
+        },
+        {
+          "href": "/agents/",
+          "label": "Agents directory"
+        },
+        {
+          "href": "/compare/infinite-vs-okara/",
+          "label": "Infinite vs Okara"
+        },
+        {
+          "href": "/compare/infinite-vs-ploy/",
+          "label": "Infinite vs Ploy"
+        },
+        {
+          "href": "/compare/infinite-vs-blaze/",
+          "label": "Infinite vs Blaze"
+        },
+        {
+          "href": "/compare/",
+          "label": "All comparisons"
+        },
+        {
+          "href": "/#proof",
+          "label": "Proof"
+        },
+        {
+          "href": "/#pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "https://blog.infinite.fast/",
+          "label": "Blog"
+        },
+        {
+          "href": "/privacy/",
+          "label": "Privacy Policy"
+        },
+        {
+          "href": "/terms/",
+          "label": "Terms of Service"
+        }
+      ]
+    },
+    {
+      "file": "live-terms.html",
+      "footer_count": 1,
+      "footer_link_count": 2,
+      "links": [
+        {
+          "href": "../",
+          "label": "Home"
+        },
+        {
+          "href": "../privacy/",
+          "label": "Privacy"
+        }
+      ]
+    },
+    {
+      "file": "live-tools.html",
+      "footer_count": 1,
+      "footer_link_count": 12,
+      "links": [
+        {
+          "href": "/",
+          "label": "infinite"
+        },
+        {
+          "href": "/#command",
+          "label": "Work"
+        },
+        {
+          "href": "/#leads",
+          "label": "Stack"
+        },
+        {
+          "href": "/#pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/tools/high-intent-lead-finder-template/",
+          "label": "Lead finder"
+        },
+        {
+          "href": "/tools/seo-geo-brief-generator/",
+          "label": "SEO brief"
+        },
+        {
+          "href": "/tools/landing-page-ab-test-ideas-generator/",
+          "label": "A/B tests"
+        },
+        {
+          "href": "/compare/infinite-vs-okara/",
+          "label": "Infinite vs Okara"
+        },
+        {
+          "href": "/compare/infinite-vs-ploy/",
+          "label": "Infinite vs Ploy"
+        },
+        {
+          "href": "/compare/infinite-vs-blaze/",
+          "label": "Infinite vs Blaze"
+        },
+        {
+          "href": "/privacy/",
+          "label": "Privacy"
+        },
+        {
+          "href": "/terms/",
+          "label": "Terms"
+        }
+      ]
+    }
+  ]
+}

@@ -2,21 +2,17 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { renderInfiniteBrowserTag } from "infinite-tag";
 
+import { PUBLIC_ROUTES } from "./lib/public-site-manifest.mjs";
+
 const origin = "https://infinite.fast";
-const pages = [
+const sourceFileByPath = new Map([
   ["/", "_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html"],
-  ["/privacy/", "privacy/index.html"],
-  ["/terms/", "terms/index.html"],
-  ["/tools/", "tools/index.html"],
-  ["/tools/high-intent-lead-finder-template/", "tools/high-intent-lead-finder-template/index.html"],
-  ["/tools/seo-geo-brief-generator/", "tools/seo-geo-brief-generator/index.html"],
-  ["/tools/landing-page-ab-test-ideas-generator/", "tools/landing-page-ab-test-ideas-generator/index.html"],
-  ["/tools/founder-content-ideas-generator/", "tools/founder-content-ideas-generator/index.html"],
-  ["/compare/", "compare/index.html"],
-  ["/compare/infinite-vs-okara/", "compare/infinite-vs-okara/index.html"],
-  ["/compare/infinite-vs-ploy/", "compare/infinite-vs-ploy/index.html"],
-  ["/compare/infinite-vs-blaze/", "compare/infinite-vs-blaze/index.html"],
-];
+  ["/startup-launch-videos/", null],
+]);
+const pages = PUBLIC_ROUTES.filter((route) => route.path !== "/startup-launch-videos/").map((route) => [
+  route.path,
+  sourceFileByPath.get(route.path) ?? `${route.path.slice(1)}index.html`,
+]);
 
 for (const [route, file] of pages) {
   const html = readFileSync(file, "utf8");
@@ -41,8 +37,8 @@ const sitemap = readFileSync("sitemap.xml", "utf8");
 const sitemapUrls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]);
 assert.deepEqual(
   [...sitemapUrls].sort(),
-  pages.map(([route]) => `${origin}${route}`).sort(),
-  "sitemap URLs must exactly match the 12 apex canonical pages",
+  PUBLIC_ROUTES.map((route) => `${origin}${route.path}`).sort(),
+  "sitemap URLs must exactly match the manifest apex canonical pages",
 );
 assert.doesNotMatch(sitemap, /blog\.infinite\.fast|www\.infinite\.fast/);
 
@@ -57,7 +53,7 @@ const generatedAnalytics = renderInfiniteBrowserTag({
   consent: { mode: "not_required" },
   mirrors: [],
 });
-for (const event of ["site_page_view", "site_click", "app_download_click", "app_download_clicked"]) {
+for (const event of ["site_page_view", "site_click", "app_download_click"]) {
   assert.match(generatedAnalytics, new RegExp(event), `generated package runtime must contain ${event}`);
 }
 assert.match(generatedAnalytics, /data-download-location/, "generated package runtime must consume download placement markers");
@@ -67,17 +63,25 @@ assert.doesNotMatch(analyticsInjector, /appDownloadTrackingSnippet|link_text|tex
 
 const homepage = readFileSync(pages[0][1], "utf8");
 assert.match(homepage, /Meet Infinite, your AI CMO/i);
-assert.match(homepage, /Find leads, automate SEO, A\/B test landing pages, and uncover trending content\./i);
-assert.match(homepage, /review-first/i);
+assert.match(homepage, /Find leads, automate SEO, plan landing-page CRO tests, and uncover trending content\./i);
+assert.match(homepage, /native authority and policy checks and require operator confirmation before execution/i);
+assert.match(homepage, /Scoped app\/MCP tools follow a separate boundary[\s\S]*host supplies their schemas and owns their semantic validation and confirmation/i);
+assert.match(homepage, /tool or proposal can be invoked before[\s\S]*follow-up confirmation/i);
+assert.match(homepage, /built-in\/native catalog has no arbitrary shell or code runner[\s\S]*host may intentionally expose broader capabilities/i);
+assert.doesNotMatch(homepage, /Live or destructive actions invoked through those tools require operator confirmation/i);
+assert.match(homepage, /test ideas for existing pages/i);
+assert.doesNotMatch(homepage, /A\/B test landing pages|landing-page creation|split live traffic[^<]*\bdoes\b(?! not)/i);
 
-const toolFiles = pages.slice(4, 8).map(([, file]) => file);
+const toolFiles = pages
+  .filter(([route]) => route.startsWith("/tools/") && route !== "/tools/")
+  .map(([, file]) => file);
 for (const file of toolFiles) {
   const html = readFileSync(file, "utf8");
   assert.ok((html.match(/<h2\b/gi) || []).length >= 3, `${file} needs at least three H2 sections`);
   assert.match(html, /WebApplication/);
   assert.match(html, /BreadcrumbList/);
   assert.match(html, /data-(?:copy|download)|result_copied|download_clicked/);
-  assert.match(html, /https:\/\/blog\.infinite\.fast\/[a-z0-9-]+/);
+  assert.match(html, /https:\/\/hub\.infinite\.fast\/[a-z0-9-]+/);
 }
 
 const toolScript = readFileSync("assets/seo-tools.js", "utf8");
@@ -85,7 +89,9 @@ for (const event of ["tool_started", "tool_generated", "result_copied", "downloa
   assert.match(toolScript, new RegExp(event), `tool analytics must emit ${event}`);
 }
 
-const comparisonFiles = pages.slice(9).map(([, file]) => file);
+const comparisonFiles = pages
+  .filter(([route]) => route.startsWith("/compare/") && route !== "/compare/")
+  .map(([, file]) => file);
 for (const file of comparisonFiles) {
   const html = readFileSync(file, "utf8");
   assert.ok((html.match(/<h2\b/gi) || []).length >= 4, `${file} needs at least four H2 sections`);
@@ -93,7 +99,7 @@ for (const file of comparisonFiles) {
   assert.match(html, /methodology/i);
   assert.match(html, /Infinite (?:created|publishes|produced) this comparison/i);
   assert.match(html, /BreadcrumbList/);
-  assert.match(html, /https:\/\/(?!infinite\.fast|blog\.infinite\.fast)[^"'\s<]+/);
+  assert.match(html, /https:\/\/(?!infinite\.fast|hub\.infinite\.fast)[^"'\s<]+/);
 }
 
 const vercel = JSON.parse(readFileSync("vercel.json", "utf8"));
@@ -110,7 +116,7 @@ for (const name of [
   assert.ok(headerNames.has(name), `vercel.json must configure ${name}`);
 }
 
-console.log(`Verified ${pages.length} apex pages against the Infinite site audit.`);
+console.log(`Verified ${pages.length} source-backed apex pages against the Infinite site audit.`);
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

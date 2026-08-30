@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Growth Tools for Founders | Infinite</title>
+  <meta name="description" content="Free Infinite tools for finding high-intent leads, generating SEO and GEO briefs, planning landing-page A/B tests, and finding founder content ideas.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="canonical" href="https://infinite.fast/tools/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Infinite">
+  <meta property="og:title" content="Free Growth Tools for Founders | Infinite">
+  <meta property="og:description" content="Generate customer acquisition ideas for leads, SEO, landing pages, and content.">
+  <meta property="og:url" content="https://infinite.fast/tools/">
+  <meta property="og:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Infinite AI CMO growth system">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
+  <meta name="twitter:image:alt" content="Infinite AI CMO growth system">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/seo-pages.css">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Free Growth Tools for Founders",
+      "url": "https://infinite.fast/tools/",
+      "description": "Free customer acquisition tools for founder-led growth.",
+      "publisher": { "@type": "Organization", "name": "Infinite", "url": "https://infinite.fast/" }
+    }
+  </script>
+  <script>
+    (function () {
+      window.__infiniteConsentGate = function (start) {
+        var started = false;
+        function run() {
+          if (started) return;
+          started = true;
+          try { start(); } catch (_startError) {}
+        }
+        try {
+          window.addEventListener("infinite:analytics-consent-change", function (event) {
+            if (event && event.detail && event.detail.granted === true) run();
+          });
+          var stored = null;
+          try { stored = localStorage.getItem("infinite_analytics_consent"); } catch (_storageError) {}
+          if (stored === "denied") return;
+          var signal = navigator.doNotTrack === "1" || navigator.globalPrivacyControl === true;
+          if (!signal || stored === "granted") run();
+        } catch (_error) {}
+      };
+    })();
+  </script>
+  <script>
+    window.__infiniteConsentGate(function () {
+    !(function (t, e) {
+      var o, n, p, r;
+      e.__SV ||
+        ((window.posthog = e),
+        (e._i = []),
+        (e.init = function (i, s, a) {
+          function g(t, e) {
+            var o = e.split(".");
+            2 == o.length && ((t = t[o[0]]), (e = o[1])),
+              (t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))); });
+          }
+          ((p = t.createElement("script")).type = "text/javascript"),
+            (p.crossOrigin = "anonymous"),
+            (p.async = !0),
+            (p.src = s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js"),
+            (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r);
+          var u = e;
+          for (
+            void 0 !== a ? (u = e[a] = []) : (a = "posthog"),
+              u.people = u.people || [],
+              u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e; },
+              u.people.toString = function () { return u.toString(1) + ".people (stub)"; },
+              o = "init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),
+              n = 0;
+            n < o.length;
+            n++
+          ) g(u, o[n]);
+          e._i.push([i, s, a]);
+        }),
+        (e.__SV = 1));
+    })(document, window.posthog || []);
+    var NO_REPLAY_PATHS = ["/startup-launch-videos"];
+    var NO_REPLAY_HERE = location.pathname;
+    if (NO_REPLAY_HERE.length > 1 && NO_REPLAY_HERE.charAt(NO_REPLAY_HERE.length - 1) === "/") {
+      NO_REPLAY_HERE = NO_REPLAY_HERE.slice(0, -1);
+    }
+    posthog.init("phc_wUuv4hpsa4jfi6fNSzWU9t3JSKneFHusRunsYenhjndJ", {
+      api_host: "/ingest",
+      ui_host: "https://eu.posthog.com",
+      defaults: "2026-01-30",
+      // Session replay is OFF on the Launch Video Leaderboard, and ONLY there.
+      //
+      // That page is a ~50-row table people scroll and hover. rrweb snapshots the ~1,900-node DOM,
+      // installs a document-wide MutationObserver, and has to serialise ~1,800 element removals and
+      // additions every time someone sorts or pages it. Replay is not worth that on a page whose
+      // only interaction is browsing a ranking.
+      //
+      // Every other page keeps replay. Heatmaps and performance capture are untouched everywhere —
+      // an earlier revision disabled all three site-wide, which was not the intent.
+      //
+      // Add a path to NO_REPLAY_PATHS to exclude another page; a trailing slash is ignored.
+      // NOTE: no regex literal here on purpose. This snippet is built inside a JS template literal,
+      // where a backslash is an escape sequence — writing //+$/ emits //+$/, which is a line
+      // comment, and silently truncates the rest of the line.
+      disable_session_recording: NO_REPLAY_PATHS.indexOf(NO_REPLAY_HERE) !== -1,
+    });
+    posthog.register({ platform: "website" });
+    });
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script>
+    window.__infiniteConsentGate(function () {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+      window.gtag("js", new Date());
+      window.gtag("config", "G-JE3BZS61FZ");
+      var loader = document.createElement("script");
+      loader.async = true;
+      loader.src = "https://www.googletagmanager.com/gtag/js?id=G-JE3BZS61FZ";
+      document.head.appendChild(loader);
+    });
+  </script>
+  <script>
+    document.addEventListener("click", function (event) {
+      var target = event.target && typeof event.target.closest === "function" ? event.target : null;
+      var anchor = target && target.closest("a[href]");
+      if (!anchor || event.defaultPrevented) return;
+      try {
+        var destination = new URL(anchor.href, location.href);
+        if (destination.origin !== location.origin || destination.pathname.replace(/\/+$/, "") !== "/download") return;
+        // GA4 is consent-gated: when it never initialized, window.gtag does not exist. Leave
+        // the navigation completely untouched then — cancelling it before a gtag throw would
+        // silently kill the Download button (the server redirect lane still counts the click).
+        if (typeof window.gtag !== "function") return;
+        var locationToken = anchor.getAttribute("data-analytics-cta-location") || anchor.getAttribute("data-download-location");
+        var sameTab = event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && anchor.getAttribute("target") !== "_blank";
+        var followed = false;
+        function follow() {
+          if (followed) return;
+          followed = true;
+          location.assign(destination.href);
+        }
+        if (sameTab) event.preventDefault();
+        window.gtag("event", "app_download_clicked", {
+          send_to: "G-JE3BZS61FZ",
+          ...(locationToken && /^[A-Za-z0-9_-]{1,64}$/.test(locationToken) ? { cta_location: locationToken } : {}),
+          destination_path: "/download",
+          ...(sameTab ? { event_callback: follow, event_timeout: 1000 } : {}),
+        });
+        if (sameTab) setTimeout(follow, 1000);
+      } catch (_error) {}
+    });
+  </script>
+<script data-infinite-runtime="managed">;(function infiniteBrowserRuntime(config) {
+    const runtimeWindow = window;
+    if (runtimeWindow.__infiniteAnalyticsRuntime)
+        return;
+    runtimeWindow.__infiniteAnalyticsRuntime = true;
+    // Automation-driven browsers declare themselves (WebDriver spec): never a visit, never an event.
+    if (navigator.webdriver === true)
+        return;
+    const isLoopbackHost = location.hostname === "localhost" ||
+        location.hostname === "127.0.0.1" ||
+        location.hostname === "::1" ||
+        location.hostname === "[::1]";
+    const isVerifiedProductionHost = config.productionHosts.length > 0 &&
+        config.productionHosts.includes(location.hostname.toLowerCase());
+    if (isLoopbackHost || !isVerifiedProductionHost)
+        return;
+    const structuralTokenPattern = /^[A-Za-z0-9_-]{1,64}$/;
+    function normalizePath(raw) {
+        const pathname = new URL(raw, location.href).pathname.replace(/\/{2,}/g, "/");
+        const stripped = pathname === "/" ? "/" : pathname.replace(/\/+$/, "") || "/";
+        if (stripped === "/" || stripped === "/download" || stripped === "/LICENSE")
+            return stripped;
+        const lastSegment = stripped.slice(stripped.lastIndexOf("/") + 1);
+        return lastSegment.includes(".") ? stripped : stripped + "/";
+    }
+    // The workspace's conversion destination for download-intent clicks, normalized once so every
+    // comparison (and the emitted destination_path property) uses the same canonical spelling the
+    // cloud ingest normalizes to. Default: the platform's /download.
+    const conversionDestinationPath = normalizePath(config.downloadDestinationPath || "/download");
+    function cleanReferrerHost(raw) {
+        if (!raw)
+            return "";
+        try {
+            return new URL(raw, location.href).hostname.toLowerCase().replace(/\.$/, "");
+        }
+        catch {
+            return "";
+        }
+    }
+    function storageId(storage, key) {
+        try {
+            const existing = storage.getItem(key);
+            if (existing)
+                return existing;
+            const created = crypto.randomUUID();
+            storage.setItem(key, created);
+            return created;
+        }
+        catch {
+            return crypto.randomUUID();
+        }
+    }
+    let anonymousId;
+    let sessionId;
+    function privacySignalBlocks() {
+        if (!config.respectDnt)
+            return false;
+        const privacyNavigator = navigator;
+        return privacyNavigator.doNotTrack === "1" || privacyNavigator.globalPrivacyControl === true;
+    }
+    // One key for both consent modes: not_required sites may still record an explicit
+    // decision (a GPC/DNT visitor clicking "allow analytics"), and the recorded decision
+    // must survive a later switch to required mode.
+    const consentStorageKey = config.consent.mode === "required" ? config.consent.storageKey : "infinite_analytics_consent";
+    let consentOverride;
+    function storedConsentDecision() {
+        try {
+            const value = localStorage.getItem(consentStorageKey);
+            if (value === "granted")
+                return true;
+            if (value === "denied")
+                return false;
+        }
+        catch {
+            // Unreadable storage means no recorded decision.
+        }
+        return undefined;
+    }
+    function hasConsent() {
+        // The user's explicit site-specific decision takes precedence over the global
+        // privacy signal — per the GPC spec, DNT/GPC is the DEFAULT, and a choice the
+        // user makes on this site overrides it (in either direction).
+        const decision = consentOverride !== undefined ? consentOverride : storedConsentDecision();
+        if (decision !== undefined)
+            return decision;
+        if (privacySignalBlocks())
+            return false;
+        return config.consent.mode === "not_required";
+    }
+    function sendInfinite(payload) {
+        if (!config.siteSourceKey)
+            return;
+        const body = JSON.stringify({
+            ...payload,
+            siteSourceKey: config.siteSourceKey
+        });
+        if (typeof navigator.sendBeacon === "function" &&
+            navigator.sendBeacon(config.collectPath, body)) {
+            return;
+        }
+        const send = (retry) => {
+            void fetch(config.collectPath, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body,
+                keepalive: true,
+                credentials: "same-origin"
+            })
+                .then((response) => {
+                if (!response.ok && retry)
+                    setTimeout(() => send(false), 250);
+            })
+                .catch(() => {
+                if (retry)
+                    setTimeout(() => send(false), 250);
+            });
+        };
+        send(true);
+    }
+    function emit(eventName, path, properties) {
+        if (!hasConsent())
+            return;
+        const canonicalPath = normalizePath(path);
+        anonymousId ??= storageId(localStorage, "infinite_analytics_visitor");
+        sessionId ??= storageId(sessionStorage, "infinite_analytics_session");
+        const payload = {
+            eventId: crypto.randomUUID(),
+            eventName,
+            occurredAt: new Date().toISOString(),
+            anonymousId,
+            sessionId,
+            url: location.origin + canonicalPath
+        };
+        const referrer = cleanReferrerHost(document.referrer);
+        if (referrer)
+            payload.referrer = referrer;
+        if (properties && Object.keys(properties).length > 0)
+            payload.properties = properties;
+        sendInfinite(payload);
+    }
+    // One logical page view per canonical path (the pathname-only dedupe) — the initial document
+    // load is nav:"navigate"; a History-API route change is nav:"history". A consent grant that
+    // arrives after the load re-emits the CURRENT page as the initial view (it IS the first view the
+    // runtime was allowed to observe), so `initialView` stays true until a view is actually sent.
+    let lastPageViewPath = null;
+    let initialView = true;
+    function emitPageView() {
+        const path = normalizePath(location.href);
+        if (path === lastPageViewPath)
+            return;
+        if (!hasConsent())
+            return;
+        lastPageViewPath = path;
+        const nav = initialView ? "navigate" : "history";
+        initialView = false;
+        emit("site_page_view", path, { nav });
+    }
+    // Bounded properties for a marked sign-up element: the optional structural cta markers, plus a
+    // same-origin destination when the marked element is (or wraps) an anchor. Never link text,
+    // never form field values — the intent event carries structure only.
+    function signupProperties(marked) {
+        const properties = {};
+        const ctaId = marked.getAttribute("data-analytics-cta-id");
+        const ctaLocation = marked.getAttribute("data-analytics-cta-location");
+        if (ctaId && structuralTokenPattern.test(ctaId))
+            properties.cta_id = ctaId;
+        if (ctaLocation && structuralTokenPattern.test(ctaLocation)) {
+            properties.cta_location = ctaLocation;
+        }
+        const anchor = (typeof marked.closest === "function"
+            ? marked.closest("a[href]")
+            : null);
+        if (anchor) {
+            try {
+                const destination = new URL(anchor.href, location.href);
+                if (destination.origin === location.origin) {
+                    properties.destination_path = normalizePath(destination.href);
+                }
+            }
+            catch {
+                // A destination is optional; malformed values are omitted.
+            }
+        }
+        return properties;
+    }
+    function bindRuntime() {
+        const wrapHistory = (method) => {
+            const original = history[method];
+            history[method] = function (...args) {
+                const result = original.apply(this, args);
+                emitPageView();
+                return result;
+            };
+        };
+        wrapHistory("pushState");
+        wrapHistory("replaceState");
+        runtimeWindow.addEventListener("popstate", emitPageView);
+        document.addEventListener("click", (event) => {
+            const target = event.target && typeof event.target.closest === "function"
+                ? event.target
+                : null;
+            if (!target || !hasConsent())
+                return;
+            const anchor = target.closest("a[href]");
+            if (anchor) {
+                try {
+                    const destination = new URL(anchor.href, location.href);
+                    if (destination.origin === location.origin &&
+                        normalizePath(destination.href) === conversionDestinationPath) {
+                        const ctaLocation = [
+                            anchor.getAttribute("data-analytics-cta-location"),
+                            anchor.getAttribute("data-download-location")
+                        ].find((value) => typeof value === "string" && structuralTokenPattern.test(value));
+                        emit("app_download_click", normalizePath(location.href), {
+                            ...(ctaLocation ? { cta_location: ctaLocation } : {}),
+                            destination_path: conversionDestinationPath
+                        });
+                        return;
+                    }
+                }
+                catch {
+                    // Ignore malformed hrefs.
+                }
+            }
+            // Marked sign-up intent: an anchor/button (or anything inside one) carrying
+            // data-conversion="signup". Takes precedence over the generic CTA lane — one observation,
+            // one event (a marked element never double-emits site_click for the same click). The
+            // properties stay strictly structural: optional cta markers + a same-origin destination.
+            const signup = target.closest('[data-conversion="signup"]');
+            if (signup) {
+                emit("sign_up_click", normalizePath(location.href), signupProperties(signup));
+                return;
+            }
+            const cta = target.closest("[data-analytics-cta-id]");
+            if (!cta)
+                return;
+            const ctaId = cta.getAttribute("data-analytics-cta-id") ?? "";
+            const ctaLocation = cta.getAttribute("data-analytics-cta-location") ?? "";
+            if (!structuralTokenPattern.test(ctaId) || !structuralTokenPattern.test(ctaLocation)) {
+                return;
+            }
+            const properties = {
+                cta_id: ctaId,
+                cta_location: ctaLocation
+            };
+            const ctaAnchor = cta.closest("a[href]");
+            if (ctaAnchor) {
+                try {
+                    const destination = new URL(ctaAnchor.href, location.href);
+                    if (destination.origin === location.origin) {
+                        properties.destination_path = normalizePath(destination.href);
+                    }
+                }
+                catch {
+                    // A destination is optional; malformed values are omitted.
+                }
+            }
+            emit("site_click", normalizePath(location.href), properties);
+        });
+        // Marked sign-up FORMS: a submit on (or inside) form[data-conversion="signup"] is the intent
+        // observation for form-based sign-ups — same event, same bounded properties as the click lane
+        // (minus a destination: a form submit's target is not a navigation the visitor chose).
+        document.addEventListener("submit", (event) => {
+            const target = event.target && typeof event.target.closest === "function"
+                ? event.target
+                : null;
+            if (!target || !hasConsent())
+                return;
+            const form = target.closest('form[data-conversion="signup"]');
+            if (!form)
+                return;
+            const properties = {};
+            const ctaId = form.getAttribute("data-analytics-cta-id");
+            const ctaLocation = form.getAttribute("data-analytics-cta-location");
+            if (ctaId && structuralTokenPattern.test(ctaId))
+                properties.cta_id = ctaId;
+            if (ctaLocation && structuralTokenPattern.test(ctaLocation)) {
+                properties.cta_location = ctaLocation;
+            }
+            emit("sign_up_click", normalizePath(location.href), properties);
+        });
+        // A consent decision must follow a genuine user gesture. Any same-origin script can
+        // dispatch the consent event, and — since explicit decisions now override GPC/DNT —
+        // a silent dispatch could otherwise persistently defeat a visitor's privacy signal.
+        // A real consent UI always produces a pointerdown/keydown moments before dispatching;
+        // a background script does not.
+        let lastGestureAt = 0;
+        const recordGesture = () => {
+            lastGestureAt = Date.now();
+        };
+        document.addEventListener("pointerdown", recordGesture, true);
+        document.addEventListener("keydown", recordGesture, true);
+        runtimeWindow.addEventListener("infinite:analytics-consent-change", (event) => {
+            // Accepted in EVERY consent mode: a not_required site still needs to record the
+            // explicit decision of a GPC/DNT visitor (the only visitors it suppresses).
+            if (Date.now() - lastGestureAt > 10000)
+                return;
+            const detail = event.detail;
+            consentOverride = detail?.granted === true;
+            try {
+                localStorage.setItem(consentStorageKey, detail?.granted ? "granted" : "denied");
+            }
+            catch {
+                // The in-memory decision still governs this page when storage is unavailable.
+            }
+            if (hasConsent()) {
+                emitPageView();
+            }
+            else {
+                // A revocation: the next grant re-observes the page as a fresh initial view.
+                lastPageViewPath = null;
+                initialView = true;
+            }
+        });
+        emitPageView();
+    }
+    // The browser→desktop handoff context — the ONLY thing this runtime exposes to the page, and
+    // the narrowest thing that can carry a browser journey into a native app. The site reads it at
+    // most once, when a visitor clicks Download, to mint a one-time attribution claim.
+    //
+    // Deliberately not a capability: no `track()`, no dispatch, no emitter, no workspace /
+    // authority / environment / endpoint, and no knowledge that a cloud exists. It also mints NO
+    // new identity — it returns the same random localStorage/sessionStorage ids the runtime already
+    // uses for its own events, so reading it can never create a visitor the site would not have had.
+    //
+    // Installed only for a configured source (the checks above already returned for loopback,
+    // unverified hosts and automation-driven browsers), so a page with no Infinite source, or on an
+    // unverified host, sees no accessor at all. Consent is re-checked on EVERY call — a stored
+    // denial, a DNT/GPC default, or a revocation dispatched a moment ago returns null, never an
+    // identity — which is why this is a live accessor and not a frozen value.
+    if (config.siteSourceKey) {
+        const siteSourceKey = config.siteSourceKey;
+        runtimeWindow.__infiniteHandoffContext = () => {
+            if (!hasConsent())
+                return null;
+            anonymousId ??= storageId(localStorage, "infinite_analytics_visitor");
+            sessionId ??= storageId(sessionStorage, "infinite_analytics_session");
+            return {
+                siteSourceKey,
+                anonymousId,
+                sessionId,
+                url: location.origin + normalizePath(location.href)
+            };
+        };
+    }
+    // Bind immediately: the runtime waits on no provider global (there is nothing to wait for).
+    bindRuntime();
+})({"siteSourceKey":"site_e603190d2f6b46648771e7e49e3c341b","collectPath":"/infinite/ledger","productionHosts":["infinite.fast"],"respectDnt":true,"consent":{"mode":"not_required"},"mirrors":[]});</script>
+  <script>
+    (function () {
+      var CARD_ID = "infinite-handoff-card";
+      var CARD_CSS = "position:fixed;right:20px;bottom:20px;z-index:2147482900;width:340px;max-width:calc(100vw - 40px);padding:20px 22px;border-radius:16px;background:#111318;color:#f5f6f8;font:14px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 16px 60px rgba(0,0,0,0.45);";
+      var BTN_PRIMARY = "display:block;padding:11px 18px;border-radius:10px;background:#f5f6f8;color:#111318;font:inherit;font-size:15px;font-weight:600;text-align:center;text-decoration:none;";
+      var BTN_SECONDARY = "display:block;margin-top:8px;padding:11px 18px;border:1px solid rgba(245,246,248,0.35);border-radius:10px;background:transparent;color:#f5f6f8;font:inherit;font-size:14px;text-align:center;text-decoration:none;";
+      var DISMISS_CSS = "position:absolute;top:10px;right:12px;padding:2px 6px;border:0;background:transparent;color:rgba(245,246,248,0.6);font:inherit;font-size:18px;line-height:1;cursor:pointer;";
+      var card = null;
+      var openLink = null;
+
+      function base64url(bytes) {
+        var binary = "";
+        for (var i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+      }
+      function randomBytes(length) {
+        var bytes = new Uint8Array(length);
+        crypto.getRandomValues(bytes);
+        return bytes;
+      }
+      // RFC 4122 v4 from the same CSPRNG as the secret, so one capability check covers both and the
+      // id always satisfies the server's strict v4 parser (crypto.randomUUID is unavailable on
+      // insecure contexts and older Safari, which would silently drop those visitors).
+      function uuidV4() {
+        var bytes = randomBytes(16);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        var hex = [];
+        for (var i = 0; i < 16; i += 1) hex.push((bytes[i] + 0x100).toString(16).slice(1));
+        return hex.slice(0, 4).join("") + "-" + hex.slice(4, 6).join("") + "-" + hex.slice(6, 8).join("")
+          + "-" + hex.slice(8, 10).join("") + "-" + hex.slice(10, 16).join("");
+      }
+      function textEl(tag, css, text) {
+        var el = document.createElement(tag);
+        if (css) el.style.cssText = css;
+        if (text) el.appendChild(document.createTextNode(text));
+        return el;
+      }
+      function buildCard() {
+        card = document.createElement("div");
+        card.id = CARD_ID;
+        card.setAttribute("role", "status");
+        card.setAttribute("aria-live", "polite");
+        card.style.cssText = CARD_CSS;
+        var dismiss = textEl("button", DISMISS_CSS, "\u00d7");
+        dismiss.setAttribute("type", "button");
+        dismiss.setAttribute("aria-label", "Dismiss");
+        dismiss.addEventListener("click", function () {
+          if (card && card.parentNode) card.parentNode.removeChild(card);
+        });
+        card.appendChild(dismiss);
+        card.appendChild(textEl("h2", "margin:0 0 6px;font-size:16px;font-weight:700;", "Download started"));
+        card.appendChild(textEl("p", "margin:0 0 14px;color:rgba(245,246,248,0.8);", "Install Infinite, then come back here and click Open Infinite."));
+        openLink = textEl("a", BTN_PRIMARY, "Open Infinite");
+        card.appendChild(openLink);
+        var again = textEl("a", BTN_SECONDARY, "Download again");
+        again.href = "/download";
+        card.appendChild(again);
+      }
+      // A later valid Download REPLACES this card's claim; it never stacks a second card, and the
+      // clicked anchor is never detached mid-dispatch (that would risk cancelling its navigation).
+      function showCard(claimId, claimSecret) {
+        if (!card) buildCard();
+        openLink.href = "infinite://handoff/v1?claim_id=" + encodeURIComponent(claimId)
+          + "&secret=" + encodeURIComponent(claimSecret);
+        if (!card.parentNode) document.body.appendChild(card);
+      }
+      function downloadAnchor(event) {
+        if (event.defaultPrevented) return null;
+        var target = event.target && typeof event.target.closest === "function" ? event.target : null;
+        var anchor = target && target.closest("a[href]");
+        if (!anchor) return null;
+        var destination = new URL(anchor.href, location.href);
+        if (destination.origin !== location.origin) return null;
+        if (destination.pathname.replace(/\/+$/, "") !== "/download") return null;
+        return anchor;
+      }
+      document.addEventListener("click", function (event) {
+        try {
+          var anchor = downloadAnchor(event);
+          if (!anchor) return;
+          var context = typeof window.__infiniteHandoffContext === "function" ? window.__infiniteHandoffContext() : null;
+          if (!context) return;
+          if (typeof context.siteSourceKey !== "string" || typeof context.anonymousId !== "string"
+            || typeof context.sessionId !== "string" || typeof context.url !== "string") return;
+          var claimId = uuidV4();
+          var claimSecret = base64url(randomBytes(32));
+          var body = JSON.stringify({
+            siteSourceKey: context.siteSourceKey,
+            claimId: claimId,
+            claimSecret: claimSecret,
+            anonymousId: context.anonymousId,
+            sessionId: context.sessionId,
+            occurredAt: new Date().toISOString(),
+            url: context.url
+          });
+          if (typeof navigator.sendBeacon !== "function" || !navigator.sendBeacon("/infinite/handoff", body)) {
+            void fetch("/infinite/handoff", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: body,
+              keepalive: true,
+              credentials: "same-origin"
+            }).catch(function () {});
+          }
+          anchor.target = "_blank";
+          anchor.rel = "noopener";
+          showCard(claimId, claimSecret);
+        } catch (_error) {}
+      }, true);
+    })();
+  </script>
+  <script>
+    (function () {
+      try {
+        var hosts = ["infinite.fast"];
+        if (hosts.indexOf(location.hostname.toLowerCase().replace(/\.$/, "")) === -1) return;
+        function textEl(tag, css, text) {
+          var el = document.createElement(tag);
+          if (css) el.style.cssText = css;
+          if (text) el.appendChild(document.createTextNode(text));
+          return el;
+        }
+        function policyLink(href, text) {
+          var link = document.createElement("a");
+          link.href = href;
+          link.style.cssText = "color:#f5f6f8;text-decoration:underline;";
+          link.appendChild(document.createTextNode(text));
+          return link;
+        }
+        function decide(granted) {
+          window.dispatchEvent(new CustomEvent("infinite:analytics-consent-change", { detail: { granted: granted } }));
+          var banner = document.getElementById("infinite-privacy-prompt");
+          if (banner && banner.parentNode) banner.parentNode.removeChild(banner);
+        }
+        var BTN_PRIMARY = "padding:12px 24px;border:0;border-radius:10px;background:#f5f6f8;color:#111318;font:inherit;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;";
+        var BTN_SECONDARY = "padding:12px 24px;border:1px solid rgba(245,246,248,0.35);border-radius:10px;background:transparent;color:#f5f6f8;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap;";
+        function render() {
+          if (document.getElementById("infinite-privacy-prompt")) return;
+          var wrap = document.createElement("div");
+          wrap.id = "infinite-privacy-prompt";
+          wrap.style.cssText = "position:fixed;bottom:20px;left:0;right:0;z-index:2147483000;display:flex;justify-content:center;padding:0 16px;pointer-events:none;";
+          var card = document.createElement("div");
+          card.setAttribute("role", "dialog");
+          card.setAttribute("aria-label", "Privacy choices");
+          card.style.cssText = "pointer-events:auto;width:100%;max-width:640px;padding:24px 28px;border-radius:16px;background:#111318;color:#f5f6f8;font:14px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 16px 60px rgba(0,0,0,0.45);";
+
+          var main = document.createElement("div");
+          main.appendChild(textEl("h2", "margin:0 0 8px;font-size:17px;font-weight:700;", "We value your privacy"));
+          var copy = textEl("p", "margin:0 0 16px;color:rgba(245,246,248,0.8);");
+          copy.appendChild(document.createTextNode('We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies. Learn more in our '));
+          copy.appendChild(policyLink("/privacy/", "Privacy Policy"));
+          copy.appendChild(document.createTextNode(" and "));
+          copy.appendChild(policyLink("/privacy/", "Cookie Policy"));
+          copy.appendChild(document.createTextNode("."));
+          main.appendChild(copy);
+          var mainButtons = document.createElement("div");
+          mainButtons.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;";
+          var accept = textEl("button", BTN_PRIMARY + "flex:1;", "Accept All");
+          accept.addEventListener("click", function () { decide(true); });
+          var manage = textEl("button", BTN_SECONDARY + "flex:1;", "Manage");
+          mainButtons.appendChild(accept);
+          mainButtons.appendChild(manage);
+          main.appendChild(mainButtons);
+
+          var manageView = document.createElement("div");
+          manageView.style.display = "none";
+          manageView.appendChild(textEl("h2", "margin:0 0 8px;font-size:17px;font-weight:700;", "Manage preferences"));
+          var rowLabel = document.createElement("label");
+          rowLabel.style.cssText = "display:flex;align-items:flex-start;gap:12px;margin:0 0 16px;padding:12px 14px;border:1px solid rgba(245,246,248,0.18);border-radius:10px;cursor:pointer;";
+          var toggle = document.createElement("input");
+          toggle.type = "checkbox";
+          toggle.style.cssText = "margin-top:3px;width:16px;height:16px;accent-color:#f5f6f8;";
+          var labelCopy = document.createElement("span");
+          labelCopy.appendChild(textEl("strong", "display:block;font-weight:600;", "Analytics"));
+          labelCopy.appendChild(textEl("span", "display:block;color:rgba(245,246,248,0.7);font-size:13px;", "First-party page views and download clicks, collected by this site only."));
+          rowLabel.appendChild(toggle);
+          rowLabel.appendChild(labelCopy);
+          manageView.appendChild(rowLabel);
+          var save = textEl("button", BTN_PRIMARY + "width:100%;", "Save choices");
+          save.addEventListener("click", function () { decide(toggle.checked === true); });
+          manageView.appendChild(save);
+
+          manage.addEventListener("click", function () {
+            main.style.display = "none";
+            manageView.style.display = "block";
+          });
+
+          card.appendChild(main);
+          card.appendChild(manageView);
+          wrap.appendChild(card);
+          document.body.appendChild(wrap);
+        }
+        function renderWhenReady() {
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", render);
+          } else {
+            render();
+          }
+        }
+        window.infinitePrivacyChoices = renderWhenReady;
+        var signal = navigator.doNotTrack === "1" || navigator.globalPrivacyControl === true;
+        if (!signal) return;
+        var stored = null;
+        try { stored = localStorage.getItem("infinite_analytics_consent"); } catch (_e) {}
+        if (stored === "granted" || stored === "denied") return;
+        renderWhenReady();
+      } catch (_error) {}
+    })();
+  </script>
+</head>
+<body>
+  <nav class="seo-nav" aria-label="Primary navigation">
+    <a class="seo-brand" href="/"><img src="/logos/infinite-ring-clean.png" alt="">infinite</a>
+    <div class="seo-nav-links">
+      <a href="/tools/">Tools</a>
+      <a href="/agents/">Agents</a>
+      <a href="/compare/">Compare</a>
+      <a href="https://blog.infinite.fast/">Blog</a>
+      <a href="/#pricing">Pricing</a>
+    </div>
+    <a class="seo-nav-cta" href="/download" data-download-location="navigation">Get Infinite</a>
+  </nav>
+
+  <main>
+    <section class="seo-hero">
+      <div class="seo-shell">
+        <span class="seo-pill">Free tools</span>
+        <h1>Growth tools for founders who already shipped.</h1>
+        <p>Turn rough customer acquisition questions into concrete lead searches, SEO briefs, landing-page tests, and content angles.</p>
+      </div>
+    </section>
+
+    <section class="seo-section">
+      <div class="seo-shell seo-card-grid">
+        <a class="seo-card" href="/tools/high-intent-lead-finder-template/">
+          <span class="seo-card-meta">Lead finder</span>
+          <h2>High-intent lead finder template</h2>
+          <p>Generate intent phrases, ICP filters, and sources to scan for buyers already describing the pain.</p>
+        </a>
+        <a class="seo-card" href="/tools/seo-geo-brief-generator/">
+          <span class="seo-card-meta">SEO + GEO</span>
+          <h2>SEO + GEO brief generator</h2>
+          <p>Build a page brief designed for Google, ChatGPT, Claude, Perplexity, and buyer comparison searches.</p>
+        </a>
+        <a class="seo-card" href="/tools/landing-page-ab-test-ideas-generator/">
+          <span class="seo-card-meta">Conversion</span>
+          <h2>Landing-page A/B test ideas</h2>
+          <p>Get three sharper homepage test directions with CTA, proof, and message recommendations.</p>
+        </a>
+        <a class="seo-card" href="/tools/founder-content-ideas-generator/">
+          <span class="seo-card-meta">Organic</span>
+          <h2>Founder content ideas generator</h2>
+          <p>Find practical post angles that connect your product to what buyers and founders already care about.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="seo-footer">
+    <div class="seo-shell">
+      <div class="seo-footer-grid">
+        <div><a class="seo-brand" href="/"><img src="/logos/infinite-ring-clean.png" alt="">infinite</a></div>
+        <div><h4>Product</h4><a href="/#command">Work</a><a href="/#leads">Stack</a><a href="/#pricing">Pricing</a></div>
+        <div><h4>Tools</h4><a href="/tools/high-intent-lead-finder-template/">Lead finder</a><a href="/tools/seo-geo-brief-generator/">SEO brief</a><a href="/tools/landing-page-ab-test-ideas-generator/">A/B tests</a></div>
+        <div><h4>Compare</h4><a href="/compare/infinite-vs-okara/">Infinite vs Okara</a><a href="/compare/infinite-vs-ploy/">Infinite vs Ploy</a><a href="/compare/infinite-vs-blaze/">Infinite vs Blaze</a></div>
+        <div><h4>Company</h4><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></div>
+      </div>
+      <div class="seo-footer-bottom"><span>Copyright 2026 Infinite.</span><span>All systems normal</span></div>
+    </div>
+  </footer>
+</body>
+</html>

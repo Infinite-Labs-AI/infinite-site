@@ -42,6 +42,7 @@ process.env.POSTHOG_PROJECT_TOKEN ||=
 
 const deployEntries = [
   "agents",
+  "features",
   "compare",
   "privacy",
   "terms",
@@ -112,6 +113,12 @@ fs.writeFileSync(path.join(distDir, "index.html"), homepageHtml);
 // Runs BEFORE inject-analytics so the generated HTML gets the same analytics + apex-URL treatment
 // as every other page, and as a child process because this file is CJS and the builder is ESM.
 execFileSync(process.execPath, [path.join(repoRoot, "scripts/build-launch-videos.mjs"), distDir], {
+  cwd: repoRoot,
+  env: process.env,
+  stdio: "inherit",
+});
+
+execFileSync(process.execPath, [path.join(repoRoot, "scripts/apply-site-graph.mjs"), distDir], {
   cwd: repoRoot,
   env: process.env,
   stdio: "inherit",

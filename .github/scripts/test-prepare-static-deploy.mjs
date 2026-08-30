@@ -4,6 +4,10 @@ import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import { serveDatasetFixture } from "./fixtures/launch-videos-dataset.mjs";
+import {
+  KNOWN_DOCUMENT_PATHS as MANIFEST_DOCUMENT_PATHS,
+  assertPublicSiteManifest,
+} from "../../scripts/lib/public-site-manifest.mjs";
 
 const repoRoot = new URL("../..", import.meta.url).pathname;
 const distDir = join(repoRoot, "dist");
@@ -13,6 +17,7 @@ const distDir = join(repoRoot, "dist");
 const dataset = await serveDatasetFixture();
 
 try {
+  assertPublicSiteManifest();
   execFileSync("node", [join(repoRoot, "scripts/prepare-static-deploy.cjs")], {
     cwd: repoRoot,
     env: {
@@ -45,6 +50,7 @@ try {
   assert.doesNotMatch(homepage, /transport_url/);
   assert.match(homepage, /<style data-homepage-critical>/);
   assert.equal((homepage.match(/<style\b/g) ?? []).length, 1, "only critical CSS may block first paint");
+  assert.deepEqual(blockingStylesheetLinks(homepage), [], "homepage must not include render-blocking stylesheet links");
   assert.doesNotMatch(homepage, /(?:glaze-hero|problem-todesktop|light-common|light-sky|scheme-variants)\.css/);
   assert.doesNotMatch(homepage, /homepage-20260722\.css/);
   assert.doesNotMatch(homepage, /homepage-20260728-trust-logos\.css/);
@@ -52,6 +58,7 @@ try {
   assert.doesNotMatch(homepage, /homepage-20260729-spade-logos\.css/);
   assert.doesNotMatch(homepage, /<link rel="preload" href="homepage-20260729-founder-x-posts\.css" as="style">/);
   assert.match(homepage, /<link rel="stylesheet" href="homepage-20260729-founder-x-posts\.css" media="print" onload="this\.media='all';this\.onload=null">/);
+  assert.match(homepage, /<link rel="stylesheet" href="\/assets\/site-footer\.css" media="print" onload="this\.media='all';this\.onload=null">/);
   assert.doesNotMatch(homepage, /\.ttf["')]/);
 
   const criticalCss = homepage.match(/<style data-homepage-critical>([\s\S]*?)<\/style>/)?.[1] ?? "";
@@ -63,6 +70,8 @@ try {
   assert.match(homepageCss, /data-scheme=(?:["']wrangle["']|wrangle)/);
   assert.match(homepageCss, /fonts\/ibm-plex\/ibm-plex-sans-400\.woff2/);
   assert.ok(homepageCss.length > 180_000, "deferred homepage bundle must contain inline and external source styles");
+  const siteFooterCss = readFileSync(join(distDir, "assets/site-footer.css"), "utf8");
+  assert.match(siteFooterCss, /\.public-site-footer\b/, "dist must carry the shared site footer CSS asset");
 
   const sitemap = readFileSync(join(distDir, "sitemap.xml"), "utf8");
   assert.doesNotMatch(sitemap, /https:\/\/www\.infinite\.fast/);
@@ -119,6 +128,11 @@ try {
   const { KNOWN_DOCUMENT_PATHS } = await import(new URL("../../middleware.js", import.meta.url));
   assert.deepEqual(
     [...KNOWN_DOCUMENT_PATHS].sort(),
+    [...MANIFEST_DOCUMENT_PATHS].sort(),
+    "middleware.js KNOWN_DOCUMENT_PATHS must be imported from the public site manifest",
+  );
+  assert.deepEqual(
+    [...KNOWN_DOCUMENT_PATHS].sort(),
     htmlDocumentPaths(distDir).sort(),
     "middleware.js KNOWN_DOCUMENT_PATHS must exactly match the built dist HTML page set — update the manifest whenever a document page is added or removed",
   );
@@ -152,4 +166,11 @@ function htmlDocumentPaths(dir, prefix = "/") {
     }
   }
   return paths;
+}
+
+function blockingStylesheetLinks(html) {
+  const scriptEnabledHtml = html.replace(/<noscript\b[\s\S]*?<\/noscript>/gi, "");
+  return (scriptEnabledHtml.match(/<link\b[^>]*rel=["']stylesheet["'][^>]*>/gi) ?? []).filter(
+    (link) => !/\bmedia=["']print["']/i.test(link) && !/\bdisabled\b/i.test(link),
+  );
 }

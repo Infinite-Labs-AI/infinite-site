@@ -1,4 +1,5 @@
 import { next } from "@vercel/functions";
+import { KNOWN_DOCUMENT_PATHS as MANIFEST_DOCUMENT_PATHS } from "./scripts/lib/public-site-manifest.mjs";
 
 const BOT_UA = /bot|crawler|spider|preview|headless|lighthouse|curl|wget/i;
 // CLI/tooling agents (mirrors the drain's learned list, 2026-08-04): classified before BOT_UA
@@ -11,27 +12,9 @@ const PRODUCTION_HOSTS = new Set(
     .filter(Boolean),
 );
 // The exact set of REAL document pages the static deploy serves, as normalizedPath()
-// canonicalizes them. The middleware logs BEFORE routing, so without this manifest any
-// scanner sweep of a non-existent path with browser-shaped headers counted as a pageview.
+// canonicalizes them. The route/footer/sitemap/llms manifest is the single source of truth.
 // /download stays excluded: its redirect is counted by the server redirect lane.
-// Guardrail: test-prepare-static-deploy.mjs fails whenever this set and the built dist's
-// HTML page set disagree — update BOTH together when adding or removing a page.
-export const KNOWN_DOCUMENT_PATHS = new Set([
-  "/",
-  "/agents/",
-  "/compare/",
-  "/compare/infinite-vs-blaze/",
-  "/compare/infinite-vs-okara/",
-  "/compare/infinite-vs-ploy/",
-  "/privacy/",
-  "/startup-launch-videos/",
-  "/terms/",
-  "/tools/",
-  "/tools/founder-content-ideas-generator/",
-  "/tools/high-intent-lead-finder-template/",
-  "/tools/landing-page-ab-test-ideas-generator/",
-  "/tools/seo-geo-brief-generator/",
-]);
+export const KNOWN_DOCUMENT_PATHS = new Set(MANIFEST_DOCUMENT_PATHS);
 
 function normalizedPath(rawUrl) {
   const collapsed = new URL(rawUrl).pathname.replace(/\/{2,}/g, "/");
@@ -182,9 +165,13 @@ async function logDownloadAttempt(request) {
 const RELEASE_URL =
   "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
 
-function isProductionDownloadGet(request) {
+function isProductionDownloadRequest(request) {
   const host = new URL(request.url).hostname.toLowerCase().replace(/\.$/, "");
-  return process.env.VERCEL_ENV === "production" && PRODUCTION_HOSTS.has(host) && request.method === "GET";
+  return (
+    process.env.VERCEL_ENV === "production"
+    && PRODUCTION_HOSTS.has(host)
+    && (request.method === "GET" || request.method === "HEAD")
+  );
 }
 
 async function downloadResponse(request) {
@@ -221,10 +208,11 @@ export default function middleware(request) {
     // LIVE-TEST FINDING (2026-08-18): on this static deployment a vercel.json /download redirect
     // executes BEFORE edge middleware — middleware never ran for /download in production, so the
     // attempt marker never fired. The middleware therefore OWNS this path and SERVES the 307
-    // itself for production GETs (marker, then redirect — the deliberate P13 trade: ~ms of edge
-    // latency, fail-open inside downloadResponse). The old vercel.json entry was REMOVED (#26);
-    // non-production/non-GET/foreign-host requests pass through to ordinary routing (404).
-    if (isProductionDownloadGet(request)) return downloadResponse(request);
+    // itself for production GET/HEAD requests. GET logs the bounded attempt marker, then redirects;
+    // HEAD returns the identical release 307 but `logDownloadAttempt()` exits before reading config
+    // or logging, so link validation never becomes a conversion. The old vercel.json entry was
+    // REMOVED (#26); non-production/other-method/foreign-host requests pass through to routing.
+    if (isProductionDownloadRequest(request)) return downloadResponse(request);
     return next();
   }
   if (isProductionDocumentNavigation(request, path)) return documentMarkerThenNext(request, path);

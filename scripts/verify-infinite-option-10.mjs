@@ -176,7 +176,7 @@ if (wrangleHtml) {
     '"@id": "https://infinite.fast/#website"',
     '"@id": "https://infinite.fast/#software"',
     '"@id": "https://infinite.fast/#faq"',
-    "Find leads, automate SEO, A/B test landing pages, and uncover trending content.",
+    "Find leads, automate SEO, plan landing-page CRO tests, and uncover trending content.",
     '<link rel="preload" as="image" href="assets/hero/relay-hq-dashboard-928.avif"',
     'imagesrcset="assets/hero/relay-hq-dashboard-624.avif 624w, assets/hero/relay-hq-dashboard-928.avif 928w, assets/hero/relay-hq-dashboard-1240.avif 1240w"',
     '<picture class="wrangle-product-picture">',
@@ -368,7 +368,7 @@ if (wrangleHtml) {
     "ai-visibility",
     "faceless-youtube",
     "reels",
-    "landing-page-ab-testing",
+    "landing-page-cro-planning",
     "competitor-tracking",
   ];
   if (JSON.stringify(ultraOnlyFeatureIds) !== JSON.stringify(expectedUltraOnlyFeatureIds)) {
@@ -379,7 +379,7 @@ if (wrangleHtml) {
     "AI Visibility and citation monitoring",
     "Faceless YouTube video generation",
     "Reels creation",
-    "Landing-page A/B testing",
+    "Landing-page CRO planning and test ideas for existing pages",
     "Competitor Tracking across content, pricing, and ads",
   ]) {
     if (!wrangleHtml.includes(label)) failures.push(`Missing Ultra-only pricing label: ${label}`);
@@ -401,7 +401,7 @@ if (wrangleHtml) {
     "Buyer-intent qualification, source context, and next actions",
     "Ad creative generation and research",
     "Instagram and X content intelligence",
-    "Tracked links, UTMs, and landing-page creation",
+    "Tracked links and UTMs",
     "Analytics and search connections: GA4, PostHog, and Google Search Console",
     "Growth stack connections: Meta, Instagram, X, Stripe, Shopify, Codex, and Gemini",
   ]) {

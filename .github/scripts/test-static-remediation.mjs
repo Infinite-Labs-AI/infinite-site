@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
+import { PUBLIC_ROUTES, SITEMAP_ROUTES, assertPublicSiteManifest } from "../../scripts/lib/public-site-manifest.mjs";
+import { renderLlmsText, renderSitemapXml } from "../../scripts/lib/site-graph-renderers.mjs";
+
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
+
+assertPublicSiteManifest();
 
 const MAIN_SITE_FILES = [
   "robots.txt",
@@ -26,31 +31,16 @@ const robots = read("robots.txt");
 assert.match(robots, /^Sitemap: https:\/\/infinite\.fast\/sitemap\.xml$/m);
 
 const llms = read("llms.txt");
-assert.match(llms, /^Canonical site: https:\/\/infinite\.fast\/$/m);
-assert.match(llms, /^Tools: https:\/\/infinite\.fast\/tools\/$/m);
-assert.match(llms, /^Comparisons: https:\/\/infinite\.fast\/compare\/$/m);
-assert.match(llms, /^Download: https:\/\/infinite\.fast\/download$/m);
-assert.match(llms, /^Blog: https:\/\/blog\.infinite\.fast\/$/m);
+assert.equal(llms, renderLlmsText({ routes: PUBLIC_ROUTES }), "llms.txt must be generated from the public site manifest");
+assert.match(llms, /\[Growth Hub\]\(https:\/\/hub\.infinite\.fast\/\)/);
+assert.match(llms, /\[Download\]\(https:\/\/infinite\.fast\/download\)/);
+assert.doesNotMatch(llms, /blog\.infinite\.fast/);
 
 const sitemap = read("sitemap.xml");
 assert.doesNotMatch(sitemap, /https:\/\/www\.infinite\.fast/);
+assert.equal(sitemap, renderSitemapXml(SITEMAP_ROUTES), "sitemap.xml must be generated from the public site manifest");
 
-const expectedLastmodByPath = new Map([
-  ["/", "2026-07-22"],
-  ["/agents/", "2026-08-17"],
-  ["/tools/", "2026-07-22"],
-  ["/tools/high-intent-lead-finder-template/", "2026-07-22"],
-  ["/tools/seo-geo-brief-generator/", "2026-07-22"],
-  ["/tools/landing-page-ab-test-ideas-generator/", "2026-07-22"],
-  ["/tools/founder-content-ideas-generator/", "2026-07-22"],
-  ["/compare/", "2026-07-22"],
-  ["/compare/infinite-vs-okara/", "2026-07-22"],
-  ["/compare/infinite-vs-ploy/", "2026-07-22"],
-  ["/compare/infinite-vs-blaze/", "2026-07-22"],
-  ["/startup-launch-videos/", "2026-08-19"],
-  ["/privacy/", "2026-08-02"],
-  ["/terms/", "2026-07-22"],
-]);
+const expectedLastmodByPath = new Map(SITEMAP_ROUTES.map((route) => [route.path, route.sitemap.lastmod]));
 
 const urlBlocks = [...sitemap.matchAll(/<url>\s*<loc>(https:\/\/infinite\.fast[^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
 assert.equal(urlBlocks.length, expectedLastmodByPath.size, "sitemap should contain exactly the expected apex URLs");
