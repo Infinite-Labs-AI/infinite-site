@@ -1,0 +1,338 @@
+{
+  "project_id": "wdxjduorvpayxixpmskf",
+  "workspace_id": "4cff9e34-59c3-458e-9df9-8c676741bbe7",
+  "window_definition": "inclusive UTC calendar days: current_date plus the prior 27 dates",
+  "receipts": {
+    "schema_rows": 99,
+    "gsc_page_rows": 317,
+    "gsc_query_rows": 496,
+    "aeo_rows": 1151,
+    "cta_rows": 18,
+    "downloads_rows": 32
+  },
+  "gsc_pages": {
+    "dates": {
+      "first": "2026-08-03",
+      "last": "2026-08-28",
+      "count": 26
+    },
+    "total_clicks": 1,
+    "total_impressions": 2561,
+    "unique_pages": 56,
+    "top_pages": [
+      {
+        "page_url": "https://infinite.fast/",
+        "clicks": 1,
+        "impressions": 16
+      },
+      {
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 1437
+      },
+      {
+        "page_url": "https://blog.infinite.fast/pipeline-generation-the-operators-playbook-for-consistent-revenue-flow",
+        "clicks": 0,
+        "impressions": 290
+      },
+      {
+        "page_url": "https://blog.infinite.fast/12-best-lead-generation-tools-for",
+        "clicks": 0,
+        "impressions": 263
+      },
+      {
+        "page_url": "https://infinite.fast/download",
+        "clicks": 0,
+        "impressions": 129
+      },
+      {
+        "page_url": "https://hub.infinite.fast/seo-automation-tools-a-workflow-first",
+        "clicks": 0,
+        "impressions": 63
+      },
+      {
+        "page_url": "https://hub.infinite.fast/12-best-lead-generation-tools-for",
+        "clicks": 0,
+        "impressions": 50
+      },
+      {
+        "page_url": "https://hub.infinite.fast/automated-seo-what-to-automate-what",
+        "clicks": 0,
+        "impressions": 40
+      },
+      {
+        "page_url": "https://hub.infinite.fast/9-ai-powered-content-creation-platforms",
+        "clicks": 0,
+        "impressions": 34
+      },
+      {
+        "page_url": "https://hub.infinite.fast/facebook-ad-automation-without-killing-performance",
+        "clicks": 0,
+        "impressions": 28
+      },
+      {
+        "page_url": "https://blog.infinite.fast/pipeline-generation-channels-attribution-metrics-the-b2b-revenue-teams-tactical-guide",
+        "clicks": 0,
+        "impressions": 26
+      },
+      {
+        "page_url": "https://hub.infinite.fast/best-ai-seo-tools-for-founders",
+        "clicks": 0,
+        "impressions": 23
+      },
+      {
+        "page_url": "https://hub.infinite.fast/ai-marketing-agent-what-it-actually",
+        "clicks": 0,
+        "impressions": 19
+      },
+      {
+        "page_url": "https://hub.infinite.fast/ai-agents-for-marketing-the-workflow",
+        "clicks": 0,
+        "impressions": 16
+      },
+      {
+        "page_url": "https://hub.infinite.fast/conversion-optimization-tools-best-picks-for",
+        "clicks": 0,
+        "impressions": 8
+      }
+    ]
+  },
+  "gsc_queries": {
+    "dates": {
+      "first": "2026-08-03",
+      "last": "2026-08-28",
+      "count": 26
+    },
+    "total_clicks": 0,
+    "total_impressions": 2122,
+    "unique_queries": 118,
+    "top_query_page_pairs": [
+      {
+        "query": "seo automation tools",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 345,
+        "is_brand": false
+      },
+      {
+        "query": "best seo automation tools",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 271,
+        "is_brand": false
+      },
+      {
+        "query": "seo lead generation software",
+        "page_url": "https://blog.infinite.fast/12-best-lead-generation-tools-for",
+        "clicks": 0,
+        "impressions": 235,
+        "is_brand": false
+      },
+      {
+        "query": "seo automation tool",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 198,
+        "is_brand": false
+      },
+      {
+        "query": "pipeline generation",
+        "page_url": "https://blog.infinite.fast/pipeline-generation-the-operators-playbook-for-consistent-revenue-flow",
+        "clicks": 0,
+        "impressions": 185,
+        "is_brand": false
+      },
+      {
+        "query": "best automated seo tools",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 166,
+        "is_brand": false
+      },
+      {
+        "query": "automated seo tools",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 106,
+        "is_brand": false
+      },
+      {
+        "query": "seo automation software",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 79,
+        "is_brand": false
+      },
+      {
+        "query": "best seo automation",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 45,
+        "is_brand": false
+      },
+      {
+        "query": "automatic seo tools",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 41,
+        "is_brand": false
+      },
+      {
+        "query": "best automated seo software",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 41,
+        "is_brand": false
+      },
+      {
+        "query": "best seo automation software",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 41,
+        "is_brand": false
+      },
+      {
+        "query": "seo lead generation software",
+        "page_url": "https://hub.infinite.fast/12-best-lead-generation-tools-for",
+        "clicks": 0,
+        "impressions": 31,
+        "is_brand": false
+      },
+      {
+        "query": "pipeline generation plan",
+        "page_url": "https://blog.infinite.fast/pipeline-generation-the-operators-playbook-for-consistent-revenue-flow",
+        "clicks": 0,
+        "impressions": 24,
+        "is_brand": false
+      },
+      {
+        "query": "ai powered content creation platform",
+        "page_url": "https://hub.infinite.fast/9-ai-powered-content-creation-platforms",
+        "clicks": 0,
+        "impressions": 19,
+        "is_brand": false
+      },
+      {
+        "query": "automated seo tool",
+        "page_url": "https://hub.infinite.fast/9-best-seo-automation-tools-for",
+        "clicks": 0,
+        "impressions": 18,
+        "is_brand": false
+      },
+      {
+        "query": "\"marketing agents are too good now\"",
+        "page_url": "https://hub.infinite.fast/ai-marketing-agent-what-it-actually",
+        "clicks": 0,
+        "impressions": 13,
+        "is_brand": false
+      },
+      {
+        "query": "generating pipeline",
+        "page_url": "https://blog.infinite.fast/pipeline-generation-the-operators-playbook-for-consistent-revenue-flow",
+        "clicks": 0,
+        "impressions": 13,
+        "is_brand": false
+      },
+      {
+        "query": "what is the best tool to automate seo content production?",
+        "page_url": "https://hub.infinite.fast/seo-automation-tools-a-workflow-first",
+        "clicks": 0,
+        "impressions": 13,
+        "is_brand": false
+      },
+      {
+        "query": "auto seo software",
+        "page_url": "https://hub.infinite.fast/automated-seo-what-to-automate-what",
+        "clicks": 0,
+        "impressions": 8,
+        "is_brand": false
+      }
+    ]
+  },
+  "aeo": {
+    "dates": {
+      "first": "2026-08-03",
+      "last": "2026-08-29",
+      "count": 21
+    },
+    "checks": 1151,
+    "our_domain_cited_count": 25,
+    "by_platform": [
+      {
+        "platform": "chatgpt",
+        "checks": 532,
+        "cited": 15,
+        "unique_prompts": 30
+      },
+      {
+        "platform": "claude",
+        "checks": 533,
+        "cited": 9,
+        "unique_prompts": 30
+      },
+      {
+        "platform": "google_ai_overview",
+        "checks": 86,
+        "cited": 1,
+        "unique_prompts": 30
+      }
+    ]
+  },
+  "cta": {
+    "dates": {
+      "first": "2026-08-07",
+      "last": "2026-08-27",
+      "count": 12
+    },
+    "site_clicks": 11,
+    "download_clicks": 12,
+    "by_cta": [
+      {
+        "cta_id": "view-pricing",
+        "cta_location": "navigation",
+        "destination_path": "/",
+        "site_clicks": 11,
+        "download_clicks": 0
+      },
+      {
+        "cta_id": "app_download",
+        "cta_location": "hero",
+        "destination_path": "/download",
+        "site_clicks": 0,
+        "download_clicks": 6
+      },
+      {
+        "cta_id": "app_download",
+        "cta_location": "navigation",
+        "destination_path": "/download",
+        "site_clicks": 0,
+        "download_clicks": 5
+      },
+      {
+        "cta_id": "app_download",
+        "cta_location": "pricing",
+        "destination_path": "/download",
+        "site_clicks": 0,
+        "download_clicks": 1
+      }
+    ]
+  },
+  "downloads": {
+    "dates": {
+      "first": "2026-08-03",
+      "last": "2026-08-30",
+      "count": 28
+    },
+    "document_requests": 1890,
+    "server_visits": 1161,
+    "download_attempts": 29,
+    "download_attempt_visits": 12,
+    "keyed_document_requests": 1269
+  },
+  "comparison_dates": {
+    "day_7": "2026-09-06",
+    "day_28": "2026-09-27",
+    "day_56": "2026-10-25",
+    "day_90": "2026-11-28"
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "receipt_dir": "docs/authority-spine/receipts/2026-08-30",
+  "files": [
+    {
+      "file": "aeo.json",
+      "bytes": 921374
+    },
+    {
+      "file": "baseline-consistency-check.json",
+      "bytes": 1667
+    },
+    {
+      "file": "captured-at.txt",
+      "bytes": 21
+    },
+    {
+      "file": "cta.json",
+      "bytes": 4807
+    },
+    {
+      "file": "download-get-headers.txt",
+      "bytes": 1605
+    },
+    {
+      "file": "download-head-headers.txt",
+      "bytes": 1550
+    },
+    {
+      "file": "downloads.json",
+      "bytes": 7775
+    },
+    {
+      "file": "github-org.json",
+      "bytes": 89
+    },
+    {
+      "file": "github-repos.jsonl",
+      "bytes": 1733
+    },
+    {
+      "file": "gsc-pages.json",
+      "bytes": 67431
+    },
+    {
+      "file": "gsc-queries.json",
+      "bytes": 141177
+    },
+    {
+      "file": "installer-pr.json",
+      "bytes": 181
+    },
+    {
+      "file": "installer-smoke.json",
+      "bytes": 180
+    },
+    {
+      "file": "live-agents.html",
+      "bytes": 55766
+    },
+    {
+      "file": "live-compare.html",
+      "bytes": 38370
+    },
+    {
+      "file": "live-footer-link-inventory.txt",
+      "bytes": 3520
+    },
+    {
+      "file": "live-home.html",
+      "bytes": 123937
+    },
+    {
+      "file": "live-link-inventory.txt",
+      "bytes": 48150
+    },
+    {
+      "file": "live-link-summary.json",
+      "bytes": 8713
+    },
+    {
+      "file": "live-llms.txt",
+      "bytes": 3690
+    },
+    {
+      "file": "live-privacy.html",
+      "bytes": 56953
+    },
+    {
+      "file": "live-route-inventory.txt",
+      "bytes": 606
+    },
+    {
+      "file": "live-sitemap.xml",
+      "bytes": 2557
+    },
+    {
+      "file": "live-startup-launch-videos.html",
+      "bytes": 286390
+    },
+    {
+      "file": "live-terms.html",
+      "bytes": 49397
+    },
+    {
+      "file": "live-tools.html",
+      "bytes": 40406
+    },
+    {
+      "file": "receipt-inventory.json",
+      "bytes": 2712
+    },
+    {
+      "file": "schema-selected-column-check.json",
+      "bytes": 1742
+    },
+    {
+      "file": "schema.json",
+      "bytes": 13191
+    },
+    {
+      "file": "site-main-sha.txt",
+      "bytes": 41
+    },
+    {
+      "file": "site-worktree-base-sha.txt",
+      "bytes": 41
+    },
+    {
+      "file": "supabase-project-ref.txt",
+      "bytes": 21
+    },
+    {
+      "file": "supabase-read-path.txt",
+      "bytes": 195
+    },
+    {
+      "file": "supabase-summary.json",
+      "bytes": 9496
+    },
+    {
+      "file": "supabase-workspace-id.txt",
+      "bytes": 37
+    },
+    {
+      "file": "vercel-deploy-wait.txt",
+      "bytes": 72
+    },
+    {
+      "file": "verified-production-sha.txt",
+      "bytes": 84
+    }
+  ],
+  "file_count": 37
+}

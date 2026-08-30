@@ -1,0 +1,67 @@
+{
+  "captured_at": "2026-08-30T01:17:00Z",
+  "site_worktree_base_sha": "e8e0117ef0e23be55fc43067d27d3c12e5848a05",
+  "site_main_sha": "e8e0117ef0e23be55fc43067d27d3c12e5848a05",
+  "verified_production_sha": "unverified: VERCEL_TOKEN or VERCEL_PROJECT_ID is missing; deploy API was not called",
+  "checks": [
+    {
+      "id": "site-base-equals-main",
+      "passed": true
+    },
+    {
+      "id": "verified-production-sha-not-faked",
+      "passed": true
+    },
+    {
+      "id": "live-sitemap-has-14-routes",
+      "passed": true,
+      "observed": 14
+    },
+    {
+      "id": "download-get-307",
+      "passed": true,
+      "observed": 307
+    },
+    {
+      "id": "download-get-location-github-dmg",
+      "passed": true,
+      "observed": "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg"
+    },
+    {
+      "id": "download-head-404-preserved",
+      "passed": true,
+      "observed": 404
+    },
+    {
+      "id": "installer-pr-merged",
+      "passed": true,
+      "observed": "MERGED"
+    },
+    {
+      "id": "installer-smoke-success",
+      "passed": true,
+      "observed": "completed/success"
+    },
+    {
+      "id": "installer-smoke-head-matches-merge",
+      "passed": true,
+      "observed": {
+        "smoke": "855d4502c8739e4870766a74b48f4613ed555bac",
+        "merge": "855d4502c8739e4870766a74b48f4613ed555bac"
+      }
+    },
+    {
+      "id": "schema-selected-columns-present",
+      "passed": true
+    },
+    {
+      "id": "supabase-prod-project-recorded",
+      "passed": true
+    },
+    {
+      "id": "supabase-receipts-not-unmeasured",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

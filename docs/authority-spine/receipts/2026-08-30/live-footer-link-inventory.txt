@@ -1,0 +1,67 @@
+live-agents.html	Infinite vs Blaze	/compare/infinite-vs-blaze/
+live-agents.html	Infinite vs Okara	/compare/infinite-vs-okara/
+live-agents.html	Infinite vs Ploy	/compare/infinite-vs-ploy/
+live-agents.html	Press Agent	/agents/
+live-agents.html	Pricing	/#pricing
+live-agents.html	Privacy	/privacy/
+live-agents.html	Stack	/#leads
+live-agents.html	Terms	/terms/
+live-agents.html	Tools	/tools/
+live-agents.html	Work	/#command
+live-agents.html	infinite	/
+live-home.html	A/B test ideas	/tools/landing-page-ab-test-ideas-generator/
+live-home.html	All comparisons	/compare/
+live-home.html	Blog	https://blog.infinite.fast/
+live-home.html	Buyer intent	#command
+live-home.html	Claude Code	#leads
+live-home.html	Content angles	#command
+live-home.html	Content ideas	/tools/founder-content-ideas-generator/
+live-home.html	FAQ	#faq
+live-home.html	Infinite vs Blaze	/compare/infinite-vs-blaze/
+live-home.html	Infinite vs Okara	/compare/infinite-vs-okara/
+live-home.html	Infinite vs Ploy	/compare/infinite-vs-ploy/
+live-home.html	Landing tests	#command
+live-home.html	Lead finder template	/tools/high-intent-lead-finder-template/
+live-home.html	Pricing	#pricing
+live-home.html	Privacy Policy	/privacy/
+live-home.html	Proof	#proof
+live-home.html	SEO + GEO	#command
+live-home.html	SEO + GEO brief generator	/tools/seo-geo-brief-generator/
+live-home.html	Terms of Service	/terms/
+live-privacy.html	Home	../
+live-privacy.html	Terms	../terms/
+live-startup-launch-videos.html	Agents directory	/agents/
+live-startup-launch-videos.html	All comparisons	/compare/
+live-startup-launch-videos.html	Blog	https://blog.infinite.fast/
+live-startup-launch-videos.html	Buyer intent	/#command
+live-startup-launch-videos.html	Claude Code	/#leads
+live-startup-launch-videos.html	Content ideas	/tools/founder-content-ideas-generator/
+live-startup-launch-videos.html	Dataset (CSV)	https://api.ultima.inc/api/launch-videos/csv
+live-startup-launch-videos.html	Dataset (JSON)	https://api.ultima.inc/api/launch-videos
+live-startup-launch-videos.html	Infinite vs Blaze	/compare/infinite-vs-blaze/
+live-startup-launch-videos.html	Infinite vs Okara	/compare/infinite-vs-okara/
+live-startup-launch-videos.html	Infinite vs Ploy	/compare/infinite-vs-ploy/
+live-startup-launch-videos.html	Landing tests	/#command
+live-startup-launch-videos.html	Launch video leaderboard	/startup-launch-videos/
+live-startup-launch-videos.html	Lead finder template	/tools/high-intent-lead-finder-template/
+live-startup-launch-videos.html	Pricing	/#pricing
+live-startup-launch-videos.html	Privacy Policy	/privacy/
+live-startup-launch-videos.html	Proof	/#proof
+live-startup-launch-videos.html	SEO + GEO	/#command
+live-startup-launch-videos.html	SEO + GEO brief generator	/tools/seo-geo-brief-generator/
+live-startup-launch-videos.html	Terms of Service	/terms/
+live-startup-launch-videos.html	The Launch Video Index	https://hub.infinite.fast/research/launch-videos
+live-terms.html	Home	../
+live-terms.html	Privacy	../privacy/
+live-tools.html	A/B tests	/tools/landing-page-ab-test-ideas-generator/
+live-tools.html	Infinite vs Blaze	/compare/infinite-vs-blaze/
+live-tools.html	Infinite vs Okara	/compare/infinite-vs-okara/
+live-tools.html	Infinite vs Ploy	/compare/infinite-vs-ploy/
+live-tools.html	Lead finder	/tools/high-intent-lead-finder-template/
+live-tools.html	Pricing	/#pricing
+live-tools.html	Privacy	/privacy/
+live-tools.html	SEO brief	/tools/seo-geo-brief-generator/
+live-tools.html	Stack	/#leads
+live-tools.html	Terms	/terms/
+live-tools.html	Work	/#command
+live-tools.html	infinite	/

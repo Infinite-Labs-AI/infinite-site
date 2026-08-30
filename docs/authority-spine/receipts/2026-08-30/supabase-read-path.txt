@@ -1,0 +1,1 @@
+mcp execute_sql available; exact durable files captured with linked Supabase CLI Management API after MCP transcript display truncated a large successful result. No sandbox, no raw psql, no DDL.

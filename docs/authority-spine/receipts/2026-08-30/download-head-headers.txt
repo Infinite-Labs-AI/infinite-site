@@ -1,0 +1,16 @@
+HTTP/2 404 
+cache-control: public, max-age=0, must-revalidate
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://static.ads-twitter.com https://connect.facebook.net; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://static.ads-twitter.com https://analytics.twitter.com https://www.facebook.com https://api.github.com https://api.npmjs.org; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' https://wdxjduorvpayxixpmskf.supabase.co; frame-src 'self' https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; report-uri /api/csp-report; report-to csp-endpoint
+content-type: text/plain; charset=utf-8
+date: Sun, 30 Aug 2026 01:17:02 GMT
+permissions-policy: accelerometer=(), bluetooth=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), browsing-topics=()
+referrer-policy: strict-origin-when-cross-origin
+report-to: {"group":"csp-endpoint","max_age":10886400,"endpoints":[{"url":"https://infinite.fast/api/csp-report"}]}
+reporting-endpoints: csp-endpoint="https://infinite.fast/api/csp-report"
+server: Vercel
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-vercel-error: NOT_FOUND
+x-vercel-id: lhr1::tqx2f-1788052622512-8bf62790d89b
+content-length: 79
+
