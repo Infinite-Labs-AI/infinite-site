@@ -140,7 +140,7 @@
           "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-os",
           "license": "https://github.com/Infinite-Labs-AI/infinite-os/blob/main/LICENSE",
           "programmingLanguage": "TypeScript",
-          "runtimePlatform": ["macOS", "Linux"],
+          "runtimePlatform": ["macOS"],
           "author": { "@id": "https://infinite.fast/#organization" },
           "isPartOf": { "@id": "https://infinite.fast/#website" }
         },
@@ -3602,7 +3602,6 @@
             <source type="image/webp" srcset="assets/hero/relay-hq-dashboard-624.webp 624w, assets/hero/relay-hq-dashboard-928.webp 928w, assets/hero/relay-hq-dashboard-1240.webp 1240w" sizes="(max-width: 640px) calc(100vw - 56px), min(calc(100vw - 70px), 1060px)">
             <img src="assets/hero/relay-hq-dashboard.png" alt="Infinite dashboard preview with demo data" width="1238" height="866" fetchpriority="high" loading="eager" decoding="async" sizes="(max-width: 640px) calc(100vw - 56px), min(calc(100vw - 70px), 1060px)">
           </picture>
-          <span class="demo-data-label">Dashboard metrics use demo data.</span>
         </div>
       </div>
 
@@ -4210,7 +4209,7 @@
           <h3 id="agent-install-title">Install Infinite for your terminal agent.</h3>
           <p>Run the local engine with Claude or Codex. Synced growth data stays in your local Postgres, connector credentials are encrypted at rest, and prompts plus relevant tool context go only to the provider you choose.</p>
           <div class="agent-install-command">
-            <code>curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash</code>
+            <code>npx infinite-os@latest</code>
             <button type="button" data-copy-agent-install aria-label="Copy the Infinite OS install command">Copy</button>
           </div>
           <div class="agent-install-links">
@@ -4256,7 +4255,7 @@
       });
     });
 
-    const installCommand = "curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash";
+    const installCommand = "npx infinite-os@latest";
     document.querySelectorAll("[data-copy-agent-install]").forEach((button) => {
       button.addEventListener("click", async () => {
         try {
@@ -4276,7 +4275,7 @@
     <div class="public-site-footer-brand">
       <span class="public-site-footer-mark" aria-hidden="true"><img src="/logos/infinite-ring-clean-96.webp" width="26" height="26" alt="" loading="lazy" decoding="async"></span>
       <strong>Infinite</strong>
-      <p>AI CMO workspace for founders and small teams. The public graph links only to shipped routes and verified public resources.</p>
+      <p>AI CMO workspace for founders and small teams.</p>
     </div>
     <nav aria-label="Agents &amp; Open Source">
       <span class="public-site-footer-column-label">Agents &amp; Open Source</span>

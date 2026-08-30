@@ -1,25 +1,14 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
-import {
-  existsSync,
-  lstatSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readlinkSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from "node:fs";
-import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
+import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import { serveDatasetFixture } from "./fixtures/launch-videos-dataset.mjs";
 
 const repoRoot = new URL("../..", import.meta.url).pathname;
 const distDir = join(repoRoot, "dist");
-const installCommand =
-  "curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash";
+const installCommand = "npx infinite-os@latest";
+const skillsInstallCommand = "npx -y skills add Infinite-Labs-AI/infinite-skills -g -a codex -y";
 const repositories = {
   os: "https://github.com/Infinite-Labs-AI/infinite-os",
   skills: "https://github.com/Infinite-Labs-AI/infinite-skills",
@@ -29,7 +18,6 @@ const repositories = {
 assertHomepage(read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html"), "homepage source");
 const agentsSource = read("agents/index.html");
 assertAgents(agentsSource, "Agents source");
-assertSkillsInstallerCollisions(agentsSource);
 assertAgentStyles(read("assets/agents-pages.css"));
 assertLlms(read("llms.txt"), "llms source");
 assertReadme(read("README.md"));
@@ -71,6 +59,8 @@ function assertHomepage(html, label) {
     `${label}: primary desktop download must precede the secondary terminal install panel`,
   );
   assert.match(html, new RegExp(escapeRegExp(installCommand)), `${label}: exact published installer is visible`);
+  assert.doesNotMatch(html, /Dashboard metrics use demo data\./, `${label}: rejected demo-data label is absent`);
+  assert.doesNotMatch(html, /The public graph links/i, `${label}: rejected public-graph footer copy is absent`);
   assert.match(html, /data-copy-agent-install/, `${label}: installer has an accessible copy control`);
   assertAnchor(html, {
     href: repositories.os,
@@ -103,6 +93,7 @@ function assertHomepage(html, label) {
   assert.equal(os.codeRepository, repositories.os);
   assert.equal(os.license, `${repositories.os}/blob/main/LICENSE`);
   assert.equal(os.programmingLanguage, "TypeScript");
+  assert.deepEqual(os.runtimePlatform, ["macOS"], `${label}: Infinite OS is advertised only for macOS`);
 
   const skills = graphById(graph, "https://infinite.fast/#infinite-skills", label);
   assert.equal(skills["@type"], "SoftwareSourceCode");
@@ -112,6 +103,7 @@ function assertHomepage(html, label) {
 }
 
 function assertAgents(html, label) {
+  assert.doesNotMatch(html, /The public graph links/i, `${label}: rejected public-graph footer copy is absent`);
   for (const text of ["Infinite OS", "Infinite Skills", "Press Agent", "Planned specialists"]) {
     assert.match(html, new RegExp(escapeRegExp(text)), `${label}: ${text} is visible`);
   }
@@ -129,17 +121,9 @@ function assertAgents(html, label) {
   }
 
   assert.match(html, new RegExp(escapeRegExp(installCommand)), `${label}: OS installer is visible`);
-  assert.match(html, /INFINITE_SKILLS_REPO_URL:-https:\/\/github\.com\/Infinite-Labs-AI\/infinite-skills\.git/, `${label}: production source defaults to public GitHub`);
-  assert.match(html, /git clone "\$repo_url" "\$checkout"/, `${label}: Skills checkout uses the selected source safely`);
-  assert.match(html, /git -C "\$checkout" pull --ff-only/, `${label}: existing Skills checkout updates safely`);
-  assert.match(html, /mkdir -p "\$skills_dir"/, `${label}: Codex discovery directory is created`);
-  assert.match(html, /for skill in "\$checkout"\/skills\/\*/, `${label}: every published skill is installed`);
-  assert.match(html, /set -eu/, `${label}: checkout failures stop before discovery mutation`);
-  assert.match(html, /if \[ -L "\$target" \]/, `${label}: symlink destinations are checked first`);
-  assert.match(html, /elif \[ -e "\$target" \]/, `${label}: files and directories are left untouched`);
-  assert.match(html, /ln -s "\$skill" "\$target"/, `${label}: only absent destinations receive a symlink`);
-  assert.doesNotMatch(html, /ln -sfn/, `${label}: install command never force-replaces a destination`);
-  assert.match(html, /data-copy-skills-install/, `${label}: complete Skills install command is copyable`);
+  assert.match(html, new RegExp(escapeRegExp(skillsInstallCommand)), `${label}: one-line Skills installer is visible`);
+  assert.doesNotMatch(html, /INFINITE_SKILLS_REPO_URL|set -eu|for skill in|ln -s/, `${label}: command wall is absent`);
+  assert.match(html, /data-copy-skills-install/, `${label}: Skills install command is copyable`);
   assert.match(html, /Restart Codex after installation/, `${label}: discovery restart is explicit`);
   assert.match(html, /25 marketing skills plus the Goal skill/, `${label}: audited Skills count is precise`);
   assert.match(html, /press-agent run --once --dry-run/, `${label}: safe Press first run is visible`);
@@ -160,6 +144,11 @@ function assertAgents(html, label) {
     { "@id": "https://infinite.fast/agents/#press-agent" },
   ]);
   assert.equal(graphById(graph, "https://infinite.fast/agents/#infinite-os", label)["@type"], "SoftwareSourceCode");
+  assert.deepEqual(
+    graphById(graph, "https://infinite.fast/agents/#infinite-os", label).runtimePlatform,
+    ["macOS"],
+    `${label}: Infinite OS is advertised only for macOS`,
+  );
   assert.equal(graphById(graph, "https://infinite.fast/agents/#infinite-skills", label)["@type"], "SoftwareSourceCode");
   assert.equal(graphById(graph, "https://infinite.fast/agents/#press-agent", label)["@type"], "SoftwareApplication");
 
@@ -179,105 +168,6 @@ function assertAgents(html, label) {
       `${label}: planned ${name} must not be a structured shipped entity`,
     );
   }
-}
-
-function assertSkillsInstallerCollisions(html) {
-  const command = extractSkillsInstallCommand(html);
-  const scratch = mkdtempSync(join(tmpdir(), "infinite-skills-install-contract-"));
-  try {
-    const fixture = createSkillsFixture(scratch);
-
-    const cleanHome = join(scratch, "home-clean");
-    runSkillsInstall(command, cleanHome, fixture);
-    assertCorrectSkillLinks(cleanHome, ["copywriting", "goal"]);
-    const cleanGoalTarget = readlinkSync(join(cleanHome, ".codex/skills/goal"));
-    const rerun = runSkillsInstall(command, cleanHome, fixture);
-    assert.equal(readlinkSync(join(cleanHome, ".codex/skills/goal")), cleanGoalTarget, "rerun keeps the correct managed symlink");
-    assert.match(rerun.output, /Already installed: goal/, "rerun explains the accepted correct symlink");
-
-    const fileHome = join(scratch, "home-file");
-    const fileTarget = prepareCollisionHome(fileHome, "file");
-    const fileRun = runSkillsInstall(command, fileHome, fixture);
-    assert.equal(readFileSync(fileTarget, "utf8"), "user-owned file\n", "regular file collision is unchanged");
-    assert.equal(lstatSync(fileTarget).isSymbolicLink(), false, "regular file is not replaced by a symlink");
-    assert.match(fileRun.output, /Skipped goal: destination exists; left untouched/, "regular file collision prints guidance");
-    assertCorrectSkillLinks(fileHome, ["copywriting"]);
-
-    const directoryHome = join(scratch, "home-directory");
-    const directoryTarget = prepareCollisionHome(directoryHome, "directory");
-    const directoryRun = runSkillsInstall(command, directoryHome, fixture);
-    assert.equal(readFileSync(join(directoryTarget, "sentinel.txt"), "utf8"), "user-owned directory\n");
-    assert.equal(existsSync(join(directoryTarget, "goal")), false, "directory collision never receives a nested symlink");
-    assert.match(directoryRun.output, /Skipped goal: destination exists; left untouched/, "directory collision prints guidance");
-
-    const wrongLinkHome = join(scratch, "home-wrong-link");
-    const wrongLinkTarget = prepareCollisionHome(wrongLinkHome, "wrong-link");
-    const beforeWrongLink = readlinkSync(wrongLinkTarget);
-    const wrongLinkRun = runSkillsInstall(command, wrongLinkHome, fixture);
-    assert.equal(readlinkSync(wrongLinkTarget), beforeWrongLink, "foreign symlink collision is unchanged");
-    assert.match(wrongLinkRun.output, /Skipped goal: symlink points to .*left untouched/, "foreign symlink prints guidance");
-  } finally {
-    rmSync(scratch, { recursive: true, force: true });
-  }
-}
-
-function extractSkillsInstallCommand(html) {
-  const match = html.match(
-    /<pre class="ag-command" aria-label="Complete Infinite Skills install command"><code>([\s\S]*?)<\/code><\/pre>\s*<button[^>]*data-copy-skills-install/,
-  );
-  assert.ok(match, "visible complete Skills command is extractable for black-box execution");
-  return match[1].trim();
-}
-
-function createSkillsFixture(scratch) {
-  const fixture = join(scratch, "skills-fixture");
-  for (const name of ["copywriting", "goal"]) {
-    mkdirSync(join(fixture, "skills", name), { recursive: true });
-    writeFileSync(join(fixture, "skills", name, "SKILL.md"), `# ${name}\n`);
-  }
-  execFileSync("git", ["init", "-q", fixture]);
-  execFileSync("git", ["-C", fixture, "add", "."]);
-  execFileSync("git", ["-C", fixture, "-c", "user.name=Contract", "-c", "user.email=contract@example.invalid", "commit", "-qm", "fixture"]);
-  return fixture;
-}
-
-function runSkillsInstall(command, home, fixture) {
-  mkdirSync(home, { recursive: true });
-  const result = spawnSync("bash", ["-c", command], {
-    encoding: "utf8",
-    env: { ...process.env, HOME: home, INFINITE_SKILLS_REPO_URL: fixture },
-  });
-  assert.equal(result.status, 0, `Skills installer exits cleanly: ${result.stderr || result.stdout}`);
-  return { output: `${result.stdout}${result.stderr}` };
-}
-
-function assertCorrectSkillLinks(home, names) {
-  for (const name of names) {
-    const target = join(home, ".codex", "skills", name);
-    assert.equal(lstatSync(target).isSymbolicLink(), true, `${name} is Codex-discoverable through a symlink`);
-    assert.equal(
-      readlinkSync(target),
-      join(home, ".codex", "infinite-skills", "skills", name),
-      `${name} points at the exact Infinite Skills checkout path`,
-    );
-  }
-}
-
-function prepareCollisionHome(home, kind) {
-  const skillsDir = join(home, ".codex", "skills");
-  const target = join(skillsDir, "goal");
-  mkdirSync(skillsDir, { recursive: true });
-  if (kind === "file") writeFileSync(target, "user-owned file\n");
-  if (kind === "directory") {
-    mkdirSync(target);
-    writeFileSync(join(target, "sentinel.txt"), "user-owned directory\n");
-  }
-  if (kind === "wrong-link") {
-    const foreign = join(home, "foreign-goal");
-    mkdirSync(foreign, { recursive: true });
-    symlinkSync(foreign, target);
-  }
-  return target;
 }
 
 function assertAgentStyles(css) {
@@ -309,7 +199,7 @@ function assertAgentStyles(css) {
 function assertLlms(text, label) {
   assert.doesNotMatch(text, /href=/, `${label}: Markdown must not contain HTML href attributes`);
   assert.match(text, new RegExp(escapeRegExp(installCommand)), `${label}: installer command is model-readable`);
-  assert.match(text, /`infinite local setup`/, `${label}: first setup command is explicit`);
+  assert.match(text, /app includes Infinite OS and its CLI/i, `${label}: bundled app contract is explicit`);
   assert.match(text, /25 marketing skills plus the Goal skill/, `${label}: Skills count is precise`);
   for (const url of Object.values(repositories)) assert.match(text, new RegExp(escapeRegExp(url)));
   assert.match(text, /live or destructive native actions[\s\S]*operator confirmation/i);

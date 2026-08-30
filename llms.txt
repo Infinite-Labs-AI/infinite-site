@@ -55,11 +55,11 @@ Infinite is built for solo founders and small teams who have no marketing hire. 
 
 ## Install Infinite OS
 
-Requires Git, Node 20 or newer, and npm. The installer provisions the repository's pinned pnpm privately when needed:
+On macOS, install the Infinite Desktop app from Terminal:
 
-    curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash
+    npx infinite-os@latest
 
-Then run `infinite local setup` and ask a first question with `infinite local "how many page views in the last 7 days"`.
+The app includes Infinite OS and its CLI.
 
 ## Data and execution boundaries
 

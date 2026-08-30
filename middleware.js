@@ -5,6 +5,9 @@ const BOT_UA = /bot|crawler|spider|preview|headless|lighthouse|curl|wget/i;
 // CLI/tooling agents (mirrors the drain's learned list, 2026-08-04): classified before BOT_UA
 // because curl/wget appear in both — a curl download attempt is "cli", not "bot".
 const CLI_UA = /curl|wget|python-requests|python-urllib|go-http-client|httpie|okhttp|axios|node-fetch|libwww|java\//i;
+// The macOS bootstrap identifies itself with this exact, bounded release-shaped UA. Preserve only
+// the version token in the marker: raw user agents never cross the edge log boundary.
+const INSTALLER_UA = /^Infinite-Installer\/((?:0|[1-9]\d{0,5})\.(?:0|[1-9]\d{0,5})\.(?:0|[1-9]\d{0,5})(?:-[0-9A-Za-z][0-9A-Za-z.-]{0,31})?)$/;
 const PRODUCTION_HOSTS = new Set(
   (process.env.INFINITE_PRODUCTION_HOSTS ?? "")
     .split(",")
@@ -63,7 +66,8 @@ function isPrefetch(request) {
 // INFINITE_ATTEMPT_FINGERPRINT_KEY — a bounded, non-reversible fingerprint. The drain derives a
 // DETERMINISTIC ledger event id from it, so N redirect requests from one browser in one bucket
 // collapse into ONE attempt row structurally (the ledger's (workspace_id, event_id) uniqueness).
-// The marker carries NO raw IP and NO raw UA — only the HMAC and a coarse UA family.
+// The marker carries NO raw IP and NO raw UA — only the HMAC, a coarse UA family, and for the
+// exact Infinite installer UA only, its bounded release-version token.
 // An attempt is a server-observed request bucket — NOT a person, NOT a completed transfer.
 
 const ATTEMPT_BUCKET_MS = 30 * 60 * 1000;
@@ -77,6 +81,12 @@ function uaFamily(userAgent) {
   if (BOT_UA.test(userAgent)) return "bot";
   if (/Mozilla\//.test(userAgent)) return "browser";
   return "unknown";
+}
+
+function attemptUserAgentFields(userAgent) {
+  const installerMatch = userAgent?.match(INSTALLER_UA);
+  if (installerMatch) return { uaFamily: "installer", installerVersion: installerMatch[1] };
+  return { uaFamily: uaFamily(userAgent) };
 }
 
 /** Normalized bounded UTM token, or null — never free text (ledger plan P39). */
@@ -140,9 +150,10 @@ async function logDownloadAttempt(request) {
     }
     return;
   }
+  const userAgent = request.headers.get("user-agent") ?? "";
   const marker = {
     attemptKey: await attemptKey(secret, request),
-    uaFamily: uaFamily(request.headers.get("user-agent")),
+    ...attemptUserAgentFields(userAgent),
     utmSource: normalizedUtm(url, "utm_source"),
     utmMedium: normalizedUtm(url, "utm_medium"),
     utmCampaign: normalizedUtm(url, "utm_campaign"),

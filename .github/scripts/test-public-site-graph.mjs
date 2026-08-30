@@ -332,6 +332,7 @@ function assertFooterShape(routePath, body, label) {
   assert.equal(canonicalFooterCount, 1, `${label}: must have exactly one canonical site footer`);
   assert.doesNotMatch(body, siteFooterLegacyClass, `${label}: legacy site footer classes must be removed`);
   assert.match(body, /© 2026 Ultima AI, Inc\./, `${label}: legal footer text must use the verified legal entity`);
+  assert.doesNotMatch(body, /The public graph links/i, `${label}: rejected public-graph footer copy must be absent`);
   if (routePath === "/") {
     assert.equal(totalFooterCount, 2, `${label}: homepage must preserve its testimonial/content footer plus one canonical site footer`);
     assert.match(
