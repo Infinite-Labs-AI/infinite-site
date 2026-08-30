@@ -1,0 +1,97 @@
+<svg width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title-ai-marketing-agents-scope desc-ai-marketing-agents-scope" xmlns="http://www.w3.org/2000/svg">
+  <title id="title-ai-marketing-agents-scope">Interface diagram of buyer-intent scope flowing into a ranked lead inbox</title>
+  <desc id="desc-ai-marketing-agents-scope">A synthetic vector interface diagram showing how a founder defines a buyer-intent scope and receives a ranked lead inbox. It uses labelled sample states only and is not a product screenshot.</desc>
+  <defs>
+    <linearGradient id="bg-ai" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f5f8fb"/>
+    </linearGradient>
+    <linearGradient id="accent-ai" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4d8dff"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <filter id="soft-ai" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="1440" height="900" fill="url(#bg-ai)"/>
+  <circle cx="120" cy="110" r="88" fill="#eaf2ff"/>
+  <circle cx="1320" cy="790" r="140" fill="#eef2f6"/>
+  <text x="96" y="78" fill="#64717d" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="800" letter-spacing="3">Interface diagram</text>
+  <text x="96" y="126" fill="#111827" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="46" font-weight="800">AI Marketing Agents</text>
+  <text x="96" y="166" fill="#52606b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="24">Buyer-intent scope flows into a ranked lead inbox.</text>
+  <g transform="translate(1110 70)">
+    <rect width="226" height="72" rx="24" fill="#ffffff" stroke="#dce6ef"/>
+    <text x="28" y="31" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="800">Synthetic labels only</text>
+    <text x="28" y="53" fill="#64748b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="14">Not a screenshot</text>
+  </g>
+
+  <g transform="translate(96 230)" filter="url(#soft-ai)">
+    <rect width="510" height="548" rx="34" fill="#ffffff" stroke="#dde7ef"/>
+    <rect x="28" y="28" width="454" height="76" rx="24" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="54" y="62" fill="#0f172a" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="800">Scope</text>
+    <text x="54" y="88" fill="#64748b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">Define who should be surfaced before scanning.</text>
+
+    <g transform="translate(36 144)">
+      <rect width="438" height="68" rx="20" fill="#eff6ff" stroke="#bfdbfe"/>
+      <text x="24" y="30" fill="#1e3a8a" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="800">Audience</text>
+      <text x="24" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18">Solo founders and small teams</text>
+    </g>
+    <g transform="translate(36 232)">
+      <rect width="438" height="68" rx="20" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="24" y="30" fill="#475569" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="800">Signals</text>
+      <text x="24" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18">Hiring, pricing, competitor mention</text>
+    </g>
+    <g transform="translate(36 320)">
+      <rect width="438" height="68" rx="20" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="24" y="30" fill="#475569" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="800">Review boundary</text>
+      <text x="24" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18">Show evidence before outreach</text>
+    </g>
+    <g transform="translate(36 426)">
+      <rect width="204" height="70" rx="22" fill="#0f172a"/>
+      <text x="30" y="43" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="19" font-weight="800">Scan intent</text>
+      <rect x="224" width="214" height="70" rx="22" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="251" y="32" fill="#475569" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="800">Synthetic count</text>
+      <text x="251" y="54" fill="#111827" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="800">42 leads</text>
+    </g>
+  </g>
+
+  <path d="M 636 504 C 712 504, 738 504, 814 504" fill="none" stroke="#2563eb" stroke-width="5" marker-end="url(#arrow-ai)"/>
+  <g transform="translate(664 432)">
+    <rect width="124" height="44" rx="22" fill="#e0ecff"/>
+    <text x="28" y="28" fill="#1d4ed8" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="800">rank</text>
+  </g>
+
+  <g transform="translate(834 230)" filter="url(#soft-ai)">
+    <rect width="510" height="548" rx="34" fill="#ffffff" stroke="#dde7ef"/>
+    <rect x="28" y="28" width="454" height="76" rx="24" fill="#111827"/>
+    <text x="54" y="62" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="800">Ranked lead inbox</text>
+    <text x="54" y="88" fill="#cbd5e1" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">Sorted by evidence strength, not raw volume.</text>
+
+    <g transform="translate(36 136)">
+      <rect width="438" height="92" rx="24" fill="#f8fafc" stroke="#dbe4ec"/>
+      <circle cx="42" cy="46" r="23" fill="url(#accent-ai)"/>
+      <text x="33" y="53" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="900">1</text>
+      <text x="84" y="35" fill="#111827" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="800">Ops lead discussing vendor switch</text>
+      <text x="84" y="62" fill="#64748b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">3 matched signals · 92 intent score</text>
+    </g>
+    <g transform="translate(36 248)">
+      <rect width="438" height="92" rx="24" fill="#ffffff" stroke="#dbe4ec"/>
+      <circle cx="42" cy="46" r="23" fill="#dbeafe"/>
+      <text x="33" y="53" fill="#1d4ed8" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="900">2</text>
+      <text x="84" y="35" fill="#111827" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="800">Founder hiring first marketer</text>
+      <text x="84" y="62" fill="#64748b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">2 matched signals · 87 intent score</text>
+    </g>
+    <g transform="translate(36 360)">
+      <rect width="438" height="92" rx="24" fill="#ffffff" stroke="#dbe4ec"/>
+      <circle cx="42" cy="46" r="23" fill="#e2e8f0"/>
+      <text x="33" y="53" fill="#475569" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="900">3</text>
+      <text x="84" y="35" fill="#111827" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="800">Team asks for search visibility</text>
+      <text x="84" y="62" fill="#64748b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">2 matched signals · 81 intent score</text>
+    </g>
+    <text x="44" y="508" fill="#64748b" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="15">Evidence cards show why each synthetic lead is ranked.</text>
+  </g>
+</svg>
