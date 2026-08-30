@@ -165,9 +165,13 @@ async function logDownloadAttempt(request) {
 const RELEASE_URL =
   "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
 
-function isProductionDownloadGet(request) {
+function isProductionDownloadRequest(request) {
   const host = new URL(request.url).hostname.toLowerCase().replace(/\.$/, "");
-  return process.env.VERCEL_ENV === "production" && PRODUCTION_HOSTS.has(host) && request.method === "GET";
+  return (
+    process.env.VERCEL_ENV === "production"
+    && PRODUCTION_HOSTS.has(host)
+    && (request.method === "GET" || request.method === "HEAD")
+  );
 }
 
 async function downloadResponse(request) {
@@ -204,10 +208,11 @@ export default function middleware(request) {
     // LIVE-TEST FINDING (2026-08-18): on this static deployment a vercel.json /download redirect
     // executes BEFORE edge middleware — middleware never ran for /download in production, so the
     // attempt marker never fired. The middleware therefore OWNS this path and SERVES the 307
-    // itself for production GETs (marker, then redirect — the deliberate P13 trade: ~ms of edge
-    // latency, fail-open inside downloadResponse). The old vercel.json entry was REMOVED (#26);
-    // non-production/non-GET/foreign-host requests pass through to ordinary routing (404).
-    if (isProductionDownloadGet(request)) return downloadResponse(request);
+    // itself for production GET/HEAD requests. GET logs the bounded attempt marker, then redirects;
+    // HEAD returns the identical release 307 but `logDownloadAttempt()` exits before reading config
+    // or logging, so link validation never becomes a conversion. The old vercel.json entry was
+    // REMOVED (#26); non-production/other-method/foreign-host requests pass through to routing.
+    if (isProductionDownloadRequest(request)) return downloadResponse(request);
     return next();
   }
   if (isProductionDocumentNavigation(request, path)) return documentMarkerThenNext(request, path);

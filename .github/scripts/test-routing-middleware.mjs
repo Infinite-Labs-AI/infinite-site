@@ -146,7 +146,7 @@ const RELEASE_URL =
   "https://github.com/Infinite-Labs-AI/infinite-desktop-releases/releases/latest/download/Infinite-arm64.dmg";
 
 function assertServedRedirect(response) {
-  assert.equal(response.status, 307, "production GET /download must be answered by the middleware with a 307");
+  assert.equal(response.status, 307, "production GET/HEAD /download must be answered by the middleware with a 307");
   assert.equal(response.headers.get("location"), RELEASE_URL, "the middleware 307 must target the exact vercel.json backstop destination");
 }
 
@@ -321,11 +321,15 @@ try {
   assert.deepEqual(broken.logs, [], "a throwing marker path must stay silent and still serve the 307");
   Date.now = () => 1_755_513_000_000;
 
-  // 6) Non-qualifying /download requests PASS THROUGH to the vercel.json backstop and emit
-  //    nothing: wrong method, preview env, foreign host.
+  // 6) HEAD validates the exact same signed release redirect as GET, but is never a conversion:
+  //    no attempt marker and no missing-key diagnostic. Link validators can therefore verify the
+  //    asset without manufacturing a download attempt.
   const head = await runAsync(request("https://infinite.fast/download", { method: "HEAD" }));
-  assertPassthrough(head.response);
-  assert.deepEqual(head.logs, [], "HEAD must not emit");
+  assertServedRedirect(head.response);
+  assert.deepEqual(head.logs, [], "HEAD must return the release redirect without emitting an attempt marker");
+
+  // 7) Non-qualifying /download requests PASS THROUGH and emit nothing: POST, preview env,
+  //    foreign host. Only production GET/HEAD are owned by this middleware branch.
   const post = await runAsync(request("https://infinite.fast/download", { method: "POST" }));
   assertPassthrough(post.response);
   assert.deepEqual(post.logs, [], "POST must not emit");

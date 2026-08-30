@@ -48,16 +48,23 @@ ${routeLine("/compare/infinite-vs-blaze/", "Infinite vs Blaze")}
 
 ${routeLine("/tools/seo-geo-brief-generator/", "SEO/GEO brief generator")}
 ${routeLine("/tools/founder-content-ideas-generator/", "Founder content ideas generator")}
-${routeLine("/tools/landing-page-ab-test-ideas-generator/", "Landing page A/B test ideas generator")}
+- [Landing page A/B test ideas generator](${absoluteSiteUrl("/tools/landing-page-ab-test-ideas-generator/")}): A free generator for landing-page CRO planning and test ideas for existing pages. It does not build variants or split live traffic.
 ${routeLine("/tools/high-intent-lead-finder-template/", "High-intent lead finder template")}
 ${routeLine("/startup-launch-videos/", "Startup launch videos")}
 
 ## Open source and agent install paths
 
-- [Infinite OS](https://github.com/Infinite-Labs-AI/infinite-os): Public open-source local engine and tooling.
+- [Infinite OS](https://github.com/Infinite-Labs-AI/infinite-os): Public open-source local engine and governed typed tools. Live or destructive tool actions require operator confirmation plus local policy checks.
 - [Infinite Skills](https://github.com/Infinite-Labs-AI/infinite-skills): Public agent skills repository.
-- [Infinite Press Agent](https://github.com/Infinite-Labs-AI/infinite-press-agent): Public press-agent repository.
+- [Infinite Press Agent](https://github.com/Infinite-Labs-AI/infinite-press-agent): Public press-agent repository. Press Agent dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.
 - [Infinite Labs AI GitHub](https://github.com/Infinite-Labs-AI): Public GitHub organization.
+
+## Data and execution boundaries
+
+- Infinite OS stores synced growth data in your local Postgres, and its connector credentials are encrypted at rest.
+- Orchestration runs locally. Prompts and relevant tool context go to your chosen Codex or Anthropic provider for inference, using your own account or credentials.
+- Infinite OS confirmation applies to its governed native/tool actions: live or destructive actions require operator confirmation plus local policy checks. It does not grant a model arbitrary shell or code execution.
+- Press Agent has a separate run contract: dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.
 
 ## Company
 

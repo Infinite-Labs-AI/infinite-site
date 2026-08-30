@@ -98,9 +98,56 @@ const expectedFooterColumns = Object.freeze([
 export function assertPublicSiteGraph(targetDir) {
   assertPublicSiteManifest();
   assertManifest();
+  assertClaimTruth();
   assertSourceFooterShapes();
   assertRootSnapshots();
   assertBuiltGraph(targetDir);
+}
+
+function assertClaimTruth() {
+  const homepage = readFileSync(
+    join(repoRoot, "_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html"),
+    "utf8",
+  );
+  const agents = readFileSync(join(repoRoot, "agents/index.html"), "utf8");
+  const llms = readFileSync(join(repoRoot, "llms.txt"), "utf8");
+  const publicClaims = `${homepage}\n${agents}\n${llms}`;
+
+  for (const unsupported of [
+    /A\/B test landing pages/i,
+    /A\/B test your landing page/i,
+    /turns weak messages into sharper variants, tracks what converts/i,
+    /Build a landing-page variant/i,
+    /Tracked links, UTMs, and landing-page creation/i,
+    /Landing-page A\/B testing/i,
+    /Test ran/i,
+    /Winner found/i,
+    /Variant B beat control/i,
+  ]) {
+    assert.doesNotMatch(publicClaims, unsupported, `unsupported landing-page execution claim must be absent: ${unsupported}`);
+  }
+
+  assert.match(homepage, /test ideas for existing pages/i, "homepage must scope landing-page output to test ideas for an existing page");
+  assert.match(homepage, /landing-page CRO planning/i, "homepage must name the shipped landing-page CRO planning boundary");
+  assert.match(
+    homepage,
+    /Infinite OS stores synced growth data in your local Postgres[\s\S]*connector credentials are encrypted at rest[\s\S]*prompts and relevant tool context go to the Codex or Anthropic provider you choose/i,
+    "homepage must distinguish local data/credentials from chosen-provider inference",
+  );
+  assert.match(
+    homepage,
+    /Infinite OS[\s\S]*governed tools[\s\S]*live or destructive actions[\s\S]*operator confirmation[\s\S]*local policy checks/i,
+    "homepage must scope confirmations to Infinite OS governed-tool writes",
+  );
+  assert.match(
+    agents,
+    /Dry-run never submits or spends a Qwoted credit[\s\S]*normal run can submit at most one pitch and spend a credit/i,
+    "Press Agent must state its own dry-run/submission boundary instead of borrowing Infinite OS confirmation semantics",
+  );
+  assert.match(llms, /test ideas for existing pages/i, "machine-readable copy must keep the landing-page claim bounded");
+  assert.match(llms, /Infinite OS stores synced growth data in your local Postgres[\s\S]*connector credentials are encrypted at rest/i, "machine-readable copy must scope local data and credential storage to Infinite OS");
+  assert.match(llms, /chosen Codex or Anthropic provider/i, "machine-readable copy must disclose chosen-provider inference");
+  assert.match(llms, /Press Agent dry-run never submits or spends a Qwoted credit/i, "machine-readable copy must state Press Agent submission risk");
 }
 
 function assertManifest() {
