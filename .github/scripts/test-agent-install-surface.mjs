@@ -282,7 +282,9 @@ function prepareCollisionHome(home, kind) {
 
 function assertAgentStyles(css) {
   const mutedHex = css.match(/--ag-muted:\s*(#[0-9a-f]{6})/i)?.[1];
+  const focusHex = css.match(/--ag-focus:\s*(#[0-9a-f]{6})/i)?.[1];
   assert.ok(mutedHex, "Agents CSS defines the accessible muted token");
+  assert.ok(focusHex, "Agents CSS defines an opaque keyboard-focus token");
   assert.match(
     css,
     /\.ag-planned-grid p\s*\{[^}]*color:\s*var\(--ag-muted\)/s,
@@ -292,6 +294,16 @@ function assertAgentStyles(css) {
   const cardBackground = composite(rgb("#ffffff"), rgb("#f7f9fb"), 0.68);
   const ratio = contrastRatio(rgb(mutedHex), cardBackground);
   assert.ok(ratio >= 4.5, `planned-specialist normal text contrast must be >= 4.5:1, got ${ratio.toFixed(2)}:1`);
+
+  assert.match(
+    css,
+    /\.ag-actions a:focus-visible,\s*\.ag-hero-link:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--ag-focus\)[^}]*box-shadow:\s*0 0 0 2px #fff/s,
+    "Agents action links use the opaque two-ring focus treatment",
+  );
+  for (const surface of ["#ffffff", "#edf8ff", "#f2efff", "#effdf5", "#f7fbff"]) {
+    const focusRatio = contrastRatio(rgb(focusHex), rgb(surface));
+    assert.ok(focusRatio >= 3, `Agents focus must be >= 3:1 against ${surface}, got ${focusRatio.toFixed(2)}:1`);
+  }
 }
 
 function assertLlms(text, label) {

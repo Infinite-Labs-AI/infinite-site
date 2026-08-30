@@ -114,9 +114,33 @@ export function assertPublicSiteGraph(targetDir) {
   assertPublicSiteManifest();
   assertManifest();
   assertClaimTruth();
+  assertSharedFooterContrast();
   assertSourceFooterShapes();
   assertRootSnapshots();
   assertBuiltGraph(targetDir);
+}
+
+function assertSharedFooterContrast() {
+  const css = readFileSync(join(repoRoot, "assets/site-footer.css"), "utf8");
+  const color = css.match(/\.public-site-footer-bottom\s*\{[^}]*color:\s*(#[0-9a-f]{6})/is)?.[1];
+  assert.ok(color, "shared footer bottom declares an opaque text color");
+  for (const surface of ["#ffffff", "#f8fafb"]) {
+    const ratio = contrastRatio(color, surface);
+    assert.ok(ratio >= 4.5, `shared footer bottom must be >= 4.5:1 against ${surface}, got ${ratio.toFixed(2)}:1`);
+  }
+}
+
+function contrastRatio(left, right) {
+  const values = [relativeLuminance(left), relativeLuminance(right)].sort((a, b) => b - a);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
+
+function relativeLuminance(hex) {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255]
+    .map((channel) => channel / 255)
+    .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
 }
 
 function assertClaimTruth() {

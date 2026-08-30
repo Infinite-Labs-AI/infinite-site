@@ -215,7 +215,10 @@ function assertFeaturePage(html, page, label) {
   assert.match(html, new RegExp(`<title>${escapeRegExp(page.title)}<\\/title>`), `${label}: exact title`);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1, `${label}: exactly one H1`);
   assert.match(html, new RegExp(`<h1[^>]*>${escapeRegExp(page.h1)}<\\/h1>`), `${label}: exact H1`);
-  assert.match(html, new RegExp(`<link rel="canonical" href="${escapeRegExp(siteOrigin + page.path)}">`), `${label}: self canonical`);
+  const canonicalUrl = siteOrigin + page.path;
+  assert.match(html, new RegExp(`<link rel="canonical" href="${escapeRegExp(canonicalUrl)}">`), `${label}: self canonical`);
+  assert.equal((html.match(/<meta\b[^>]*property="og:url"[^>]*>/g) ?? []).length, 1, `${label}: exactly one og:url`);
+  assert.match(html, new RegExp(`<meta property="og:url" content="${escapeRegExp(canonicalUrl)}">`), `${label}: canonical og:url`);
   assert.match(html, new RegExp(`href="${escapeRegExp("/features/" )}"`), `${label}: crawlable Features breadcrumb`);
   for (const crumb of page.breadcrumb) assert.match(html, new RegExp(`>${escapeRegExp(crumb)}<`), `${label}: visible breadcrumb ${crumb}`);
   const graph = jsonLdGraph(html, label);
