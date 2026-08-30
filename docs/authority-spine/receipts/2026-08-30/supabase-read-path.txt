@@ -1,1 +1,1 @@
-mcp execute_sql available; exact durable files captured with linked Supabase CLI Management API after MCP transcript display truncated a large successful result. No sandbox, no raw psql, no DDL.
+primary receipt provenance: mcp__supabase__execute_sql against prod project wdxjduorvpayxixpmskf; supplemental full row dumps retained from linked Supabase CLI Management API for row-level comparison. No sandbox, no raw psql, no DDL.

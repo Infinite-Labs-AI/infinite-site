@@ -61,6 +61,19 @@
     {
       "id": "supabase-receipts-not-unmeasured",
       "passed": true
+    },
+    {
+      "id": "mcp-proof-consistency",
+      "passed": true,
+      "observed": "57/57"
+    },
+    {
+      "id": "supabase-primary-receipts-use-mcp",
+      "passed": true
+    },
+    {
+      "id": "supabase-primary-receipts-have-row-dump-comparison",
+      "passed": true
     }
   ],
   "passed": true

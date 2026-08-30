@@ -1,0 +1,388 @@
+{
+  "project_id": "wdxjduorvpayxixpmskf",
+  "workspace_id": "4cff9e34-59c3-458e-9df9-8c676741bbe7",
+  "mcp_captured_at": "2026-08-30T01:33:10Z",
+  "checks": [
+    {
+      "id": "schema.json:top-level-read-path",
+      "passed": true,
+      "observed": "mcp__supabase__execute_sql",
+      "expected": "mcp__supabase__execute_sql"
+    },
+    {
+      "id": "schema.json:project",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "schema.json:mcp-project-arg",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "gsc-pages.json:top-level-read-path",
+      "passed": true,
+      "observed": "mcp__supabase__execute_sql",
+      "expected": "mcp__supabase__execute_sql"
+    },
+    {
+      "id": "gsc-pages.json:project",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "gsc-pages.json:mcp-project-arg",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "gsc-queries.json:top-level-read-path",
+      "passed": true,
+      "observed": "mcp__supabase__execute_sql",
+      "expected": "mcp__supabase__execute_sql"
+    },
+    {
+      "id": "gsc-queries.json:project",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "gsc-queries.json:mcp-project-arg",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "aeo.json:top-level-read-path",
+      "passed": true,
+      "observed": "mcp__supabase__execute_sql",
+      "expected": "mcp__supabase__execute_sql"
+    },
+    {
+      "id": "aeo.json:project",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "aeo.json:mcp-project-arg",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "cta.json:top-level-read-path",
+      "passed": true,
+      "observed": "mcp__supabase__execute_sql",
+      "expected": "mcp__supabase__execute_sql"
+    },
+    {
+      "id": "cta.json:project",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "cta.json:mcp-project-arg",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "downloads.json:top-level-read-path",
+      "passed": true,
+      "observed": "mcp__supabase__execute_sql",
+      "expected": "mcp__supabase__execute_sql"
+    },
+    {
+      "id": "downloads.json:project",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "downloads.json:mcp-project-arg",
+      "passed": true,
+      "observed": "wdxjduorvpayxixpmskf",
+      "expected": "wdxjduorvpayxixpmskf"
+    },
+    {
+      "id": "schema:row-count",
+      "passed": true,
+      "observed": 99,
+      "expected": 99
+    },
+    {
+      "id": "schema:missing-required-columns",
+      "passed": true,
+      "observed": [],
+      "expected": []
+    },
+    {
+      "id": "gsc-pages:row-count",
+      "passed": true,
+      "observed": 317,
+      "expected": 317
+    },
+    {
+      "id": "gsc-pages:first-date",
+      "passed": true,
+      "observed": "2026-08-03",
+      "expected": "2026-08-03"
+    },
+    {
+      "id": "gsc-pages:last-date",
+      "passed": true,
+      "observed": "2026-08-28",
+      "expected": "2026-08-28"
+    },
+    {
+      "id": "gsc-pages:date-count",
+      "passed": true,
+      "observed": 26,
+      "expected": 26
+    },
+    {
+      "id": "gsc-pages:unique-pages",
+      "passed": true,
+      "observed": 56,
+      "expected": 56
+    },
+    {
+      "id": "gsc-pages:clicks",
+      "passed": true,
+      "observed": 1,
+      "expected": 1
+    },
+    {
+      "id": "gsc-pages:impressions",
+      "passed": true,
+      "observed": 2561,
+      "expected": 2561
+    },
+    {
+      "id": "gsc-queries:row-count",
+      "passed": true,
+      "observed": 496,
+      "expected": 496
+    },
+    {
+      "id": "gsc-queries:first-date",
+      "passed": true,
+      "observed": "2026-08-03",
+      "expected": "2026-08-03"
+    },
+    {
+      "id": "gsc-queries:last-date",
+      "passed": true,
+      "observed": "2026-08-28",
+      "expected": "2026-08-28"
+    },
+    {
+      "id": "gsc-queries:date-count",
+      "passed": true,
+      "observed": 26,
+      "expected": 26
+    },
+    {
+      "id": "gsc-queries:unique-queries",
+      "passed": true,
+      "observed": 118,
+      "expected": 118
+    },
+    {
+      "id": "gsc-queries:unique-pages",
+      "passed": true,
+      "observed": 24,
+      "expected": 24
+    },
+    {
+      "id": "gsc-queries:clicks",
+      "passed": true,
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "gsc-queries:impressions",
+      "passed": true,
+      "observed": 2122,
+      "expected": 2122
+    },
+    {
+      "id": "aeo:row-count",
+      "passed": true,
+      "observed": 1151,
+      "expected": 1151
+    },
+    {
+      "id": "aeo:first-date",
+      "passed": true,
+      "observed": "2026-08-03",
+      "expected": "2026-08-03"
+    },
+    {
+      "id": "aeo:last-date",
+      "passed": true,
+      "observed": "2026-08-29",
+      "expected": "2026-08-29"
+    },
+    {
+      "id": "aeo:date-count",
+      "passed": true,
+      "observed": 21,
+      "expected": 21
+    },
+    {
+      "id": "aeo:unique-prompts",
+      "passed": true,
+      "observed": 30,
+      "expected": 30
+    },
+    {
+      "id": "aeo:cited-count",
+      "passed": true,
+      "observed": 25,
+      "expected": 25
+    },
+    {
+      "id": "aeo:by-platform",
+      "passed": true,
+      "observed": [
+        {
+          "cited": 15,
+          "checks": 532,
+          "platform": "chatgpt",
+          "unique_prompts": 30
+        },
+        {
+          "cited": 9,
+          "checks": 533,
+          "platform": "claude",
+          "unique_prompts": 30
+        },
+        {
+          "cited": 1,
+          "checks": 86,
+          "platform": "google_ai_overview",
+          "unique_prompts": 30
+        }
+      ],
+      "expected": [
+        {
+          "cited": 15,
+          "checks": 532,
+          "platform": "chatgpt",
+          "unique_prompts": 30
+        },
+        {
+          "cited": 9,
+          "checks": 533,
+          "platform": "claude",
+          "unique_prompts": 30
+        },
+        {
+          "cited": 1,
+          "checks": 86,
+          "platform": "google_ai_overview",
+          "unique_prompts": 30
+        }
+      ]
+    },
+    {
+      "id": "cta:row-count",
+      "passed": true,
+      "observed": 18,
+      "expected": 18
+    },
+    {
+      "id": "cta:first-date",
+      "passed": true,
+      "observed": "2026-08-07",
+      "expected": "2026-08-07"
+    },
+    {
+      "id": "cta:last-date",
+      "passed": true,
+      "observed": "2026-08-27",
+      "expected": "2026-08-27"
+    },
+    {
+      "id": "cta:date-count",
+      "passed": true,
+      "observed": 12,
+      "expected": 12
+    },
+    {
+      "id": "cta:site-clicks",
+      "passed": true,
+      "observed": 11,
+      "expected": 11
+    },
+    {
+      "id": "cta:download-clicks",
+      "passed": true,
+      "observed": 12,
+      "expected": 12
+    },
+    {
+      "id": "downloads:row-count",
+      "passed": true,
+      "observed": 32,
+      "expected": 32
+    },
+    {
+      "id": "downloads:first-date",
+      "passed": true,
+      "observed": "2026-08-03",
+      "expected": "2026-08-03"
+    },
+    {
+      "id": "downloads:last-date",
+      "passed": true,
+      "observed": "2026-08-30",
+      "expected": "2026-08-30"
+    },
+    {
+      "id": "downloads:date-count",
+      "passed": true,
+      "observed": 28,
+      "expected": 28
+    },
+    {
+      "id": "downloads:document-requests",
+      "passed": true,
+      "observed": 1890,
+      "expected": 1890
+    },
+    {
+      "id": "downloads:server-visits",
+      "passed": true,
+      "observed": 1161,
+      "expected": 1161
+    },
+    {
+      "id": "downloads:download-attempts",
+      "passed": true,
+      "observed": 29,
+      "expected": 29
+    },
+    {
+      "id": "downloads:download-attempt-visits",
+      "passed": true,
+      "observed": 12,
+      "expected": 12
+    },
+    {
+      "id": "downloads:keyed-document-requests",
+      "passed": true,
+      "observed": 1269,
+      "expected": 1269
+    }
+  ],
+  "passed": true
+}

@@ -334,5 +334,10 @@
     "day_28": "2026-09-27",
     "day_56": "2026-10-25",
     "day_90": "2026-11-28"
-  }
+  },
+  "read_path": "primary receipt provenance is mcp__supabase__execute_sql; supplemental full row dumps retained for row-level audit comparison",
+  "mcp_captured_at": "2026-08-30T01:33:10Z",
+  "mcp_proof_summary_file": "mcp-proof-summary.json",
+  "mcp_proof_consistency_file": "mcp-proof-consistency-check.json",
+  "mcp_proof_consistency_passed": true
 }

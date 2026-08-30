@@ -163,14 +163,22 @@ Receipts:
 - `aeo.json`
 - `cta.json`
 - `downloads.json`
+- `supabase-mcp-captured-at.txt`
+- `mcp-proof-summary.json`
+- `mcp-proof-consistency-check.json`
 - `supabase-summary.json`
 
-Method note: `mcp__supabase__execute_sql` was available and was used for the schema preflight and an initial data read. The MCP transcript display truncated a large successful result, so the exact durable JSON files were captured with the repo-approved linked Supabase CLI Management API path after confirming `supabase/.temp/project-ref` was prod. No sandbox project, raw `psql`, DDL, or writes were used.
+Method note: the primary Supabase receipt provenance is now `mcp__supabase__execute_sql` against prod project `wdxjduorvpayxixpmskf`. Each primary receipt (`schema.json`, `gsc-pages.json`, `gsc-queries.json`, `aeo.json`, `cta.json`, `downloads.json`) records the MCP tool name, MCP project argument, MCP capture timestamp, the required SQL, the bounded proof SQL, the MCP result row, and the MCP untrusted-data boundary ID observed in the tool output. The earlier linked-CLI full row dumps are retained inside those files under `supplemental_full_row_dump` so the row-level data can be compared to the MCP proof values. No sandbox project, raw `psql`, DDL, or writes were used.
+
+MCP amendment captured at: `2026-08-30T01:33:10Z`
+
+MCP proof consistency: `mcp-proof-consistency-check.json` passed `57/57` checks against the retained row dumps.
 
 ### Schema
 
 - Rows: `99`
 - Selected-column check: passed
+- MCP rowset MD5: `c9bbc491d402a554c2ec295ac374715c`
 
 ### GSC page truth
 
@@ -182,6 +190,7 @@ Receipt: `gsc-pages.json`
 - Unique pages: `56`
 - Clicks: `1`
 - Impressions: `2561`
+- MCP rowset MD5: `81e566657a488a6ff0368ee379114a70`
 
 Top page totals by clicks, then impressions:
 
@@ -205,6 +214,7 @@ Receipt: `gsc-queries.json`
 - Unique queries: `118`
 - Clicks: `0`
 - Impressions: `2122`
+- MCP rowset MD5: `3c7fcc713999b7617c269b01839f994e`
 
 This is the retained query sample, not a census.
 
@@ -226,6 +236,7 @@ Receipt: `aeo.json`
 - Dates present in returned data: `2026-08-03` through `2026-08-29`
 - Date count present: `21`
 - `our_domain_cited`: `25`
+- MCP rowset MD5: `1563af869e51977c3161528c8f01e3be`
 
 By platform:
 
@@ -246,6 +257,7 @@ Receipt: `cta.json`
 - Date count present: `12`
 - `site_clicks`: `11`
 - `download_clicks`: `12`
+- MCP rowset MD5: `b3ac55a1d40a2fe1e9bbe61806d2def4`
 
 By CTA/location/destination:
 
@@ -270,6 +282,7 @@ Receipt: `downloads.json`
 - `download_attempts`: `29`
 - `download_attempt_visits`: `12`
 - `keyed_document_requests`: `1269`
+- MCP rowset MD5: `72833d04e2191a80604ee367661a8f60`
 
 ## GitHub baseline
 
@@ -326,6 +339,9 @@ Checks covered:
 - Schema selected columns are present.
 - Supabase receipts record prod project `wdxjduorvpayxixpmskf`.
 - Supabase data receipts are not `unmeasured:`.
+- Supabase primary receipts use `mcp__supabase__execute_sql`.
+- Supabase primary receipts retain full row dumps for comparison.
+- MCP proof consistency passes against the retained row dumps.
 
 ## Open unmeasured gates
 

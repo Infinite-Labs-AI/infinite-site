@@ -3,11 +3,11 @@
   "files": [
     {
       "file": "aeo.json",
-      "bytes": 921374
+      "bytes": 985658
     },
     {
       "file": "baseline-consistency-check.json",
-      "bytes": 1667
+      "bytes": 1948
     },
     {
       "file": "captured-at.txt",
@@ -15,7 +15,7 @@
     },
     {
       "file": "cta.json",
-      "bytes": 4807
+      "bytes": 7542
     },
     {
       "file": "download-get-headers.txt",
@@ -27,7 +27,7 @@
     },
     {
       "file": "downloads.json",
-      "bytes": 7775
+      "bytes": 10900
     },
     {
       "file": "github-org.json",
@@ -39,11 +39,11 @@
     },
     {
       "file": "gsc-pages.json",
-      "bytes": 67431
+      "bytes": 74246
     },
     {
       "file": "gsc-queries.json",
-      "bytes": 141177
+      "bytes": 153004
     },
     {
       "file": "installer-pr.json",
@@ -106,8 +106,16 @@
       "bytes": 40406
     },
     {
+      "file": "mcp-proof-consistency-check.json",
+      "bytes": 8631
+    },
+    {
+      "file": "mcp-proof-summary.json",
+      "bytes": 3182
+    },
+    {
       "file": "receipt-inventory.json",
-      "bytes": 2712
+      "bytes": 2946
     },
     {
       "file": "schema-selected-column-check.json",
@@ -115,7 +123,7 @@
     },
     {
       "file": "schema.json",
-      "bytes": 13191
+      "bytes": 17671
     },
     {
       "file": "site-main-sha.txt",
@@ -126,16 +134,20 @@
       "bytes": 41
     },
     {
+      "file": "supabase-mcp-captured-at.txt",
+      "bytes": 21
+    },
+    {
       "file": "supabase-project-ref.txt",
       "bytes": 21
     },
     {
       "file": "supabase-read-path.txt",
-      "bytes": 195
+      "bytes": 234
     },
     {
       "file": "supabase-summary.json",
-      "bytes": 9496
+      "bytes": 9847
     },
     {
       "file": "supabase-workspace-id.txt",
@@ -150,5 +162,5 @@
       "bytes": 84
     }
   ],
-  "file_count": 37
+  "file_count": 40
 }
