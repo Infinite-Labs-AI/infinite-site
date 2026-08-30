@@ -384,5 +384,61 @@
       "expected": 1269
     }
   ],
-  "passed": true
+  "passed": true,
+  "normalized_pair_comparisons": {
+    "schema": {
+      "canonical_json_sha256": "8c9dabba1244e152dc412e2d588abb6e2a5df9eab2227fe79603204283c9928c",
+      "canonical_row_count": 99,
+      "postgres_compatible_cli_rowset_md5": null,
+      "mcp_proof_rowset_md5": "c9bbc491d402a554c2ec295ac374715c",
+      "mcp_summary_matches_cli_rows": true,
+      "comparison_status": "summary-verified only: historical MCP raw rows were not retained"
+    },
+    "gsc-pages": {
+      "canonical_json_sha256": "ea263d0aa4167f0c2a1f05939594e63e3c674d779ec5f79cee166abee751fd9b",
+      "canonical_row_count": 317,
+      "postgres_compatible_cli_rowset_md5": "81e566657a488a6ff0368ee379114a70",
+      "mcp_proof_rowset_md5": "81e566657a488a6ff0368ee379114a70",
+      "mcp_summary_matches_cli_rows": true,
+      "comparison_status": "verified: PostgreSQL-jsonb-compatible CLI rowset MD5 reproduces the MCP proof"
+    },
+    "gsc-queries": {
+      "canonical_json_sha256": "64b97323df5ef4a3c5d415fddcfe0456fa0c83a85cbc39e9671a903ba05a3c0c",
+      "canonical_row_count": 496,
+      "postgres_compatible_cli_rowset_md5": null,
+      "mcp_proof_rowset_md5": "3c7fcc713999b7617c269b01839f994e",
+      "mcp_summary_matches_cli_rows": true,
+      "comparison_status": "summary-verified only: historical MCP raw rows were not retained"
+    },
+    "aeo": {
+      "canonical_json_sha256": "0e15240a2fb4a01e2956112fba3e808500dca250947bb2ca82aa7656cf066e9c",
+      "canonical_row_count": 1151,
+      "postgres_compatible_cli_rowset_md5": null,
+      "mcp_proof_rowset_md5": "1563af869e51977c3161528c8f01e3be",
+      "mcp_summary_matches_cli_rows": true,
+      "comparison_status": "summary-verified only: historical MCP raw rows were not retained"
+    },
+    "cta": {
+      "canonical_json_sha256": "158e94553fe9f86ab4dfc6f5f21597caeca8e321e0ee722ba8b98b671aa27517",
+      "canonical_row_count": 18,
+      "postgres_compatible_cli_rowset_md5": null,
+      "mcp_proof_rowset_md5": "b3ac55a1d40a2fe1e9bbe61806d2def4",
+      "mcp_summary_matches_cli_rows": true,
+      "comparison_status": "summary-verified only: historical MCP raw rows were not retained"
+    },
+    "downloads": {
+      "canonical_json_sha256": "d622ecd7f83ed5da9dbd9d8aac8442dff13b2d6c8d9f2384ae6bf01caa0d2512",
+      "canonical_row_count": 32,
+      "postgres_compatible_cli_rowset_md5": null,
+      "mcp_proof_rowset_md5": "72833d04e2191a80604ee367661a8f60",
+      "mcp_summary_matches_cli_rows": true,
+      "comparison_status": "summary-verified only: historical MCP raw rows were not retained"
+    }
+  },
+  "normalized_pair_comparison_method": {
+    "generated_by": "verify-normalized-receipt-pairs.mjs --write",
+    "equality_basis": "Every retained CLI row dump is normalized to query-selected columns and query sort keys, then checked against its MCP proof summary. For gsc-pages, its PostgreSQL-jsonb-compatible MD5 also reproduces the independently captured MCP proof MD5. Canonical SHA-256 values are durable transport-independent CLI snapshot fingerprints.",
+    "limitation": "The historical MCP transcript retained proof rows and rowset MD5s, not raw MCP rows. The canonical SHA-256 values are therefore CLI snapshot fingerprints, not separately captured MCP canonical hashes. Only gsc-pages has a verified local reproduction of the MCP PostgreSQL-jsonb MD5; no row-for-row equality claim is made for the other pairs."
+  },
+  "normalized_pair_comparison_passed": true
 }

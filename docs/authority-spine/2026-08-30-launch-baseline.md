@@ -166,13 +166,14 @@ Receipts:
 - `supabase-mcp-captured-at.txt`
 - `mcp-proof-summary.json`
 - `mcp-proof-consistency-check.json`
+- `verify-normalized-receipt-pairs.mjs`
 - `supabase-summary.json`
 
-Method note: the primary Supabase receipt provenance is now `mcp__supabase__execute_sql` against prod project `wdxjduorvpayxixpmskf`. Each primary receipt (`schema.json`, `gsc-pages.json`, `gsc-queries.json`, `aeo.json`, `cta.json`, `downloads.json`) records the MCP tool name, MCP project argument, MCP capture timestamp, the required SQL, the bounded proof SQL, the MCP result row, and the MCP untrusted-data boundary ID observed in the tool output. The earlier linked-CLI full row dumps are retained inside those files under `supplemental_full_row_dump` so the row-level data can be compared to the MCP proof values. No sandbox project, raw `psql`, DDL, or writes were used.
+Method note: the primary Supabase receipt provenance is now `mcp__supabase__execute_sql` against prod project `wdxjduorvpayxixpmskf`. Each primary receipt (`schema.json`, `gsc-pages.json`, `gsc-queries.json`, `aeo.json`, `cta.json`, `downloads.json`) records the MCP tool name, MCP project argument, MCP capture timestamp, the required SQL, the bounded proof SQL, the MCP result row, and the MCP untrusted-data boundary ID observed in the tool output. The earlier linked-CLI full row dumps are retained inside those files under `supplemental_full_row_dump`. `verify-normalized-receipt-pairs.mjs` reduces every dump to its selected columns, canonical scalar values, and query sort keys, then records a deterministic canonical JSON SHA-256 and row count. No sandbox project, raw `psql`, DDL, or writes were used.
 
 MCP amendment captured at: `2026-08-30T01:33:10Z`
 
-MCP proof consistency: `mcp-proof-consistency-check.json` passed `57/57` checks against the retained row dumps.
+MCP proof consistency: the original `57/57` provenance/summary checks pass, and the normalized checker passes `6/6` retained CLI row dumps. The GSC-pages CLI rows reproduce the independently captured MCP PostgreSQL-jsonb MD5 (`81e566657a488a6ff0368ee379114a70`) at 317 rows, so this pair is verified equal despite transport-level raw-JSON MD5 differences. The other historical MCP receipts retain only summary rows and aggregate hashes, not raw MCP rows: their summary values and CLI canonical snapshots are verified, but this baseline makes no unsupported row-for-row equality claim for them.
 
 ### Schema
 
@@ -340,8 +341,8 @@ Checks covered:
 - Supabase receipts record prod project `wdxjduorvpayxixpmskf`.
 - Supabase data receipts are not `unmeasured:`.
 - Supabase primary receipts use `mcp__supabase__execute_sql`.
-- Supabase primary receipts retain full row dumps for comparison.
-- MCP proof consistency passes against the retained row dumps.
+- Supabase primary receipts retain full CLI row dumps.
+- The normalized receipt checker passes; only GSC-pages claims rowset equality because only it has a reproduced MCP rowset checksum.
 
 ## Open unmeasured gates
 

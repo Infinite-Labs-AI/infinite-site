@@ -7,7 +7,7 @@
     },
     {
       "file": "baseline-consistency-check.json",
-      "bytes": 1948
+      "bytes": 2712
     },
     {
       "file": "captured-at.txt",
@@ -107,7 +107,7 @@
     },
     {
       "file": "mcp-proof-consistency-check.json",
-      "bytes": 8631
+      "bytes": 12049
     },
     {
       "file": "mcp-proof-summary.json",
@@ -115,7 +115,7 @@
     },
     {
       "file": "receipt-inventory.json",
-      "bytes": 2946
+      "bytes": 3125
     },
     {
       "file": "schema-selected-column-check.json",
@@ -160,7 +160,15 @@
     {
       "file": "verified-production-sha.txt",
       "bytes": 84
+    },
+    {
+      "file": "verify-normalized-receipt-pairs.mjs",
+      "bytes": 10851
+    },
+    {
+      "file": "verify-normalized-receipt-pairs.test.mjs",
+      "bytes": 1254
     }
   ],
-  "file_count": 40
+  "file_count": 42
 }
