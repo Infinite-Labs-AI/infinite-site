@@ -210,7 +210,7 @@ for (const [id, config] of Object.entries(pairs)) {
   }
 }
 
-if (write) {
+if (write && errors.length === 0) {
   consistency.normalized_pair_comparisons = normalized;
   consistency.normalized_pair_comparison_method = {
     generated_by: 'verify-normalized-receipt-pairs.mjs --write',

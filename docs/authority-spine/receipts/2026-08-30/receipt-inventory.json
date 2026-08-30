@@ -163,11 +163,11 @@
     },
     {
       "file": "verify-normalized-receipt-pairs.mjs",
-      "bytes": 10851
+      "bytes": 10874
     },
     {
       "file": "verify-normalized-receipt-pairs.test.mjs",
-      "bytes": 1254
+      "bytes": 2216
     }
   ],
   "file_count": 42
