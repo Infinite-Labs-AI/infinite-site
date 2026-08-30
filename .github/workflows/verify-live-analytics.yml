@@ -81,6 +81,7 @@ jobs:
           - test-static-remediation.mjs
           - test-public-site-graph.mjs
           - test-agent-install-surface.mjs
+          - test-feature-pillars.mjs
           - test-prepare-static-deploy.mjs
           - test-launch-video-pages.mjs
           - test-csp-report.mjs

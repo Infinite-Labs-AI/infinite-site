@@ -11,6 +11,15 @@ Infinite is built for solo founders and small teams who have no marketing hire. 
 - [Download](https://infinite.fast/download): Mac desktop app (Apple silicon). The server-owned /download path remains the primary conversion route.
 - [Tools](https://infinite.fast/tools/): A directory of free founder-facing tools for lead research, SEO briefs, landing-page tests, and content ideas.
 
+## Features and availability
+
+- **Shipped** — [AI Marketing Agents](https://infinite.fast/features/ai-marketing-agents/): Shipped AI CMO workflow for scoped buyer-intent scanning, evidence, scoring, and lead triage.
+- **Shipped** — [SEO + AEO](https://infinite.fast/features/seo-aeo/): Shipped metered research, review, publishing, search reporting, and sampled AI-citation workflow.
+- **Shipped** — [X + Instagram Content](https://infinite.fast/features/x-instagram-content/): Shipped X and Instagram research, bounded drafting, human review, and supported publishing workflow.
+- **Shipped** — [AI Ads](https://infinite.fast/features/ads/): Shipped Meta-first evidence, paused proposals, confirmations, policy guards, Google Ads infrastructure, and history.
+- **Current availability** — [Email](https://infinite.fast/features/email/): Current availability and launch requirements for retained email operations infrastructure; not a public product surface.
+- **CRO + A/B test ideas** — [Websites + A/B Ideas](https://infinite.fast/features/websites-ab-testing/): Landing-page CRO planning and test ideas for existing pages; not a builder or live A/B-test runtime.
+
 ## Pricing
 
 - [Max](https://infinite.fast/#pricing): $60/month billed monthly, or $50/month billed annually at $600/year.

@@ -8,7 +8,7 @@ export function renderSiteFooter({ status = "Public route graph" } = {}) {
     <div class="public-site-footer-brand">
       <span class="public-site-footer-mark" aria-hidden="true"><img src="/logos/infinite-ring-clean-96.webp" width="26" height="26" alt="" loading="lazy" decoding="async"></span>
       <strong>Infinite</strong>
-      <p>AI CMO workspace for founders and small teams. The public graph links only to shipped routes and verified public resources.</p>
+      <p>AI CMO workspace for founders and small teams. The public graph links to labelled product status pages and verified public resources.</p>
     </div>
     ${FOOTER_COLUMNS.map(renderColumn).join("\n    ")}
   </div>

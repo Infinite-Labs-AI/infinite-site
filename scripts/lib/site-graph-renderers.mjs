@@ -26,6 +26,15 @@ ${routeLine("/agents/", "Agents")}
 - [Download](${SITE_ORIGIN}${DOWNLOAD_PATH}): Mac desktop app (Apple silicon). The server-owned /download path remains the primary conversion route.
 ${routeLine("/tools/", "Tools")}
 
+## Features and availability
+
+- **Shipped** — [AI Marketing Agents](${absoluteSiteUrl("/features/ai-marketing-agents/")}): ${routeByPath.get("/features/ai-marketing-agents/")?.llmsSummary}
+- **Shipped** — [SEO + AEO](${absoluteSiteUrl("/features/seo-aeo/")}): ${routeByPath.get("/features/seo-aeo/")?.llmsSummary}
+- **Shipped** — [X + Instagram Content](${absoluteSiteUrl("/features/x-instagram-content/")}): ${routeByPath.get("/features/x-instagram-content/")?.llmsSummary}
+- **Shipped** — [AI Ads](${absoluteSiteUrl("/features/ads/")}): ${routeByPath.get("/features/ads/")?.llmsSummary}
+- **Current availability** — [Email](${absoluteSiteUrl("/features/email/")}): ${routeByPath.get("/features/email/")?.llmsSummary}
+- **CRO + A/B test ideas** — [Websites + A/B Ideas](${absoluteSiteUrl("/features/websites-ab-testing/")}): ${routeByPath.get("/features/websites-ab-testing/")?.llmsSummary}
+
 ## Pricing
 
 - [Max](https://infinite.fast/#pricing): $60/month billed monthly, or $50/month billed annually at $600/year.

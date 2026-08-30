@@ -18,6 +18,13 @@ const repoRoot = new URL("../..", import.meta.url).pathname;
 const distDir = join(repoRoot, "dist");
 const expectedRoutes = [
   "/",
+  "/features/",
+  "/features/ai-marketing-agents/",
+  "/features/seo-aeo/",
+  "/features/x-instagram-content/",
+  "/features/ads/",
+  "/features/email/",
+  "/features/websites-ab-testing/",
   "/agents/",
   "/tools/",
   "/tools/high-intent-lead-finder-template/",
@@ -25,9 +32,9 @@ const expectedRoutes = [
   "/tools/landing-page-ab-test-ideas-generator/",
   "/tools/founder-content-ideas-generator/",
   "/compare/",
+  "/compare/infinite-vs-blaze/",
   "/compare/infinite-vs-okara/",
   "/compare/infinite-vs-ploy/",
-  "/compare/infinite-vs-blaze/",
   "/startup-launch-videos/",
   "/privacy/",
   "/terms/",
@@ -46,6 +53,14 @@ const expectedRouteFields = [
   "title",
 ];
 const expectedFooterColumns = Object.freeze([
+  footerColumn("Product", [
+    footerLink("AI Marketing Agents", "/features/ai-marketing-agents/", "feature-ai-marketing-agents"),
+    footerLink("SEO + AEO", "/features/seo-aeo/", "feature-seo-aeo"),
+    footerLink("X + Instagram Content", "/features/x-instagram-content/", "feature-x-instagram-content"),
+    footerLink("AI Ads", "/features/ads/", "feature-ads"),
+    footerLink("Email — availability", "/features/email/", "feature-email"),
+    footerLink("Websites + A/B Ideas", "/features/websites-ab-testing/", "feature-websites-ab-testing"),
+  ]),
   footerColumn("Agents & Open Source", [
     footerLink("Agent Ecosystem", "/agents/", "agents"),
     footerLink("Infinite OS", "https://github.com/Infinite-Labs-AI/infinite-os", "infinite-os-github"),
@@ -177,7 +192,7 @@ function assertManifest() {
   assert.deepEqual(
     PUBLIC_ROUTES.map((route) => route.path),
     expectedRoutes,
-    "manifest must contain exactly the 14 existing public document routes in canonical order",
+    "manifest must contain exactly the final 21 public document routes in canonical order",
   );
   assert.deepEqual(
     SITEMAP_ROUTES.map((route) => route.path),
@@ -212,12 +227,7 @@ function assertManifest() {
     assert.match(route.sitemap.priority, /^(?:0\.[0-9]|1\.0)$/, `${route.path}: route must carry a valid sitemap.priority`);
   }
 
-  assert.equal(
-    FOOTER_COLUMNS.some((column) => column.label === "Product"),
-    false,
-    "Task 2 foundation footer must omit Product until feature pages exist",
-  );
-  assert.deepEqual(FOOTER_COLUMNS, expectedFooterColumns, "Task 2 footer columns must equal the binding final footer with Product omitted");
+  assert.deepEqual(FOOTER_COLUMNS, expectedFooterColumns, "final footer columns must include the activated Product destinations");
   assert.ok(Object.isFrozen(FOOTER_COLUMNS), "footer column array must be frozen");
 
   const routePaths = new Set(expectedRoutes);
