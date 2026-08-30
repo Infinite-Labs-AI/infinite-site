@@ -165,9 +165,9 @@ assert.deepEqual(
 assert.ok(existsSync(join(repoRoot, "assets/feature-pages.css")), "shared feature-page CSS must exist");
 const css = read("assets/feature-pages.css");
 assert.match(css, /@media\s*\(max-width:\s*760px\)/, "feature pages need a mobile layout");
-assert.match(css, /:focus-visible/, "feature pages need visible keyboard focus");
 assert.match(css, /--feature-text:\s*#14202b/i, "feature text token is the reviewed high-contrast value");
 assert.match(css, /--feature-muted:\s*#53616e/i, "feature muted token is the reviewed accessible value");
+assertFocusContrast(css);
 
 for (const page of pages) {
   assert.ok(existsSync(join(repoRoot, page.file)), `${page.file} must exist`);
@@ -248,6 +248,43 @@ function assertFeaturePage(html, page, label) {
   if (page.path === "/features/websites-ab-testing/") {
     assert.doesNotMatch(main, /\/assets\/features\//, `${label}: Websites page has no builder screenshot`);
   }
+  for (const anchor of html.match(/<a\b[^>]*href="[^"]+"[^>]*>/g) ?? []) {
+    assert.doesNotMatch(anchor, /tabindex="-1"/, `${label}: CTA/card link must remain keyboard-focusable`);
+  }
+}
+
+function assertFocusContrast(styles) {
+  const tokens = Object.fromEntries(
+    [...styles.matchAll(/--(feature-(?:bg|card|text|focus|focus-halo)):\s*(#[0-9a-f]{6})/gi)]
+      .map((match) => [match[1], match[2].toLowerCase()]),
+  );
+  for (const token of ["feature-bg", "feature-card", "feature-text", "feature-focus", "feature-focus-halo"]) {
+    assert.match(tokens[token] ?? "", /^#[0-9a-f]{6}$/, `focus contract must declare --${token}`);
+  }
+  assert.match(
+    styles,
+    /a:focus-visible,button:focus-visible\{[^}]*outline:\s*3px solid var\(--feature-focus\)[^}]*outline-offset:\s*4px[^}]*box-shadow:\s*0 0 0 7px var\(--feature-focus-halo\)/,
+    "every feature link/button must receive the shared two-color keyboard focus treatment",
+  );
+  for (const adjacent of ["feature-bg", "feature-card"]) {
+    const ratio = contrastRatio(tokens["feature-focus"], tokens[adjacent]);
+    assert.ok(ratio >= 3, `--feature-focus must be >=3:1 against --${adjacent}; got ${ratio.toFixed(2)}:1`);
+  }
+  const darkRatio = contrastRatio(tokens["feature-focus-halo"], tokens["feature-text"]);
+  assert.ok(darkRatio >= 3, `--feature-focus-halo must be >=3:1 against dark controls; got ${darkRatio.toFixed(2)}:1`);
+}
+
+function contrastRatio(left, right) {
+  const values = [relativeLuminance(left), relativeLuminance(right)].sort((a, b) => b - a);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
+
+function relativeLuminance(hex) {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255]
+    .map((channel) => channel / 255)
+    .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
 }
 
 function assertHubStatuses(html, label) {
