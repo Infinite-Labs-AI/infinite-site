@@ -849,3 +849,107 @@ body {
     min-height: 300px;
   }
 }
+
+.agent-install-panel {
+  width: 100%;
+  margin-top: 18px;
+  padding: clamp(22px, 3vw, 30px);
+  border: 1px solid rgba(52, 84, 128, 0.16);
+  border-radius: 18px;
+  background: rgba(244, 249, 255, 0.82);
+  text-align: left;
+}
+
+.agent-install-kicker {
+  margin: 0 0 8px;
+  color: #47657e;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.agent-install-panel h3 {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.08;
+}
+
+.agent-install-panel > p:not(.agent-install-kicker) {
+  max-width: 720px;
+  margin: 12px 0 0;
+  color: #566577;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.agent-install-command {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.agent-install-command code {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  min-height: 48px;
+  padding: 12px 14px;
+  overflow-wrap: anywhere;
+  border: 1px solid rgba(52, 84, 128, 0.16);
+  border-radius: 12px;
+  background: #101826;
+  color: #dff8e9;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.agent-install-command button {
+  min-width: 92px;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid rgba(52, 84, 128, 0.18);
+  border-radius: 12px;
+  background: #fff;
+  color: #172337;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.agent-install-command button:focus-visible,
+.agent-install-links a:focus-visible {
+  outline: 3px solid rgba(34, 117, 255, 0.32);
+  outline-offset: 3px;
+}
+
+.agent-install-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-top: 16px;
+}
+
+.agent-install-links a {
+  color: #244a73;
+  font-size: 13px;
+  font-weight: 750;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 680px) {
+  .agent-install-command {
+    flex-direction: column;
+  }
+
+  .agent-install-command button {
+    width: 100%;
+    min-height: 44px;
+  }
+}

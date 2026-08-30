@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GTM Agents for Founders | Infinite</title>
-  <meta name="description" content="A directory of Infinite's shipped open-source agent and planned go-to-market tools. Infinite OS stores synced data locally; chosen AI providers handle inference.">
+  <title>Agent Ecosystem for Claude and Codex | Infinite</title>
+  <meta name="description" content="Install Infinite OS, add 25 marketing skills plus the Goal skill, or run Press Agent with an explicit dry-run and submission boundary.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#ffffff">
   <link rel="canonical" href="https://infinite.fast/agents/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Infinite">
-  <meta property="og:title" content="GTM Agents for Founders | Infinite">
-  <meta property="og:description" content="Start with the open-source Press Agent. Its dry-run is non-submitting; normal runs can submit one Qwoted pitch.">
+  <meta property="og:title" content="Agent Ecosystem for Claude and Codex | Infinite">
+  <meta property="og:description" content="A local engine, installable Codex skills, and a specialist press agent—with each permission boundary stated plainly.">
   <meta property="og:url" content="https://infinite.fast/agents/">
   <meta property="og:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Infinite AI CMO growth system">
+  <meta property="og:image:alt" content="Infinite agent ecosystem">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://infinite.fast/assets/infinite/ai-cmo-social-preview.png">
-  <meta name="twitter:image:alt" content="Infinite AI CMO growth system">
+  <meta name="twitter:image:alt" content="Infinite agent ecosystem">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -32,12 +32,16 @@
         {
           "@type": "CollectionPage",
           "@id": "https://infinite.fast/agents/#page",
-          "name": "GTM Agents",
+          "name": "Infinite Agent Ecosystem",
           "url": "https://infinite.fast/agents/",
-          "description": "A directory of Infinite's shipped open-source agent and planned go-to-market tools. Infinite OS stores synced data locally; chosen AI providers handle inference.",
-          "isPartOf": { "@type": "WebSite", "name": "Infinite", "url": "https://infinite.fast/" },
-          "publisher": { "@type": "Organization", "name": "Infinite", "url": "https://infinite.fast/" },
-          "mainEntity": { "@id": "https://infinite.fast/agents/#press-agent" }
+          "description": "Install Infinite OS, add Codex marketing skills, or run the specialist Press Agent.",
+          "isPartOf": { "@id": "https://infinite.fast/#website" },
+          "publisher": { "@id": "https://infinite.fast/#organization" },
+          "mainEntity": [
+            { "@id": "https://infinite.fast/agents/#infinite-os" },
+            { "@id": "https://infinite.fast/agents/#infinite-skills" },
+            { "@id": "https://infinite.fast/agents/#press-agent" }
+          ]
         },
         {
           "@type": "BreadcrumbList",
@@ -47,17 +51,37 @@
           ]
         },
         {
+          "@type": "SoftwareSourceCode",
+          "@id": "https://infinite.fast/agents/#infinite-os",
+          "name": "Infinite OS",
+          "description": "MIT-licensed local-first growth analytics engine and CLI for Claude and Codex.",
+          "url": "https://github.com/Infinite-Labs-AI/infinite-os",
+          "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-os",
+          "license": "https://github.com/Infinite-Labs-AI/infinite-os/blob/main/LICENSE",
+          "programmingLanguage": "TypeScript",
+          "runtimePlatform": ["macOS", "Linux"]
+        },
+        {
+          "@type": "SoftwareSourceCode",
+          "@id": "https://infinite.fast/agents/#infinite-skills",
+          "name": "Infinite Skills",
+          "description": "Twenty-five marketing skills plus the Goal skill for Codex.",
+          "url": "https://github.com/Infinite-Labs-AI/infinite-skills",
+          "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-skills",
+          "license": "https://github.com/Infinite-Labs-AI/infinite-skills/blob/main/LICENSE",
+          "runtimePlatform": "Codex"
+        },
+        {
           "@type": "SoftwareApplication",
           "@id": "https://infinite.fast/agents/#press-agent",
           "name": "Press Agent",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "macOS",
           "description": "Search and rank Qwoted opportunities, then draft pitches. Dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.",
-          "url": "https://infinite.fast/agents/#press-agent",
+          "url": "https://github.com/Infinite-Labs-AI/infinite-press-agent",
           "downloadUrl": "https://www.npmjs.com/package/infinite-press-agent",
           "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-press-agent",
-          "license": "https://opensource.org/licenses/MIT",
-          "author": { "@type": "Organization", "name": "Infinite Labs", "url": "https://github.com/Infinite-Labs-AI" },
+          "license": "https://github.com/Infinite-Labs-AI/infinite-press-agent/blob/main/LICENSE",
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
         }
       ]
@@ -67,305 +91,101 @@
 </head>
 <body>
   <nav class="seo-nav" aria-label="Primary navigation">
-    <a class="seo-brand" href="/"><img src="/logos/infinite-ring-clean.png" alt="">infinite</a>
+    <a class="seo-brand" href="/"><img src="/logos/infinite-ring-clean.png" alt="" width="26" height="26">infinite</a>
     <div class="seo-nav-links">
       <a href="/tools/">Tools</a>
       <a href="/agents/" aria-current="page">Agents</a>
       <a href="/compare/">Compare</a>
-      <a href="https://hub.infinite.fast/">Blog</a>
+      <a href="https://hub.infinite.fast/">Hub</a>
       <a href="/#pricing">Pricing</a>
     </div>
     <a class="seo-nav-cta" href="/download" data-download-location="navigation">Get Infinite</a>
   </nav>
 
   <main>
-    <section class="seo-hero ag-hero">
+    <section class="seo-hero ag-hero" aria-labelledby="agents-title">
       <div class="seo-shell">
-        <span class="seo-pill">GTM agents</span>
-        <h1>Open-source marketing agents and local tools.</h1>
-        <p>Start with Press Agent today. Every other card below is labelled coming soon rather than presented as a shipped agent.</p>
-        <div class="ag-filter" aria-label="Filter agents by category">
-          <button class="ag-chip is-active" data-cat="all">All</button>
-          <button class="ag-chip" data-cat="media">Media &amp; PR</button>
-          <button class="ag-chip" data-cat="content">Content</button>
-          <button class="ag-chip" data-cat="seo">SEO</button>
-          <button class="ag-chip" data-cat="conversion">Conversion</button>
-          <button class="ag-chip" data-cat="retention">Retention</button>
-          <button class="ag-chip" data-cat="lifecycle">Lifecycle</button>
+        <span class="seo-pill">Infinite agent ecosystem</span>
+        <h1 id="agents-title">Give Claude or Codex a governed growth engine.</h1>
+        <p>Install Infinite's local engine, add reusable marketing skills, or run a specialist open-source agent. Each shipped tool below states where data goes and when a real action can happen.</p>
+        <a class="ag-hero-link" href="/download" data-download-location="agents-hero">Download Infinite for Mac</a>
+      </div>
+    </section>
+
+    <section class="ag-section" aria-labelledby="shipped-title">
+      <div class="seo-shell">
+        <div class="ag-section-heading"><span class="ag-eyebrow">Available now</span><h2 id="shipped-title">Three public ways to use Infinite.</h2></div>
+        <div class="ag-shipped-grid">
+          <article class="ag-product-card ag-product-card-os">
+            <div class="ag-card-topline"><span>Local engine + CLI</span><span>MIT</span></div>
+            <h3>Infinite OS</h3>
+            <p>Connect growth sources to a local Postgres and give Claude or Codex governed typed tools. Live or destructive native actions require operator confirmation.</p>
+            <div class="ag-command" aria-label="Infinite OS install command"><code>curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash</code></div>
+            <div class="ag-actions"><a class="ag-primary" href="https://github.com/Infinite-Labs-AI/infinite-os" data-analytics-cta-id="infinite-os-github" data-analytics-cta-location="agents-directory">View source</a><a href="https://github.com/Infinite-Labs-AI/infinite-os/blob/main/SECURITY.md">Security model</a></div>
+          </article>
+
+          <article class="ag-product-card ag-product-card-skills">
+            <div class="ag-card-topline"><span>Codex skills</span><span>25 + Goal</span></div>
+            <h3>Infinite Skills</h3>
+            <p>Install 25 marketing skills plus the Goal skill for research, positioning, distribution, copy, analytics, and operator work.</p>
+            <div class="ag-proof" aria-label="Live GitHub proof"><span><strong data-proof="skills-stars">&mdash;</strong> GitHub stars</span><span><strong data-proof="skills-forks">&mdash;</strong> forks</span></div>
+            <div class="ag-command" aria-label="Infinite Skills install command"><code>git clone https://github.com/Infinite-Labs-AI/infinite-skills.git ~/.codex/infinite-skills</code></div>
+            <div class="ag-actions"><a class="ag-primary" href="https://github.com/Infinite-Labs-AI/infinite-skills" data-analytics-cta-id="infinite-skills-github" data-analytics-cta-location="agents-directory">Browse skills</a><a href="https://github.com/Infinite-Labs-AI/infinite-skills#install-for-codex">Install guide</a></div>
+          </article>
+
+          <article class="ag-product-card ag-product-card-press">
+            <div class="ag-card-topline"><span>Media opportunities</span><span>MIT</span></div>
+            <h3>Press Agent</h3>
+            <p>Search and rank Qwoted requests, then draft a relevant pitch. <strong>Dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.</strong></p>
+            <div class="ag-command" aria-label="Press Agent safe install and dry-run commands"><code>npm install -g infinite-press-agent<br>press-agent init<br>press-agent run --once --dry-run</code></div>
+            <div class="ag-actions"><a class="ag-primary" href="https://github.com/Infinite-Labs-AI/infinite-press-agent" data-analytics-cta-id="press-agent-github" data-analytics-cta-location="agents-directory">View source</a><a href="https://github.com/Infinite-Labs-AI/infinite-press-agent/blob/main/docs/SECURITY.md">Safety notes</a></div>
+          </article>
         </div>
       </div>
     </section>
 
-    <section class="ag-wrap">
+    <section class="ag-section ag-planned" aria-labelledby="planned-title">
       <div class="seo-shell">
-        <div class="ag-grid" id="ag-grid">
-
-          <button class="ag-card" data-cat="media" data-agent="press" aria-haspopup="dialog">
-            <span class="ag-play" aria-hidden="true"></span>
-            <span class="ag-cat">Media &amp; PR</span>
-            <span class="ag-name">Press Agent</span>
-            <span class="ag-by">by Infinite Labs<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.4l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L17.2 9l-6.4 6.4z"/></svg></span>
-            <span class="ag-desc">Find and rank Qwoted opportunities, with a safe dry-run before submission.</span>
-            <span class="ag-foot">
-              <span class="ag-stat"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 5.9 20.9l1.2-6.6L2.3 9l6.6-.9L12 2z"/></svg><span data-stat="stars">&mdash;</span></span>
-              <span class="ag-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 19h16"/></svg><span data-stat="downloads">&mdash;</span></span>
-              <span class="ag-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.4"/><circle cx="18" cy="5" r="2.4"/><circle cx="12" cy="19" r="2.4"/><path d="M6 7.4v3.1a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7.4M12 13.6v3"/></svg><span data-stat="forks">&mdash;</span></span>
-            </span>
-          </button>
-
-          <div class="ag-card is-soon" data-cat="content" aria-disabled="true">
-            <span class="ag-cat">Content</span>
-            <span class="ag-name">Content Repurposer</span>
-            <span class="ag-by">by Infinite Labs<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.4l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L17.2 9l-6.4 6.4z"/></svg></span>
-            <span class="ag-desc">Turns one long post into a week of platform-native drafts in your voice.</span>
-            <span class="ag-soon-tag">Coming soon</span>
-          </div>
-          <div class="ag-card is-soon" data-cat="seo" aria-disabled="true">
-            <span class="ag-cat">SEO</span>
-            <span class="ag-name">SEO Brief Writer</span>
-            <span class="ag-by">by Infinite Labs<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.4l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L17.2 9l-6.4 6.4z"/></svg></span>
-            <span class="ag-desc">Researches a keyword and hands you a build-ready brief for search &amp; answer engines.</span>
-            <span class="ag-soon-tag">Coming soon</span>
-          </div>
-          <div class="ag-card is-soon" data-cat="conversion" aria-disabled="true">
-            <span class="ag-cat">Conversion</span>
-            <span class="ag-name">Landing Page Optimizer</span>
-            <span class="ag-by">by Infinite Labs<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.4l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L17.2 9l-6.4 6.4z"/></svg></span>
-            <span class="ag-desc">Reads a live page and proposes sharper headline, proof &amp; CTA tests.</span>
-            <span class="ag-soon-tag">Coming soon</span>
-          </div>
-          <div class="ag-card is-soon" data-cat="retention" aria-disabled="true">
-            <span class="ag-cat">Retention</span>
-            <span class="ag-name">Review Collector</span>
-            <span class="ag-by">by Infinite Labs<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.4l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L17.2 9l-6.4 6.4z"/></svg></span>
-            <span class="ag-desc">Requests, gathers &amp; routes customer testimonials to the pages that convert.</span>
-            <span class="ag-soon-tag">Coming soon</span>
-          </div>
-          <div class="ag-card is-soon" data-cat="lifecycle" aria-disabled="true">
-            <span class="ag-cat">Lifecycle</span>
-            <span class="ag-name">Changelog Broadcaster</span>
-            <span class="ag-by">by Infinite Labs<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.4l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L17.2 9l-6.4 6.4z"/></svg></span>
-            <span class="ag-desc">Turns a release into a drafted announcement across changelog, email &amp; social.</span>
-            <span class="ag-soon-tag">Coming soon</span>
-          </div>
-          <div class="ag-card is-soon" data-cat="content" aria-disabled="true">
-            <span class="ag-cat">Content</span>
-            <span class="ag-name">Newsletter Composer</span>
-            <span class="ag-by">by Infinite Labs<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.4l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L17.2 9l-6.4 6.4z"/></svg></span>
-            <span class="ag-desc">Drafts your next issue from what you shipped and what your audience engaged with.</span>
-            <span class="ag-soon-tag">Coming soon</span>
-          </div>
-          <div class="ag-card is-soon" data-cat="conversion" aria-disabled="true">
-            <span class="ag-cat">Conversion</span>
-            <span class="ag-name">Onboarding Auditor</span>
-            <span class="ag-by">by Infinite Labs<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.4l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L17.2 9l-6.4 6.4z"/></svg></span>
-            <span class="ag-desc">Walks your signup flow like a new user and flags every drop-off it hits.</span>
-            <span class="ag-soon-tag">Coming soon</span>
-          </div>
-
+        <div class="ag-section-heading"><span class="ag-eyebrow">Roadmap</span><h2 id="planned-title">Planned specialists</h2><p>These are directions, not shipped agents. They have no install controls or software schema until their public implementation exists.</p></div>
+        <div class="ag-planned-grid">
+          <article><span>Content</span><h3>Content Repurposer</h3><p>Planned: turn one source into reviewed platform-native drafts.</p></article>
+          <article><span>SEO</span><h3>SEO Brief Writer</h3><p>Planned: research a term and prepare a reviewable brief.</p></article>
+          <article><span>Conversion</span><h3>Landing Page Optimizer</h3><p>Planned: diagnose friction and propose CRO tests.</p></article>
+          <article><span>Retention</span><h3>Review Collector</h3><p>Planned: request and route customer proof.</p></article>
+          <article><span>Lifecycle</span><h3>Changelog Broadcaster</h3><p>Planned: prepare release announcements for review.</p></article>
+          <article><span>Content</span><h3>Newsletter Composer</h3><p>Planned: draft an issue from shipped work and audience signal.</p></article>
+          <article><span>Conversion</span><h3>Onboarding Auditor</h3><p>Planned: walk a signup flow and flag friction.</p></article>
         </div>
       </div>
     </section>
   </main>
 
-
-
-
-
-
-
-
-  <dialog class="ag-modal" id="ag-modal" aria-labelledby="ag-modal-title">
-    <button class="ag-mclose" id="ag-modal-close" aria-label="Close">&times;</button>
-    <video class="ag-video" id="ag-video" controls playsinline loop preload="metadata">
-      <source src="/assets/agents/press-agent-demo.mp4" type="video/mp4">
-    </video>
-    <div class="ag-mbody">
-      <div class="ag-mtop">
-        <div>
-          <h2 id="ag-modal-title">Press Agent</h2>
-          <span class="ag-mrepo">infinite-press-agent &middot; MIT &middot; local-first</span>
-        </div>
-        <div class="ag-mstats">
-          <span class="ag-stat"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 5.9 20.9l1.2-6.6L2.3 9l6.6-.9L12 2z"/></svg><span data-stat="stars">&mdash;</span></span>
-          <span class="ag-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 19h16"/></svg><span data-stat="downloads">&mdash;</span></span>
-          <span class="ag-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.4"/><circle cx="18" cy="5" r="2.4"/><circle cx="12" cy="19" r="2.4"/><path d="M6 7.4v3.1a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7.4M12 13.6v3"/></svg><span data-stat="forks">&mdash;</span></span>
-          <a class="ag-org" href="https://github.com/Infinite-Labs-AI" target="_blank" rel="noopener" title="Infinite Labs on GitHub" aria-label="Infinite Labs on GitHub"><img src="/logos/infinite-ring-clean.png" alt="" width="18" height="18"></a>
-          <button class="ag-share" id="ag-share" type="button" aria-label="Copy a direct link to this agent" title="Copy link"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></button>
-        </div>
-      </div>
-      <p class="ag-mdesc">Press Agent searches Qwoted opportunities, ranks them for relevance, and drafts a journalist-useful pitch. Dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.</p>
-      <div class="ag-mactions">
-        <a class="ag-btn ag-btn-primary" href="https://github.com/Infinite-Labs-AI/infinite-press-agent" target="_blank" rel="noopener">View on GitHub &rarr;</a>
-      </div>
-      <div class="ag-cmd">
-        <button class="ag-copy" id="ag-copy" type="button" aria-label="Copy install command" data-cmd="npm install -g infinite-press-agent&#10;press-agent">Copy</button>
-        <code><span class="c"># install press agent</span>
-npm install -g infinite-press-agent
-press-agent</code>
-      </div>
-    </div>
-  </dialog>
-
   <script>
   (function () {
     "use strict";
-    var chips = [].slice.call(document.querySelectorAll(".ag-chip"));
-    var cards = [].slice.call(document.querySelectorAll("#ag-grid .ag-card"));
-    chips.forEach(function (chip) {
-      chip.addEventListener("click", function () {
-        chips.forEach(function (c) { c.classList.remove("is-active"); });
-        chip.classList.add("is-active");
-        var cat = chip.getAttribute("data-cat");
-        cards.forEach(function (card) {
-          card.style.display = (cat === "all" || card.getAttribute("data-cat") === cat) ? "" : "none";
-        });
-      });
-    });
-
-    var modal = document.getElementById("ag-modal");
-    var video = document.getElementById("ag-video");
-    var supportsDialog = typeof modal.showModal === "function";
-    function openModal() {
-      if (supportsDialog) { modal.showModal(); } else { modal.setAttribute("open", ""); }
-      try { video.currentTime = 0; var p = video.play(); if (p && p.catch) { p.catch(function () {}); } } catch (e) {}
+    function fillProof(key, value) {
+      if (value > 0) {
+        var node = document.querySelector('[data-proof="' + key + '"]');
+        if (node) node.textContent = new Intl.NumberFormat("en", { notation: "compact" }).format(value);
+      }
     }
-    function closeModal() {
-      video.pause();
-      if (supportsDialog && modal.open) { modal.close(); } else { modal.removeAttribute("open"); }
-    }
-    document.querySelectorAll('.ag-card[data-agent="press"]').forEach(function (c) {
-      c.addEventListener("click", function () { openModal(); setHash(true); });
-    });
-    document.getElementById("ag-modal-close").addEventListener("click", function () { closeModal(); setHash(false); });
-    modal.addEventListener("cancel", function () { video.pause(); setHash(false); });
-    modal.addEventListener("click", function (e) { if (e.target === modal) { closeModal(); setHash(false); } });
-
-    function fallbackCopy(text) {
-      try {
-        var ta = document.createElement("textarea");
-        ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
-        document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
-      } catch (e) {}
-    }
-    var copyBtn = document.getElementById("ag-copy");
-    if (copyBtn) {
-      copyBtn.addEventListener("click", function () {
-        var text = copyBtn.getAttribute("data-cmd") || "";
-        var flash = function () {
-          copyBtn.textContent = "Copied"; copyBtn.classList.add("copied");
-          setTimeout(function () { copyBtn.textContent = "Copy"; copyBtn.classList.remove("copied"); }, 1600);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(flash, function () { fallbackCopy(text); flash(); });
-        } else { fallbackCopy(text); flash(); }
-      });
-    }
-
-    function agentUrl() {
-      var base = (location.origin && location.origin !== "null")
-        ? (location.origin + location.pathname + location.search)
-        : location.href.split("#")[0];
-      return base + "#press-agent";
-    }
-    function setHash(on) {
-      try {
-        if (on) { history.replaceState(null, "", "#press-agent"); }
-        else { history.replaceState(null, "", location.pathname + location.search); }
-      } catch (e) {}
-    }
-    if (location.hash === "#press-agent") { try { openModal(); setHash(true); } catch (e) {} }
-
-    var shareBtn = document.getElementById("ag-share");
-    if (shareBtn) {
-      var shareIcon = shareBtn.innerHTML;
-      var checkIcon = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>';
-      shareBtn.addEventListener("click", function () {
-        var url = agentUrl();
-        var flash = function () {
-          shareBtn.classList.add("copied"); shareBtn.innerHTML = checkIcon; shareBtn.title = "Link copied";
-          setTimeout(function () { shareBtn.innerHTML = shareIcon; shareBtn.classList.remove("copied"); shareBtn.title = "Copy link"; }, 1700);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).then(flash, function () { fallbackCopy(url); flash(); });
-        } else { fallbackCopy(url); flash(); }
-      });
-    }
-    // ---- live stats: real stars/forks (GitHub) + downloads (npm) ----
-    function fmtNum(n) {
-      if (n === null || n === undefined || isNaN(n)) return null;
-      if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "m";
-      if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "k";
-      return String(n);
-    }
-    function fillStat(key, val) {
-      var out = fmtNum(val);
-      if (out === null) return;
-      [].slice.call(document.querySelectorAll('[data-stat="' + key + '"]')).forEach(function (el) { el.textContent = out; });
-    }
-    fetch("https://api.github.com/repos/Infinite-Labs-AI/infinite-press-agent", { headers: { "Accept": "application/vnd.github+json" } })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { if (d) { fillStat("stars", d.stargazers_count); fillStat("forks", d.forks_count); } })
-      .catch(function () {});
-    fetch("https://api.npmjs.org/downloads/point/last-month/infinite-press-agent")
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { if (d && typeof d.downloads === "number") { fillStat("downloads", d.downloads); } })
+    fetch("https://api.github.com/repos/Infinite-Labs-AI/infinite-skills", { headers: { "Accept": "application/vnd.github+json" } })
+      .then(function (response) { return response.ok ? response.json() : null; })
+      .then(function (data) { if (data) { fillProof("skills-stars", data.stargazers_count); fillProof("skills-forks", data.forks_count); } })
       .catch(function () {});
   })();
   </script>
 
 <footer class="public-site-footer" data-site-footer="public-route-graph-v1">
   <div class="public-site-footer-inner">
-    <div class="public-site-footer-brand">
-      <span class="public-site-footer-mark" aria-hidden="true"><img src="/logos/infinite-ring-clean-96.webp" width="26" height="26" alt="" loading="lazy" decoding="async"></span>
-      <strong>Infinite</strong>
-      <p>AI CMO workspace for founders and small teams. The public graph links only to shipped routes and verified public resources.</p>
-    </div>
-    <nav aria-label="Agents &amp; Open Source">
-      <span class="public-site-footer-column-label">Agents &amp; Open Source</span>
-      <a href="/agents/" data-analytics-cta-id="agents" data-analytics-cta-location="site-footer">Agent Ecosystem</a>
-      <a href="https://github.com/Infinite-Labs-AI/infinite-os" rel="noopener" data-analytics-cta-id="infinite-os-github" data-analytics-cta-location="site-footer">Infinite OS</a>
-      <a href="https://github.com/Infinite-Labs-AI/infinite-skills" rel="noopener" data-analytics-cta-id="infinite-skills-github" data-analytics-cta-location="site-footer">Infinite Skills</a>
-      <a href="https://github.com/Infinite-Labs-AI/infinite-press-agent" rel="noopener" data-analytics-cta-id="press-agent-github" data-analytics-cta-location="site-footer">Press Agent</a>
-      <a href="https://github.com/Infinite-Labs-AI" rel="noopener" data-analytics-cta-id="github-org" data-analytics-cta-location="site-footer">GitHub</a>
-      <a href="/llms.txt">llms.txt</a>
-    </nav>
-    <nav aria-label="Free Tools">
-      <span class="public-site-footer-column-label">Free Tools</span>
-      <a href="/tools/" data-analytics-cta-id="tools" data-analytics-cta-location="site-footer">All Tools</a>
-      <a href="/tools/high-intent-lead-finder-template/" data-analytics-cta-id="tool-lead-finder" data-analytics-cta-location="site-footer">Lead Finder</a>
-      <a href="/tools/seo-geo-brief-generator/" data-analytics-cta-id="tool-seo-geo" data-analytics-cta-location="site-footer">SEO + GEO Brief</a>
-      <a href="/tools/landing-page-ab-test-ideas-generator/" data-analytics-cta-id="tool-ab-ideas" data-analytics-cta-location="site-footer">A/B Test Ideas</a>
-      <a href="/tools/founder-content-ideas-generator/" data-analytics-cta-id="tool-content-ideas" data-analytics-cta-location="site-footer">Founder Content Ideas</a>
-    </nav>
-    <nav aria-label="Resources">
-      <span class="public-site-footer-column-label">Resources</span>
-      <a href="https://hub.infinite.fast/" rel="noopener" data-analytics-cta-id="growth-hub" data-analytics-cta-location="site-footer">Growth Hub</a>
-      <a href="https://hub.infinite.fast/research" rel="noopener" data-analytics-cta-id="hub-research" data-analytics-cta-location="site-footer">Research</a>
-      <a href="/startup-launch-videos/" data-analytics-cta-id="launch-videos" data-analytics-cta-location="site-footer">Launch Videos</a>
-      <a href="https://hub.infinite.fast/research/launch-videos" rel="noopener" data-analytics-cta-id="launch-video-study" data-analytics-cta-location="site-footer">Launch Video Study</a>
-      <a href="https://hub.infinite.fast/feed.xml" rel="noopener" data-analytics-cta-id="hub-rss" data-analytics-cta-location="site-footer">Hub RSS</a>
-    </nav>
-    <nav aria-label="Compare">
-      <span class="public-site-footer-column-label">Compare</span>
-      <a href="/compare/" data-analytics-cta-id="compare" data-analytics-cta-location="site-footer">All Comparisons</a>
-      <a href="/compare/infinite-vs-blaze/" data-analytics-cta-id="compare-blaze" data-analytics-cta-location="site-footer">Infinite vs Blaze</a>
-      <a href="/compare/infinite-vs-okara/" data-analytics-cta-id="compare-okara" data-analytics-cta-location="site-footer">Infinite vs Okara</a>
-      <a href="/compare/infinite-vs-ploy/" data-analytics-cta-id="compare-ploy" data-analytics-cta-location="site-footer">Infinite vs Ploy</a>
-    </nav>
-    <nav aria-label="Company">
-      <span class="public-site-footer-column-label">Company</span>
-      <a href="/download" data-analytics-cta-id="download-mac" data-analytics-cta-location="site-footer" data-download-location="site-footer">Download for Mac</a>
-      <a href="/#pricing" data-analytics-cta-id="home" data-analytics-cta-location="site-footer">Pricing</a>
-      <a href="/privacy/" data-analytics-cta-id="privacy" data-analytics-cta-location="site-footer">Privacy</a>
-      <a href="/terms/" data-analytics-cta-id="terms" data-analytics-cta-location="site-footer">Terms</a>
-      <a href="/sitemap.xml">Sitemap</a>
-    </nav>
+    <div class="public-site-footer-brand"><span class="public-site-footer-mark" aria-hidden="true"><img src="/logos/infinite-ring-clean-96.webp" width="26" height="26" alt="" loading="lazy" decoding="async"></span><strong>Infinite</strong><p>AI CMO workspace for founders and small teams. The public graph links only to shipped routes and verified public resources.</p></div>
+    <nav aria-label="Agents &amp; Open Source"><span class="public-site-footer-column-label">Agents &amp; Open Source</span><a href="/agents/" data-analytics-cta-id="agents" data-analytics-cta-location="site-footer">Agent Ecosystem</a><a href="https://github.com/Infinite-Labs-AI/infinite-os" rel="noopener" data-analytics-cta-id="infinite-os-github" data-analytics-cta-location="site-footer">Infinite OS</a><a href="https://github.com/Infinite-Labs-AI/infinite-skills" rel="noopener" data-analytics-cta-id="infinite-skills-github" data-analytics-cta-location="site-footer">Infinite Skills</a><a href="https://github.com/Infinite-Labs-AI/infinite-press-agent" rel="noopener" data-analytics-cta-id="press-agent-github" data-analytics-cta-location="site-footer">Press Agent</a><a href="https://github.com/Infinite-Labs-AI" rel="noopener" data-analytics-cta-id="github-org" data-analytics-cta-location="site-footer">GitHub</a><a href="/llms.txt">llms.txt</a></nav>
+    <nav aria-label="Free Tools"><span class="public-site-footer-column-label">Free Tools</span><a href="/tools/" data-analytics-cta-id="tools" data-analytics-cta-location="site-footer">All Tools</a><a href="/tools/high-intent-lead-finder-template/" data-analytics-cta-id="tool-lead-finder" data-analytics-cta-location="site-footer">Lead Finder</a><a href="/tools/seo-geo-brief-generator/" data-analytics-cta-id="tool-seo-geo" data-analytics-cta-location="site-footer">SEO + GEO Brief</a><a href="/tools/landing-page-ab-test-ideas-generator/" data-analytics-cta-id="tool-ab-ideas" data-analytics-cta-location="site-footer">A/B Test Ideas</a><a href="/tools/founder-content-ideas-generator/" data-analytics-cta-id="tool-content-ideas" data-analytics-cta-location="site-footer">Founder Content Ideas</a></nav>
+    <nav aria-label="Resources"><span class="public-site-footer-column-label">Resources</span><a href="https://hub.infinite.fast/" rel="noopener" data-analytics-cta-id="growth-hub" data-analytics-cta-location="site-footer">Growth Hub</a><a href="https://hub.infinite.fast/research" rel="noopener" data-analytics-cta-id="hub-research" data-analytics-cta-location="site-footer">Research</a><a href="/startup-launch-videos/" data-analytics-cta-id="launch-videos" data-analytics-cta-location="site-footer">Launch Videos</a><a href="https://hub.infinite.fast/research/launch-videos" rel="noopener" data-analytics-cta-id="launch-video-study" data-analytics-cta-location="site-footer">Launch Video Study</a><a href="https://hub.infinite.fast/feed.xml" rel="noopener" data-analytics-cta-id="hub-rss" data-analytics-cta-location="site-footer">Hub RSS</a></nav>
+    <nav aria-label="Compare"><span class="public-site-footer-column-label">Compare</span><a href="/compare/" data-analytics-cta-id="compare" data-analytics-cta-location="site-footer">All Comparisons</a><a href="/compare/infinite-vs-blaze/" data-analytics-cta-id="compare-blaze" data-analytics-cta-location="site-footer">Infinite vs Blaze</a><a href="/compare/infinite-vs-okara/" data-analytics-cta-id="compare-okara" data-analytics-cta-location="site-footer">Infinite vs Okara</a><a href="/compare/infinite-vs-ploy/" data-analytics-cta-id="compare-ploy" data-analytics-cta-location="site-footer">Infinite vs Ploy</a></nav>
+    <nav aria-label="Company"><span class="public-site-footer-column-label">Company</span><a href="/download" data-analytics-cta-id="download-mac" data-analytics-cta-location="site-footer" data-download-location="site-footer">Download for Mac</a><a href="/#pricing" data-analytics-cta-id="home" data-analytics-cta-location="site-footer">Pricing</a><a href="/privacy/" data-analytics-cta-id="privacy" data-analytics-cta-location="site-footer">Privacy</a><a href="/terms/" data-analytics-cta-id="terms" data-analytics-cta-location="site-footer">Terms</a><a href="/sitemap.xml">Sitemap</a></nav>
   </div>
-  <div class="public-site-footer-bottom">
-    <span>© 2026 Ultima AI, Inc.</span>
-    <span>AI agents</span>
-  </div>
+  <div class="public-site-footer-bottom"><span>© 2026 Ultima AI, Inc.</span><span>Infinite Agent Ecosystem</span></div>
 </footer>
 </body>
 </html>

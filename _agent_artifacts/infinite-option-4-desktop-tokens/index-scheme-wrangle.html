@@ -67,7 +67,7 @@
         },
         {
           "@type": "SoftwareApplication",
-          "@id": "https://infinite.fast/#software",
+          "@id": "https://infinite.fast/#desktop",
           "name": "Infinite",
           "url": "https://infinite.fast/",
           "downloadUrl": "https://infinite.fast/download",
@@ -130,6 +130,31 @@
           "isPartOf": {
             "@id": "https://infinite.fast/#website"
           }
+        },
+        {
+          "@type": "SoftwareSourceCode",
+          "@id": "https://infinite.fast/#infinite-os",
+          "name": "Infinite OS",
+          "description": "MIT-licensed local-first growth analytics engine and CLI for Claude and Codex.",
+          "url": "https://github.com/Infinite-Labs-AI/infinite-os",
+          "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-os",
+          "license": "https://github.com/Infinite-Labs-AI/infinite-os/blob/main/LICENSE",
+          "programmingLanguage": "TypeScript",
+          "runtimePlatform": ["macOS", "Linux"],
+          "author": { "@id": "https://infinite.fast/#organization" },
+          "isPartOf": { "@id": "https://infinite.fast/#website" }
+        },
+        {
+          "@type": "SoftwareSourceCode",
+          "@id": "https://infinite.fast/#infinite-skills",
+          "name": "Infinite Skills",
+          "description": "Twenty-five marketing skills plus the Goal skill for Codex.",
+          "url": "https://github.com/Infinite-Labs-AI/infinite-skills",
+          "codeRepository": "https://github.com/Infinite-Labs-AI/infinite-skills",
+          "license": "https://github.com/Infinite-Labs-AI/infinite-skills/blob/main/LICENSE",
+          "runtimePlatform": "Codex",
+          "author": { "@id": "https://infinite.fast/#organization" },
+          "isPartOf": { "@id": "https://infinite.fast/#website" }
         },
         {
           "@type": "FAQPage",
@@ -2986,7 +3011,7 @@
   <link rel="stylesheet" href="../shared/glaze-hero.css">
   <style>
     :root {
-      /* 1bu-1 desktop glass token pass: mapped from apps/desktop renderer tokens. */
+      /* Desktop glass token pass: mapped from the renderer token set. */
       --background: #0a0c16;
       --foreground: #fff;
       --card: rgba(10, 13, 24, 0.55);
@@ -4147,6 +4172,19 @@
         <p class="eyebrow section-pill">Start Growing</p>
         <h2 id="final-title">You shipped the app. Now let Infinite get you customers.</h2>
         <a class="hero-cta" href="/download" data-download-location="final-cta">Download for Mac</a>
+        <aside class="agent-install-panel" data-agent-install aria-labelledby="agent-install-title">
+          <p class="agent-install-kicker">Open-source engine</p>
+          <h3 id="agent-install-title">Install Infinite for your terminal agent.</h3>
+          <p>Run the local engine with Claude or Codex. Synced growth data stays in your local Postgres, connector credentials are encrypted at rest, and prompts plus relevant tool context go only to the provider you choose.</p>
+          <div class="agent-install-command">
+            <code>curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash</code>
+            <button type="button" data-copy-agent-install aria-label="Copy the Infinite OS install command">Copy</button>
+          </div>
+          <div class="agent-install-links">
+            <a href="https://github.com/Infinite-Labs-AI/infinite-os" data-analytics-cta-id="infinite-os-github" data-analytics-cta-location="homepage-install">View Infinite OS on GitHub</a>
+            <a href="/agents/">Explore the agent ecosystem</a>
+          </div>
+        </aside>
       </div>
     </section>
   </main>
@@ -4182,6 +4220,19 @@
         document.querySelectorAll("[data-pricing-note]").forEach((note) => {
           note.textContent = pricingCatalog[note.dataset.pricingNote][billing].note;
         });
+      });
+    });
+
+    const installCommand = "curl -fsSL https://raw.githubusercontent.com/Infinite-Labs-AI/infinite-os/main/scripts/install.sh | bash";
+    document.querySelectorAll("[data-copy-agent-install]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(installCommand);
+          button.textContent = "Copied";
+          window.setTimeout(() => { button.textContent = "Copy"; }, 1600);
+        } catch {
+          button.textContent = "Select command";
+        }
       });
     });
   </script>
