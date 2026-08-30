@@ -63,23 +63,23 @@ ${routeLine("/startup-launch-videos/", "Startup launch videos")}
 
 ## Open source and agent install paths
 
-- [Infinite OS](https://github.com/Infinite-Labs-AI/infinite-os): Public open-source local engine. Its built-in/native action registry exposes typed actions; live or destructive native actions pass native authority and policy checks and require operator confirmation before execution.
+- [Infinite OS](https://github.com/Infinite-Labs-AI/infinite-os): MIT-licensed source for Infinite's signed macOS app and Terminal companion. Its built-in/native action registry exposes typed actions; live or destructive native actions pass native authority and policy checks and require operator confirmation before execution.
 - [Infinite Skills](https://github.com/Infinite-Labs-AI/infinite-skills): Public repository with 25 marketing skills plus the Goal skill for Codex.
 - [Infinite Press Agent](https://github.com/Infinite-Labs-AI/infinite-press-agent): Public press-agent repository. Press Agent dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.
 - [Infinite Labs AI GitHub](https://github.com/Infinite-Labs-AI): Public GitHub organization.
 
-## Install Infinite OS
+## Install Infinite for Mac
 
-On macOS, install the Infinite Desktop app from Terminal:
+On macOS, install the signed Infinite app from Terminal:
 
     npx infinite-os@latest
 
-The app includes Infinite OS and its CLI.
+The command downloads and verifies the signed Mac app. Sign in and finish setup in the app, then use the same agent from app ⌘L or Terminal. Same account. Same workspace. Same agent.
 
 ## Data and execution boundaries
 
-- Infinite OS stores synced growth data in your local Postgres, and its connector credentials are encrypted at rest.
-- Orchestration runs locally. Prompts and relevant tool context go to your chosen Codex or Anthropic provider for inference, using your own account or credentials.
+- The signed macOS app keeps local orchestration data in PGlite and encrypts connector credentials at rest.
+- Prompts and relevant tool context go to your chosen Codex or Anthropic provider for inference, using your own account or credentials.
 - Scoped app/MCP tools follow a separate boundary: the operator-authorized host supplies their schemas and owns their semantic validation and confirmation. A scoped tool or proposal can be invoked before the host or tool result requests follow-up confirmation.
 - The built-in/native catalog has no arbitrary shell or code runner; a host may intentionally expose broader capabilities through scoped tools.
 - Press Agent has a separate run contract. Dry-run never submits or spends a Qwoted credit; a normal run can submit at most one pitch and spend a credit.

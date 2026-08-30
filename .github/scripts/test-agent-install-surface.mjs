@@ -59,6 +59,11 @@ function assertHomepage(html, label) {
     `${label}: primary desktop download must precede the secondary terminal install panel`,
   );
   assert.match(html, new RegExp(escapeRegExp(installCommand)), `${label}: exact published installer is visible`);
+  const installerPanel = html.match(/<aside class="agent-install-panel"[\s\S]*?<\/aside>/)?.[0] ?? "";
+  assert.match(installerPanel, /signed Mac app/i, `${label}: terminal installer describes the signed Mac app`);
+  assert.match(installerPanel, /Sign in and finish setup in the app/i, `${label}: app-owned setup is explicit`);
+  assert.match(installerPanel, /Same account\. Same workspace\. Same agent\./i, `${label}: shared app and Terminal agent is explicit`);
+  assert.doesNotMatch(installerPanel, /trial|docker|self-host|local engine|infinite local|npm install infinite/i, `${label}: installer panel has no competing customer install proposition`);
   assert.doesNotMatch(html, /Dashboard metrics use demo data\./, `${label}: rejected demo-data label is absent`);
   assert.doesNotMatch(html, /The public graph links/i, `${label}: rejected public-graph footer copy is absent`);
   assert.match(html, /data-copy-agent-install/, `${label}: installer has an accessible copy control`);
@@ -94,6 +99,7 @@ function assertHomepage(html, label) {
   assert.equal(os.license, `${repositories.os}/blob/main/LICENSE`);
   assert.equal(os.programmingLanguage, "TypeScript");
   assert.deepEqual(os.runtimePlatform, ["macOS"], `${label}: Infinite OS is advertised only for macOS`);
+  assert.match(os.description, /signed macOS app and Terminal companion/i, `${label}: homepage source metadata matches the one-product install contract`);
 
   const skills = graphById(graph, "https://infinite.fast/#infinite-skills", label);
   assert.equal(skills["@type"], "SoftwareSourceCode");
@@ -121,6 +127,9 @@ function assertAgents(html, label) {
   }
 
   assert.match(html, new RegExp(escapeRegExp(installCommand)), `${label}: OS installer is visible`);
+  assert.match(html, /signed Mac app and Terminal companion/i, `${label}: OS card presents one macOS product`);
+  assert.match(html, /same account, workspace, and agent/i, `${label}: OS card makes the shared agent contract explicit`);
+  assert.doesNotMatch(html, /local engine \+ CLI|local Postgres/i, `${label}: Agents install surface does not market a second local product`);
   assert.match(html, new RegExp(escapeRegExp(skillsInstallCommand)), `${label}: one-line Skills installer is visible`);
   assert.doesNotMatch(html, /INFINITE_SKILLS_REPO_URL|set -eu|for skill in|ln -s/, `${label}: command wall is absent`);
   assert.match(html, /data-copy-skills-install/, `${label}: Skills install command is copyable`);
@@ -148,6 +157,11 @@ function assertAgents(html, label) {
     graphById(graph, "https://infinite.fast/agents/#infinite-os", label).runtimePlatform,
     ["macOS"],
     `${label}: Infinite OS is advertised only for macOS`,
+  );
+  assert.match(
+    graphById(graph, "https://infinite.fast/agents/#infinite-os", label).description,
+    /signed macOS app and Terminal companion/i,
+    `${label}: OS JSON-LD matches the one-product install contract`,
   );
   assert.equal(graphById(graph, "https://infinite.fast/agents/#infinite-skills", label)["@type"], "SoftwareSourceCode");
   assert.equal(graphById(graph, "https://infinite.fast/agents/#press-agent", label)["@type"], "SoftwareApplication");
@@ -199,13 +213,15 @@ function assertAgentStyles(css) {
 function assertLlms(text, label) {
   assert.doesNotMatch(text, /href=/, `${label}: Markdown must not contain HTML href attributes`);
   assert.match(text, new RegExp(escapeRegExp(installCommand)), `${label}: installer command is model-readable`);
-  assert.match(text, /app includes Infinite OS and its CLI/i, `${label}: bundled app contract is explicit`);
+  assert.match(text, /signed Mac app/i, `${label}: signed macOS install is explicit`);
+  assert.match(text, /Same account\. Same workspace\. Same agent\./i, `${label}: app and Terminal share one agent`);
   assert.match(text, /25 marketing skills plus the Goal skill/, `${label}: Skills count is precise`);
   for (const url of Object.values(repositories)) assert.match(text, new RegExp(escapeRegExp(url)));
   assert.match(text, /live or destructive native actions[\s\S]*operator confirmation/i);
   assert.match(text, /Dry-run never submits or spends a Qwoted credit/);
   assert.match(text, /normal run can submit at most one pitch and spend a credit/);
-  assert.match(text, /synced growth data[\s\S]*local Postgres/i);
+  assert.match(text, /local orchestration[\s\S]*PGlite/i, `${label}: architecture is accurately described outside the install proposition`);
+  assert.doesNotMatch(text, /Public open-source local engine|self-host|Docker|infinite local|npm install infinite/i, `${label}: llms install guidance has no competing customer product`);
   for (const [status, route, name] of [
     ["Shipped", "/features/ai-marketing-agents/", "AI Marketing Agents"],
     ["Shipped", "/features/seo-aeo/", "SEO + AEO"],
