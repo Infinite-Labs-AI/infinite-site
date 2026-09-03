@@ -204,7 +204,7 @@
             <li>Drag Infinite to Applications</li>
             <li>Click Open Infinite</li>
           </ol>
-          <a id="gate-open-infinite" class="button" href="#">Open Infinite</a>
+          <button id="gate-open-infinite" class="button" type="button">Open Infinite</button>
           <a id="gate-download-again" class="button button--secondary" href="/download" data-download-location="get-started">Download again</a>
           <p class="fine">Signed in as <span id="gate-download-email"></span>. The Open Infinite link works once, for 48 hours - we also emailed it to you. Open the app once before clicking it so macOS knows where to send it.</p>
         </section>
@@ -260,7 +260,7 @@
       var downloadAgain = el("gate-download-again");
       var openInfinite = el("gate-open-infinite");
 
-      var state = { email: "", challenge: "" };
+      var state = { email: "", challenge: "", claim: null };
 
       // Page events go to PostHog + GA4 ONLY (never the first-party ledger - its event enum is
       // fixed), and only after the shared consent gate the injector places in <head> has started
@@ -332,8 +332,8 @@
       }
 
       function showDownload(claim) {
+        state.claim = claim;
         downloadEmail.textContent = claim.email;
-        openInfinite.href = handoffUrl(claim);
         show("download");
       }
 
@@ -372,17 +372,20 @@
         codeNote.textContent = "";
         postJson(OTP_PATH, { email: state.email }).then(function (result) {
           if (!result.ok || typeof result.data.challenge !== "string") {
+            if (result.status === 404 || result.status >= 500 || result.status === 0) revealFallback();
             return setError(codeError, result.status === 429 ? COPY.emailRateLimited : COPY.resendFailed);
           }
           state.challenge = result.data.challenge;
           codeNote.textContent = "We sent a new code to " + state.email + ".";
         }).catch(function () {
+          revealFallback();
           setError(codeError, COPY.offline);
         });
       });
 
       changeEmail.addEventListener("click", function () {
         state.challenge = "";
+        state.claim = null;
         setError(emailError, "");
         show("email");
         emailInput.focus();
@@ -429,6 +432,8 @@
         track("gate_download_started", { cta_location: CTA_LOCATION, trigger: "again" });
       });
       openInfinite.addEventListener("click", function () {
+        var claim = state.claim || readClaim();
+        if (claim) location.assign(handoffUrl(claim));
         track("handoff_link_clicked", { cta_location: CTA_LOCATION });
       });
 

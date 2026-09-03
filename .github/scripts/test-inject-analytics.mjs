@@ -135,6 +135,12 @@ try {
     assert.equal(click.defaultPrevented, true, `${location} must wait briefly for GA4 delivery before same-tab navigation`);
   }
   assert.doesNotMatch(JSON.stringify(granted.infiniteBodies), /Download for Mac|Pricing/);
+  assert.equal(granted.posthogInitOptions()[0].autocapture, undefined, "ordinary pages keep PostHog autocapture at its existing default");
+  assert.equal(granted.posthogInitOptions()[0].disable_session_recording, false, "ordinary pages keep PostHog replay enabled");
+
+  const sensitiveGate = executeAnalytics(syntheticHtml, { pathname: "/get-started/" });
+  assert.equal(sensitiveGate.posthogInitOptions()[0].autocapture, false, "/get-started disables PostHog autocapture because it renders email and a one-time handoff claim");
+  assert.equal(sensitiveGate.posthogInitOptions()[0].disable_session_recording, true, "/get-started disables PostHog replay because it renders email and a one-time handoff claim");
 
   // The global privacy signal is the DEFAULT: it suppresses only visitors with no decision.
   // Since the consent-gate fix, GA4 and PostHog honor the exact same state machine.
@@ -371,6 +377,7 @@ function executeAnalytics(html, {
   doNotTrack = "0",
   globalPrivacyControl = false,
   hostname = "infinite.fast",
+  pathname = "/tools/",
   // `undefined` = the accessor is absent entirely (older infinite-tag, unverified host, no source
   // key). `null` = the accessor exists and reports no consent-qualified context. An object = a
   // consent-qualified context, exactly the documented infinite-tag >= 0.6.0 shape.
@@ -435,7 +442,7 @@ function executeAnalytics(html, {
       href: `${origin}/tools/?campaign=secret#fragment`,
       origin,
       hostname,
-      pathname: "/tools/",
+      pathname,
     },
     addEventListener: (name, listener) => listeners.set(name, [...(listeners.get(name) ?? []), listener]),
     dispatchEvent: (event) => {
@@ -509,6 +516,7 @@ function executeAnalytics(html, {
     downloads,
     infiniteBodies,
     infiniteEvents: (name) => infiniteBodies.filter((body) => body.eventName === name),
+    posthogInitOptions: () => (window.posthog?._i ?? []).map((entry) => entry[1]),
     posthogEvents,
     gaEvents,
     gaConfigs,

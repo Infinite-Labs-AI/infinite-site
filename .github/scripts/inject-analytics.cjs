@@ -228,28 +228,27 @@ function posthogSnippet({ apiHost, uiHost, projectToken }) {
         (e.__SV = 1));
     })(document, window.posthog || []);
     var NO_REPLAY_PATHS = ["/startup-launch-videos"];
-    var NO_REPLAY_HERE = location.pathname;
-    if (NO_REPLAY_HERE.length > 1 && NO_REPLAY_HERE.charAt(NO_REPLAY_HERE.length - 1) === "/") {
-      NO_REPLAY_HERE = NO_REPLAY_HERE.slice(0, -1);
+    var SENSITIVE_PATHS = ["/get-started"];
+    var POSTHOG_PATH_HERE = location.pathname;
+    if (POSTHOG_PATH_HERE.length > 1 && POSTHOG_PATH_HERE.charAt(POSTHOG_PATH_HERE.length - 1) === "/") {
+      POSTHOG_PATH_HERE = POSTHOG_PATH_HERE.slice(0, -1);
     }
+    var POSTHOG_SENSITIVE_HERE = SENSITIVE_PATHS.indexOf(POSTHOG_PATH_HERE) !== -1;
     posthog.init(${JSON.stringify(projectToken)}, {
       api_host: ${JSON.stringify(apiHost)},${uiHostLine}
       defaults: "2026-01-30",
-      // Session replay is OFF on the Launch Video Leaderboard, and ONLY there.
+      // Session replay is OFF on the Launch Video Leaderboard and on sensitive auth/download flows.
       //
-      // That page is a ~50-row table people scroll and hover. rrweb snapshots the ~1,900-node DOM,
-      // installs a document-wide MutationObserver, and has to serialise ~1,800 element removals and
-      // additions every time someone sorts or pages it. Replay is not worth that on a page whose
-      // only interaction is browsing a ranking.
+      // The leaderboard is excluded for performance. /get-started renders a verified email and keeps
+      // a one-time desktop handoff claim client-side, so it also disables PostHog autocapture and
+      // replay. The page still emits explicit bounded funnel events after consent.
       //
-      // Every other page keeps replay. Heatmaps and performance capture are untouched everywhere —
-      // an earlier revision disabled all three site-wide, which was not the intent.
-      //
-      // Add a path to NO_REPLAY_PATHS to exclude another page; a trailing slash is ignored.
+      // Add a path to one of the lists above to exclude another page; a trailing slash is ignored.
       // NOTE: no regex literal here on purpose. This snippet is built inside a JS template literal,
       // where a backslash is an escape sequence — writing /\/+$/ emits //+$/, which is a line
       // comment, and silently truncates the rest of the line.
-      disable_session_recording: NO_REPLAY_PATHS.indexOf(NO_REPLAY_HERE) !== -1,
+      disable_session_recording: POSTHOG_SENSITIVE_HERE || NO_REPLAY_PATHS.indexOf(POSTHOG_PATH_HERE) !== -1,
+      autocapture: POSTHOG_SENSITIVE_HERE ? false : undefined,
     });
     posthog.register({ platform: "website" });
     });

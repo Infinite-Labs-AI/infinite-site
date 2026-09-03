@@ -35,12 +35,12 @@ Browser delivery is the same-origin path `/infinite/ledger`, rewritten by Vercel
 ## Get-started sign-in handoff
 
 The browser-to-desktop handoff is a **sign-in grant, not attribution**. It replaced the "Wave 2"
-attribution snippet on 2026-09-03 - that snippet was live in production from 2026-08-19 but inert,
-because the tag accessor it depended on never shipped in `infinite-tag@0.6.0`. The injector snippet,
-its site-side build flag, the guardrail's repo variable and the `/infinite/handoff` rewrite were
-deleted; `.github/scripts/test-inject-analytics.mjs` and `scripts/verify-live-analytics.mjs` now
-fail if those bytes ever reappear. The cloud attribution routes (`/api/analytics/attribution/handoff/*`)
-are a 1bu-1 concern and were not changed by the site.
+attribution snippet on 2026-09-03 - that snippet was live in production from 2026-08-19 but inert
+until `infinite-tag@0.6.0` shipped the consent-qualified accessor it depended on. The injector
+snippet, its site-side build flag, the guardrail's repo variable and the `/infinite/handoff` rewrite
+were deleted; `.github/scripts/test-inject-analytics.mjs` and `scripts/verify-live-analytics.mjs`
+now fail if those bytes ever reappear. The cloud attribution routes
+(`/api/analytics/attribution/handoff/*`) are a 1bu-1 concern and were not changed by the site.
 
 `/get-started` (a static page built like every other, spec:
 `1bu-1/docs/superpowers/specs/2026-09-03-email-gated-download-design.md`) gates the installer behind
@@ -64,10 +64,11 @@ returns a consent-qualified context (null under DNT/GPC or a saved denial). The 
 `infinite_analytics_visitor` / `infinite_analytics_session` directly. `infinite-tag@0.6.0` defines
 the accessor, and the page treats absence or a null return as "send no browser ids."
 
-Downloads are unchanged facts: after verification the page runs `location.assign("/download")` and
-renders **Download again** as `<a href="/download" data-download-location="get-started">`, so the
-server attempt marker, `app_download_click`, and the GA4 `app_download_clicked` bridge all fire as
-before. The homepage CTAs now point at `/get-started` and carry
+Downloads are unchanged facts: after verification the page runs `location.assign("/download")`, which
+hits the server `/download` redirect lane, and renders **Download again** as
+`<a href="/download" data-download-location="get-started">`, whose browser click fires
+`app_download_click` and the GA4 `app_download_clicked` bridge as before. The homepage CTAs now point
+at `/get-started` and carry
 `data-analytics-cta-id="get-started"` + `data-analytics-cta-location`, which is what makes them
 `site_click` events (the runtime emits `site_click` only from that pair). The page's own funnel
 events - `gate_email_submitted`, `gate_code_verified`, `gate_download_started { trigger }`,

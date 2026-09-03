@@ -30,7 +30,8 @@ assert.match(html, /<p id="gate-fallback"(?![^>]*\bhidden\b)[^>]*>[\s\S]*?<a\b[^
 for (const id of ["gate-step-email", "gate-step-code", "gate-step-download"]) {
   assert.match(html, new RegExp(`<section id="${id}"[^>]*\\bhidden\\b`), `${id} starts hidden and is revealed by the script`);
 }
-assert.match(html, /<a\b[^>]*id="gate-open-infinite"[^>]*href="#"/, "Open Infinite has no target until a claim exists");
+assert.match(html, /<button\b[^>]*id="gate-open-infinite"[^>]*type="button"/, "Open Infinite computes the secret-bearing URL only on click");
+assert.doesNotMatch(html, /id="gate-open-infinite"[^>]*href=/, "the claim secret must never sit in a DOM href");
 
 // The privacy boundary: never read the tag's storage, never reference the retired Wave 2 endpoint.
 assert.doesNotMatch(html, /infinite_analytics_visitor|infinite_analytics_session/);
@@ -186,14 +187,16 @@ const err = (status, error) => ({ status, body: { error } });
   assert.equal(page.el("gate-step-code").hidden, true);
   assert.equal(page.el("gate-step-download").hidden, false);
   assert.equal(page.el("gate-download-email").textContent, "founder@example.com");
-  assert.equal(
-    page.el("gate-open-infinite").href,
-    `infinite://handoff/v1?claim_id=${encodeURIComponent(CLAIM.claimId)}&secret=${encodeURIComponent(CLAIM.secret)}`,
-  );
+  assert.equal(page.el("gate-open-infinite").href, "", "the secret-bearing handoff URL is not stored in the DOM");
   assert.equal(page.el("gate-download-again").href, "/download", "Download again stays a plain /download anchor");
   assert.deepEqual(page.assigned, ["/download"], "the download auto-starts exactly once via location.assign");
   assert.deepEqual(JSON.parse(page.storage.get(CLAIM_KEY)), { ...CLAIM, email: "founder@example.com" });
   assert.equal(page.el("gate-fallback").hidden, true);
+  await page.click("gate-open-infinite");
+  assert.deepEqual(page.assigned, [
+    "/download",
+    `infinite://handoff/v1?claim_id=${encodeURIComponent(CLAIM.claimId)}&secret=${encodeURIComponent(CLAIM.secret)}`,
+  ]);
 }
 
 for (const handoffContext of [null, undefined]) {
@@ -281,8 +284,10 @@ for (const handoffContext of [null, undefined]) {
   assert.equal(page.el("gate-step-download").hidden, false);
   assert.equal(page.el("gate-step-email").hidden, true);
   assert.equal(page.el("gate-download-email").textContent, "a@b.co");
-  assert.match(page.el("gate-open-infinite").href, /^infinite:\/\/handoff\/v1\?claim_id=/);
+  assert.equal(page.el("gate-open-infinite").href, "", "restored claims also keep the secret out of the DOM");
   assert.deepEqual(page.assigned, [], "a refresh must not download again by itself");
+  await page.click("gate-open-infinite");
+  assert.match(page.assigned[0], /^infinite:\/\/handoff\/v1\?claim_id=/);
   assert.equal(page.fetchCalls.length, 0);
 }
 {
@@ -304,6 +309,30 @@ for (const handoffContext of [null, undefined]) {
   await page.submit("gate-form-code");
   assert.equal(page.fetchCalls[2].body.challenge, "c2", "the newest challenge is the one verified");
 }
+for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
+  const page = createPage({ responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c1" }), err(status, "Unavailable")] } });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  await page.click("gate-resend");
+  assert.equal(page.el("gate-fallback").hidden, false, `a resend ${message} reveals the direct download`);
+  assert.match(page.el("gate-code-error").textContent, /new code|direct download/i);
+}
+{
+  const page = createPage({ responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c1" }), new TypeError("Failed to fetch")] } });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  await page.click("gate-resend");
+  assert.equal(page.el("gate-fallback").hidden, false, "a resend network failure reveals the direct download");
+  assert.match(page.el("gate-code-error").textContent, /couldn.t reach Infinite/);
+}
+{
+  const page = createPage({ responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c1" }), err(429, "Rate limit exceeded")] } });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  await page.click("gate-resend");
+  assert.equal(page.el("gate-fallback").hidden, true, "a resend rate limit keeps the hard gate");
+  assert.match(page.el("gate-code-error").textContent, /Too many codes requested/);
+}
 {
   const page = createPage({ responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c1" })] } });
   page.el("gate-email").value = "a@b.co";
@@ -324,6 +353,10 @@ for (const handoffContext of [null, undefined]) {
   await page.submit("gate-form-code");
   await page.click("gate-download-again");
   await page.click("gate-open-infinite");
+  assert.deepEqual(page.assigned, [
+    "/download",
+    `infinite://handoff/v1?claim_id=${encodeURIComponent(CLAIM.claimId)}&secret=${encodeURIComponent(CLAIM.secret)}`,
+  ]);
   assert.deepEqual(page.captures, [
     ["gate_email_submitted", { cta_location: "get-started" }],
     ["gate_code_verified", { cta_location: "get-started" }],
