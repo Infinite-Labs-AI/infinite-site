@@ -331,6 +331,7 @@ const err = (status, error) => ({ status, body: { error } });
 for (const [status, error, reason] of [
   [400, "google_provider_required", "google_provider_required"],
   [401, "invalid_token", "invalid_token"],
+  [429, "rate_limited", "rate_limited"],
 ]) {
   const page = createPage({
     search: "?code=pkce-code",
@@ -342,7 +343,8 @@ for (const [status, error, reason] of [
   assert.equal(page.el("gate-step-email").hidden, false);
   assert.equal(page.el("gate-google-notice").hidden, false);
   assert.match(page.el("gate-google-notice").textContent, /Google sign-in didn.t complete/);
-  assert.equal(page.el("gate-fallback").hidden, true, "provider/token failures fall back to email, not direct-download bypass");
+  assert.equal(page.el("gate-fallback").hidden, true, "provider/token/rate-limit failures fall back to email, not direct-download bypass");
+  assert.deepEqual(page.assigned, [], "Google claim failures do not start the installer download");
   assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
   assert.deepEqual(page.replaced, ["/get-started"]);
   assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
