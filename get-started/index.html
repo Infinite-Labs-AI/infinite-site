@@ -327,6 +327,14 @@
           if (window.posthog && typeof window.posthog.identify === "function") window.posthog.identify(userId);
         } catch (_error) {}
       }
+      // Browser half of the Meta dedup pair. The cloud sends CompleteRegistration server-side with
+      // event_id = claimId; firing the SAME event with the SAME eventID here lets Meta collapse the two
+      // into one conversion. Only after the claim 200, only when the env-gated + consent-gated pixel
+      // snippet defined window.fbq (unconfigured pixel ⇒ this is a no-op). Custom data stays empty.
+      function mirrorRegistration(claimId) {
+        if (!analyticsAllowed || typeof claimId !== "string" || typeof window.fbq !== "function") return;
+        try { window.fbq("track", "CompleteRegistration", {}, { eventID: claimId }); } catch (_error) {}
+      }
 
       function show(name) {
         for (var key in steps) steps[key].hidden = key !== name;
@@ -454,10 +462,40 @@
           return {};
         }
       }
+      // Ad-network click identifiers ride the claim POST IN FLIGHT ONLY (cloud rule §14: never at rest).
+      // fbc/fbp come from Meta's own first-party cookies and gclid from THIS page's URL, both read at the
+      // moment of the POST so the same server invocation can forward them to Meta / Google and let go.
+      // They are never written to sessionStorage/localStorage, never sent to PostHog/GA4, never logged.
+      // Consent-qualified like every other Meta-facing byte on the site: under DNT/GPC without a site
+      // grant or a saved denial nothing is read. Shapes mirror the cloud parser exactly (it drops the
+      // rest silently, never a 400), so nothing malformed leaves the browser either.
+      var FB_COOKIE = /^fb\.[0-9]{1,2}\.[0-9]{1,20}\.[A-Za-z0-9_%.-]{1,512}$/;
+      var GCLID = /^[A-Za-z0-9_-]{1,512}$/;
+      function cookieValue(name) {
+        try {
+          var parts = String(document.cookie || "").split(";");
+          for (var index = 0; index < parts.length; index += 1) {
+            var part = parts[index].replace(/^\s+/, "");
+            if (part.indexOf(name + "=") === 0) return part.slice(name.length + 1);
+          }
+        } catch (_error) {}
+        return "";
+      }
+      function adClickIds(body) {
+        if (!analyticsAllowed) return body;
+        var fbc = cookieValue("_fbc");
+        var fbp = cookieValue("_fbp");
+        var gclid = "";
+        try { gclid = new URLSearchParams(location.search || "").get("gclid") || ""; } catch (_error) {}
+        if (FB_COOKIE.test(fbc)) body.fbc = fbc;
+        if (FB_COOKIE.test(fbp)) body.fbp = fbp;
+        if (GCLID.test(gclid)) body.gclid = gclid;
+        return body;
+      }
       function claimBody(body) {
         var attribution = campaignAttribution();
         for (var key in attribution) body[key] = attribution[key];
-        return handoffIds(body);
+        return adClickIds(handoffIds(body));
       }
       function authStorage() {
         return {
@@ -678,6 +716,7 @@
           var claim = { claimId: data.claimId, secret: data.secret, expiresAt: data.expiresAt, email: state.email };
           writeClaim(claim);
           identifyUser(data.userId);
+          mirrorRegistration(data.claimId);
           track("gate_code_verified", { cta_location: CTA_LOCATION });
           showDownload(claim);
           track("gate_download_started", { cta_location: CTA_LOCATION, trigger: "auto" });
@@ -739,6 +778,7 @@
             writeClaim(pendingClaim);
             clearGoogleContext();
             identifyUser(data.userId);
+            mirrorRegistration(data.claimId);
             track("gate_google_completed", { cta_location: claimCtaLocation });
             showDownload(pendingClaim);
             track("gate_download_started", { cta_location: claimCtaLocation, trigger: "auto" });
