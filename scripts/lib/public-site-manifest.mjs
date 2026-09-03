@@ -203,6 +203,19 @@ export const PUBLIC_ROUTES = deepFreeze([
     priority: "0.7",
   }),
   route({
+    id: "get-started",
+    path: "/get-started/",
+    source: "get-started/index.html",
+    owner: "site",
+    title: "Get started with Infinite",
+    llmsSummary: "Email verification gate for downloading Infinite for Mac and opening the desktop app already signed in.",
+    lastmod: "2026-09-03",
+    changefreq: "yearly",
+    priority: "0.1",
+    indexable: false,
+    footer: false,
+  }),
+  route({
     id: "launch-videos",
     path: "/startup-launch-videos/",
     source: "scripts/build-launch-videos.mjs",
@@ -220,7 +233,7 @@ export const PUBLIC_ROUTES = deepFreeze([
     owner: "legal",
     title: "Privacy policy",
     llmsSummary: "Infinite's public privacy policy and analytics preference entry point.",
-    lastmod: "2026-08-02",
+    lastmod: "2026-09-03",
     changefreq: "yearly",
     priority: "0.3",
   }),
@@ -388,22 +401,37 @@ export function assertPublicSiteManifest() {
   }
 }
 
-function route({ id, path, source, owner, title, llmsSummary, lastmod, changefreq, priority }) {
+function route({
+  id,
+  path,
+  source,
+  owner,
+  title,
+  llmsSummary,
+  lastmod,
+  changefreq,
+  priority,
+  indexable = true,
+  documentLog = true,
+  footer = true,
+}) {
   return {
     id,
     path,
     source,
     owner,
-    indexable: true,
-    documentLog: true,
-    footer: true,
+    indexable,
+    documentLog,
+    footer,
     title,
     llmsSummary,
-    sitemap: {
-      lastmod,
-      changefreq,
-      priority,
-    },
+    sitemap: indexable
+      ? {
+          lastmod,
+          changefreq,
+          priority,
+        }
+      : null,
   };
 }
 
@@ -450,6 +478,10 @@ function isAllowedExternal(href) {
 }
 
 function assertSitemap(route) {
+  if (!route.indexable) {
+    if (route.sitemap !== null) throw new Error(`${route.path}: non-indexable route must not carry sitemap metadata`);
+    return;
+  }
   if (!route.sitemap || typeof route.sitemap !== "object") throw new Error(`${route.path}: sitemap metadata required`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(route.sitemap.lastmod)) throw new Error(`${route.path}: sitemap.lastmod must be ISO date`);
   if (!/^(daily|weekly|monthly|yearly)$/.test(route.sitemap.changefreq)) throw new Error(`${route.path}: sitemap.changefreq invalid`);
