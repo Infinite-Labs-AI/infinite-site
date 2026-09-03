@@ -15,6 +15,7 @@ const contractHashes = {
   "browser-collect-v1.fixture.json": "08d5ae19194044bf0f2d144c2bd50902baacb09f5170f66067d0e9fd9b9148a9",
 };
 const downloadLocations = ["navigation", "hero", "pricing", "final-cta"];
+const retiredSiteHandoffFlag = ["INFINITE", "HANDOFF", "ENABLED"].join("_");
 
 const sourceArtifact = (siteSourceKey, productionHosts) => JSON.stringify({
   siteSourceKey,
@@ -134,6 +135,12 @@ try {
     assert.equal(click.defaultPrevented, true, `${location} must wait briefly for GA4 delivery before same-tab navigation`);
   }
   assert.doesNotMatch(JSON.stringify(granted.infiniteBodies), /Download for Mac|Pricing/);
+  assert.equal(granted.posthogInitOptions()[0].autocapture, undefined, "ordinary pages keep PostHog autocapture at its existing default");
+  assert.equal(granted.posthogInitOptions()[0].disable_session_recording, false, "ordinary pages keep PostHog replay enabled");
+
+  const sensitiveGate = executeAnalytics(syntheticHtml, { pathname: "/get-started/" });
+  assert.equal(sensitiveGate.posthogInitOptions()[0].autocapture, false, "/get-started disables PostHog autocapture because it renders email and a one-time handoff claim");
+  assert.equal(sensitiveGate.posthogInitOptions()[0].disable_session_recording, true, "/get-started disables PostHog replay because it renders email and a one-time handoff claim");
 
   // The global privacy signal is the DEFAULT: it suppresses only visitors with no decision.
   // Since the consent-gate fix, GA4 and PostHog honor the exact same state machine.
@@ -325,25 +332,20 @@ try {
     rmSync(wrongKeyDir, { recursive: true, force: true });
   }
 
-  // ── Browser-led desktop attribution handoff (Wave 2) ─────────────────────────────────────────
-  // Two-keyed enablement: the site half is `INFINITE_HANDOFF_ENABLED=1`. Shipped OFF, and OFF must
-  // mean ZERO handoff bytes — not an inert snippet, not a dead endpoint reference. `syntheticHtml`
-  // above is a full production build with every other lane on and this key unset.
-  for (const dormantBytes of [syntheticHtml, readFileSync(nestedPath, "utf8")]) {
-    assert.doesNotMatch(dormantBytes, /infinite-handoff-card/);
-    assert.doesNotMatch(dormantBytes, /\/infinite\/handoff/);
-    // NOTE (infinite-tag 0.6.0): the TAG's own consent-gated accessor `window.__infiniteHandoffContext`
-    // is part of the runtime bytes on every page (it only READS existing ids; it mints nothing, emits
-    // nothing) — so its name is NOT a handoff-flow marker any more. The site flow's markers are the
-    // card, the endpoint, and the custom scheme, asserted above/below.
-    assert.doesNotMatch(dormantBytes, /infinite:\/\/handoff/);
+  // ── Wave 2 browser-led handoff is RETIRED (2026-09-03) ───────────────────────────────────────
+  // The /get-started page owns the browser->desktop handoff now. The injector must emit ZERO
+  // handoff bytes on every page, and the old site build flag must be inert.
+  for (const outputPath of [indexPath, nestedPath]) {
+    const bytes = readFileSync(outputPath, "utf8");
+    assert.doesNotMatch(bytes, /infinite-handoff-card/);
+    assert.doesNotMatch(bytes, /\/infinite\/handoff/);
+    assert.doesNotMatch(bytes, /infinite:\/\/handoff/);
   }
-
-  const handoffDir = mkdtempSync(join(tmpdir(), "infinite-analytics-handoff-"));
+  const retiredFlagDir = mkdtempSync(join(tmpdir(), "infinite-analytics-retired-flag-"));
   try {
-    mkdirSync(join(handoffDir, "dist"), { recursive: true });
-    writeFileSync(join(handoffDir, "dist/index.html"), page("Handoff"));
-    runInjector(handoffDir, {
+    mkdirSync(join(retiredFlagDir, "dist"), { recursive: true });
+    writeFileSync(join(retiredFlagDir, "dist/index.html"), page("Retired flag"));
+    runInjector(retiredFlagDir, {
       POSTHOG_API_HOST: "/ingest",
       POSTHOG_PROJECT_TOKEN: "phc_test_project_token",
       GOOGLE_ANALYTICS_TAG_ID: "G-TEST1234",
@@ -351,159 +353,15 @@ try {
       INFINITE_PRODUCTION_HOSTS: "infinite.fast",
       INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact("site_synthetic_test", ["infinite.fast"]),
       VERCEL_ENV: "production",
-      INFINITE_HANDOFF_ENABLED: "1",
+      [retiredSiteHandoffFlag]: "1",
     });
-    const enabledHtml = readFileSync(join(handoffDir, "dist/index.html"), "utf8");
-
-    // Byte-level contract pinned by the plan.
-    assert.match(enabledHtml, /window\.__infiniteHandoffContext/);
-    assert.match(enabledHtml, /navigator\.sendBeacon\("\/infinite\/handoff"/);
-    assert.match(enabledHtml, /target = "_blank"/);
-    assert.match(enabledHtml, /infinite:\/\/handoff\/v1/);
-    assert.match(enabledHtml, /Install Infinite, then come back here and click Open Infinite/);
-    assert.match(enabledHtml, /if \(!context\) return/);
-    assert.match(enabledHtml, /Download started/);
-    assert.match(enabledHtml, /Download again/);
-    assert.equal((enabledHtml.match(/data-infinite-runtime="managed"/g) ?? []).length, 1, "the handoff snippet must not disturb the managed runtime");
-    assert.match(enabledHtml, /gtag\("event", "app_download_clicked"/, "the canonical GA4 download bridge survives");
-
-    const handoffScript = handoffScriptOf(enabledHtml);
-    // The handler NEVER cancels the navigation, never schedules an automatic scheme launch, and
-    // never reads anything identifying beyond the consent-gated accessor's own bounded context.
-    assert.doesNotMatch(handoffScript, /preventDefault/, "the handoff handler must never cancel the download navigation");
-    assert.doesNotMatch(handoffScript, /setTimeout|setInterval|requestAnimationFrame/, "no auto-launch timer: the user's explicit click is the only browser->app transition");
-    assert.doesNotMatch(handoffScript, /location\.href\s*=|location\.assign|location\.replace|window\.open/, "the snippet never navigates on the visitor's behalf");
-    assert.doesNotMatch(handoffScript, /email|userAgent|textContent|innerHTML|\.search\b|referrer/i, "no email, UA, DOM text, query string, or referrer capture");
-
-    const HANDOFF_CONTEXT = {
-      siteSourceKey: "site_synthetic_test",
-      anonymousId: "ca36c3bb-afd2-45eb-8987-d711ecd07cf7",
-      sessionId: "16e97614-a026-4c6c-9aa0-3f29fa8cd522",
-      url: "https://infinite.fast/tools/",
-    };
-    const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-    const CLAIM_SECRET = /^[A-Za-z0-9_-]{43}$/;
-
-    const handoff = executeAnalytics(enabledHtml, { handoffContext: HANDOFF_CONTEXT });
-    assert.equal(handoff.documentCaptureListenerCount("click"), 1, "the handoff handler binds once, in the capture phase");
-    assert.equal(handoff.handoffCard(), null, "no card exists before a download click");
-
-    const first = handoff.click(handoff.downloads.hero);
-    // THE contract: the original page survives, so the DMG must open in a NEW tab and nothing may
-    // cancel the anchor's own navigation. With target="_blank" set during capture, the GA4 bubble
-    // bridge classifies the click as new-tab and leaves it alone.
-    assert.equal(first.defaultPrevented, false, "a handoff download click must never be cancelled");
-    assert.equal(handoff.downloads.hero.getAttribute("target"), "_blank");
-    assert.equal(handoff.downloads.hero.getAttribute("rel"), "noopener");
-    assert.equal(handoff.handoffBeacons.length, 1, "one claim per download click");
-    assert.equal(handoff.handoffFetches.length, 0, "an accepted beacon needs no keepalive fetch");
-
-    const claim = handoff.handoffBeacons[0];
-    assert.deepEqual(
-      Object.keys(claim).sort(),
-      ["anonymousId", "claimId", "claimSecret", "occurredAt", "sessionId", "siteSourceKey", "url"],
-      "the claim payload is exactly the bounded v1 issue shape",
-    );
-    assert.match(claim.claimId, UUID_V4);
-    assert.match(claim.claimSecret, CLAIM_SECRET);
-    assert.equal(claim.siteSourceKey, HANDOFF_CONTEXT.siteSourceKey);
-    assert.equal(claim.anonymousId, HANDOFF_CONTEXT.anonymousId);
-    assert.equal(claim.sessionId, HANDOFF_CONTEXT.sessionId);
-    assert.equal(claim.url, HANDOFF_CONTEXT.url);
-    assert.match(claim.occurredAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-    assert.doesNotMatch(JSON.stringify(claim), /campaign=secret|Download for Mac|search\.example|\?|#/);
-
-    assert.equal(handoff.handoffCardCount(), 1);
-    assert.match(handoff.handoffCardText(), /Download started/);
-    assert.match(handoff.handoffCardText(), /Install Infinite, then come back here and click Open Infinite\./);
-    assert.equal(
-      handoff.handoffOpenUrl(),
-      `infinite://handoff/v1?claim_id=${encodeURIComponent(claim.claimId)}&secret=${encodeURIComponent(claim.claimSecret)}`,
-    );
-    // The canonical lanes are untouched: this feature adds a claim, it does not replace Downloads.
-    assert.equal(handoff.infiniteEvents("app_download_click").length, 1);
-    assert.equal(handoff.gaEvents("app_download_clicked").length, 1);
-
-    // A later valid Download REPLACES the card's claim rather than stacking cards.
-    handoff.click(handoff.downloads.pricing);
-    assert.equal(handoff.handoffBeacons.length, 2);
-    assert.equal(handoff.handoffCardCount(), 1, "a second download replaces the claim, never stacks a card");
-    assert.notEqual(handoff.handoffBeacons[1].claimId, claim.claimId, "each download mints its own claim");
-    assert.notEqual(handoff.handoffBeacons[1].claimSecret, claim.claimSecret);
-    assert.equal(
-      handoff.handoffOpenUrl(),
-      `infinite://handoff/v1?claim_id=${encodeURIComponent(handoff.handoffBeacons[1].claimId)}&secret=${encodeURIComponent(handoff.handoffBeacons[1].claimSecret)}`,
-      "the card carries the newest claim",
-    );
-
-    // The card's own "Download again" link is an ordinary same-origin /download anchor, so it runs
-    // the same path: new claim, new tab, one card.
-    const again = handoff.clickHandoffLink("Download again");
-    const againEvent = handoff.click(again);
-    assert.equal(againEvent.defaultPrevented, false);
-    assert.equal(again.getAttribute("target"), "_blank");
-    assert.equal(handoff.handoffBeacons.length, 3);
-    assert.equal(handoff.handoffCardCount(), 1);
-
-    handoff.dismissHandoffCard();
-    assert.equal(handoff.handoffCard(), null, "the card is dismissible");
-    handoff.click(handoff.downloads.navigation);
-    assert.equal(handoff.handoffCardCount(), 1, "a later download brings the card back");
-
-    // A non-download CTA never mints a claim.
-    const claimsBefore = handoff.handoffBeacons.length;
-    handoff.click(handoff.cta);
-    assert.equal(handoff.handoffBeacons.length, claimsBefore, "only /download clicks mint claims");
-
-    // No consent-qualified context (DNT/GPC or a saved denial) → the accessor returns null and the
-    // ordinary direct download is preserved byte for byte, including the GA4 same-tab bridge.
-    const noContext = executeAnalytics(enabledHtml, { handoffContext: null });
-    const denied = noContext.click(noContext.downloads.hero);
-    assert.equal(noContext.handoffBeacons.length, 0, "no context, no claim");
-    assert.equal(noContext.handoffFetches.length, 0);
-    assert.equal(noContext.handoffCard(), null, "no context, no card");
-    assert.equal(noContext.downloads.hero.getAttribute("target"), null, "no context means no anchor mutation");
-    assert.equal(denied.defaultPrevented, true, "without a claim the ordinary GA4 same-tab download path is untouched");
-
-    // A browser whose infinite-tag predates the accessor (or an unverified host / missing source
-    // key, where the accessor is never installed) behaves identically.
-    const noAccessor = executeAnalytics(enabledHtml, { handoffAccessor: "absent" });
-    const legacy = noAccessor.click(noAccessor.downloads.hero);
-    assert.equal(noAccessor.handoffBeacons.length, 0);
-    assert.equal(noAccessor.handoffCard(), null);
-    assert.equal(legacy.defaultPrevented, true);
-
-    // Beacon refusal falls back to ONE same-origin keepalive fetch with the identical payload.
-    const refused = executeAnalytics(enabledHtml, { handoffContext: HANDOFF_CONTEXT, beaconRefuses: true });
-    const refusedClick = refused.click(refused.downloads.hero);
-    assert.equal(refused.handoffBeacons.length, 0);
-    assert.equal(refused.handoffFetches.length, 1);
-    assert.equal(refused.handoffFetches[0].init.method, "POST");
-    assert.equal(refused.handoffFetches[0].init.keepalive, true);
-    assert.equal(refused.handoffFetches[0].init.credentials, "same-origin");
-    assert.equal(refused.handoffFetches[0].init.headers["content-type"], "application/json");
-    assert.match(refused.handoffFetches[0].payload.claimId, UUID_V4);
-    assert.match(refused.handoffFetches[0].payload.claimSecret, CLAIM_SECRET);
-    assert.equal(refusedClick.defaultPrevented, false, "a refused beacon still downloads in a new tab");
-    assert.equal(refused.handoffCardCount(), 1);
+    const flagged = readFileSync(join(retiredFlagDir, "dist/index.html"), "utf8");
+    assert.doesNotMatch(flagged, /infinite-handoff-card|\/infinite\/handoff|infinite:\/\/handoff/, "the retired site handoff flag is inert: the Wave 2 snippet is gone, not gated");
   } finally {
-    rmSync(handoffDir, { recursive: true, force: true });
+    rmSync(retiredFlagDir, { recursive: true, force: true });
   }
 } finally {
   rmSync(tempDir, { recursive: true, force: true });
-}
-
-/** The ONE injected script that owns the handoff flow, isolated so its prohibitions
- *  (no preventDefault, no timer, no identifying capture) are asserted against that snippet alone
- *  and not against the unrelated GA4 bridge that legitimately cancels same-tab clicks. */
-function handoffScriptOf(html) {
-  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
-    .map((match) => match[1])
-    // The SITE's handoff snippet (not the tag runtime, which also names the accessor since 0.6.0): the
-    // one script that builds the card and calls the accessor.
-    .filter((script) => script.includes("infinite-handoff-card") && script.includes("__infiniteHandoffContext"));
-  assert.equal(scripts.length, 1, "exactly one handoff snippet per page");
-  return scripts[0];
 }
 
 function runInjector(cwd, env) {
@@ -519,6 +377,7 @@ function executeAnalytics(html, {
   doNotTrack = "0",
   globalPrivacyControl = false,
   hostname = "infinite.fast",
+  pathname = "/tools/",
   // `undefined` = the accessor is absent entirely (older infinite-tag, unverified host, no source
   // key). `null` = the accessor exists and reports no consent-qualified context. An object = a
   // consent-qualified context, exactly the documented infinite-tag >= 0.6.0 shape.
@@ -583,7 +442,7 @@ function executeAnalytics(html, {
       href: `${origin}/tools/?campaign=secret#fragment`,
       origin,
       hostname,
-      pathname: "/tools/",
+      pathname,
     },
     addEventListener: (name, listener) => listeners.set(name, [...(listeners.get(name) ?? []), listener]),
     dispatchEvent: (event) => {
@@ -657,6 +516,7 @@ function executeAnalytics(html, {
     downloads,
     infiniteBodies,
     infiniteEvents: (name) => infiniteBodies.filter((body) => body.eventName === name),
+    posthogInitOptions: () => (window.posthog?._i ?? []).map((entry) => entry[1]),
     posthogEvents,
     gaEvents,
     gaConfigs,
