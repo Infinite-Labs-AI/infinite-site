@@ -126,10 +126,6 @@
       "destination": "https://api.ultima.inc/api/auth/handoff/claim"
     },
     {
-      "source": "/infinite/handoff",
-      "destination": "https://api.ultima.inc/api/analytics/attribution/handoff/claim"
-    },
-    {
       "source": "/infinite/events/collect",
       "destination": "https://api.ultima.inc/api/analytics/events/collect"
     },

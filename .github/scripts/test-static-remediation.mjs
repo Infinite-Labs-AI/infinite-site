@@ -77,6 +77,11 @@ assert.deepEqual(
   { source: "/infinite/auth/handoff/claim", destination: "https://api.ultima.inc/api/auth/handoff/claim" },
   "the get-started page mints its one-time sign-in claim through a same-origin rewrite (no CORS)",
 );
+assert.equal(
+  rewrites.some((rewrite) => rewrite.source === "/infinite/handoff"),
+  false,
+  "the Wave 2 /infinite/handoff rewrite is retired — the get-started page owns the handoff",
+);
 assert.equal(existsSync(new URL("../../api/download.js", import.meta.url)), false, "the native /download redirect must not become a function");
 assert.equal(existsSync(new URL("../workflows/deploy-pages.yml", import.meta.url)), false, "Vercel is the only production host");
 
@@ -104,6 +109,13 @@ const injector = read(".github/scripts/inject-analytics.cjs");
 assert.match(injector, /await import\("infinite-tag"\)/);
 assert.match(injector, /gtag\("event", "app_download_clicked"/);
 assert.doesNotMatch(injector, /_1BU|\/api\/events\/track|custom_app_download_redirect|appDownloadTrackingSnippet|link_text/);
+const retiredSnippetName = "download" + "Handoff" + "Snippet";
+const retiredBuildFlag = ["INFINITE", "HANDOFF", "ENABLED"].join("_");
+assert.doesNotMatch(
+  injector,
+  new RegExp(`${retiredSnippetName}|${retiredBuildFlag}|infinite-handoff-card`),
+  "the Wave 2 attribution snippet is deleted, not flagged off",
+);
 // Consent gating (2026-08-04): the shared gate exists, the download bridge refuses to
 // preventDefault without an initialized gtag, and the banner carries the host gate + the
 // manual revocation hook.
