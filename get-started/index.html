@@ -130,6 +130,22 @@
     }
     .button[disabled] { opacity: 0.6; cursor: progress; }
     .button--secondary { background: transparent; color: var(--text); border: 1px solid var(--line-strong); }
+    .button--google { gap: 10px; margin-top: 22px; background: #fff; color: #1f2328; }
+    .button--google::before {
+      content: "G";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid rgba(31, 35, 40, 0.18);
+      color: #4285f4;
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+    }
+    .divider { display: flex; align-items: center; gap: 12px; margin-top: 20px; color: var(--dim); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .divider::before, .divider::after { content: ""; height: 1px; flex: 1; background: var(--line); }
     .linkish { margin-top: 18px; display: flex; gap: 18px; flex-wrap: wrap; }
     .linkish button { padding: 0; border: 0; background: none; color: var(--accent); font: inherit; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
     .error { margin-top: 12px; color: var(--danger); }
@@ -174,13 +190,16 @@
         </p>
 
         <section id="gate-step-email" aria-labelledby="gate-email-label" hidden>
+          <button id="gate-google" class="button button--google" type="button">Continue with Google</button>
+          <p id="gate-google-notice" class="note" role="status" hidden></p>
+          <div class="divider">or use email</div>
           <form id="gate-form-email" novalidate>
             <label id="gate-email-label" for="gate-email">Use the email you’ll sign in to Infinite with.</label>
             <input id="gate-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required placeholder="you@company.com" />
             <p id="gate-email-error" class="error" role="alert" hidden></p>
             <button id="gate-submit-email" class="button" type="submit">Continue</button>
           </form>
-          <p class="fine">We email you a 6-digit code. No password, no OAuth. <a href="../privacy/">Privacy</a></p>
+          <p class="fine">Google sign-in uses Supabase Auth; the site never stores your Google token. Email sends a 6-digit code. <a href="../privacy/">Privacy</a></p>
         </section>
 
         <section id="gate-step-code" aria-labelledby="gate-code-label" hidden>
@@ -219,11 +238,17 @@
     <span class="sep">·</span>
     <a href="../terms/">Terms</a>
   </footer>
+  <script src="/assets/supabase-js-2.89.0.js"></script>
   <script>
     (function () {
       var STORAGE_KEY = "infinite_get_started_claim";
+      var GOOGLE_CONTEXT_KEY = "infinite_get_started_google_context";
       var OTP_PATH = "/infinite/auth/otp";
       var CLAIM_PATH = "/infinite/auth/handoff/claim";
+      var SUPABASE_URL = "https://wdxjduorvpayxixpmskf.supabase.co";
+      var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkeGpkdW9ydnBheXhpeHBtc2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0Njc0NzMsImV4cCI6MjA4MzA0MzQ3M30.wTsxXgy784NHWjFxox1jkfiNZ4vXydEzlumC5v8NMtA";
+      var SUPABASE_REDIRECT_TO = "https://infinite.fast/get-started";
+      var SUPABASE_PKCE_VERIFIER_KEY = "sb-wdxjduorvpayxixpmskf-auth-token-code-verifier";
       var ALLOWED_CTA_LOCATIONS = {
         "get-started": true,
         navigation: true,
@@ -242,7 +267,8 @@
         codeRateLimited: "Too many attempts. Wait a few minutes, then try again.",
         codeFailed: "Something went wrong on our side. Try again, or use the direct download above and sign in inside the app.",
         resendFailed: "We couldn’t send a new code. Try again in a moment.",
-        offline: "We couldn’t reach Infinite. Check your connection, or use the direct download above."
+        offline: "We couldn’t reach Infinite. Check your connection, or use the direct download above.",
+        googleFallback: "Google sign-in didn’t complete — use your email instead"
       };
 
       function el(id) {
@@ -252,6 +278,8 @@
       }
       var fallback = el("gate-fallback");
       var steps = { email: el("gate-step-email"), code: el("gate-step-code"), download: el("gate-step-download") };
+      var googleButton = el("gate-google");
+      var googleNotice = el("gate-google-notice");
       var emailForm = el("gate-form-email");
       var emailInput = el("gate-email");
       var emailError = el("gate-email-error");
@@ -269,6 +297,8 @@
       var openInfinite = el("gate-open-infinite");
 
       var state = { email: "", challenge: "", claim: null };
+      var supabaseClient = null;
+      var supabaseMemory = {};
 
       // Page events go to PostHog + GA4 ONLY (never the first-party ledger - its event enum is
       // fixed), and only after the shared consent gate the injector places in <head> has started
@@ -296,6 +326,10 @@
         node.textContent = message || "";
         node.hidden = !message;
       }
+      function setNotice(node, message) {
+        node.textContent = message || "";
+        node.hidden = !message;
+      }
       function revealFallback() { fallback.hidden = false; }
 
       function readClaim() {
@@ -311,6 +345,41 @@
       }
       function writeClaim(claim) {
         try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(claim)); } catch (_error) {}
+      }
+      function writeGoogleContext() {
+        var params = new URLSearchParams(location.search || "");
+        var value = ctaLocation();
+        var context = {
+          ctaLocation: value,
+          gateMethod: "google",
+          utm: {
+            source: params.get("utm_source") || "",
+            medium: params.get("utm_medium") || "",
+            campaign: params.get("utm_campaign") || ""
+          },
+          clickIds: {
+            gclid: params.has("gclid"),
+            fbclid: params.has("fbclid"),
+            msclkid: params.has("msclkid"),
+            ttclid: params.has("ttclid")
+          }
+        };
+        try { sessionStorage.setItem(GOOGLE_CONTEXT_KEY, JSON.stringify(context)); } catch (_error) {}
+        return context;
+      }
+      function readGoogleContext() {
+        try {
+          var raw = sessionStorage.getItem(GOOGLE_CONTEXT_KEY);
+          if (!raw) return null;
+          var context = JSON.parse(raw);
+          if (!context || ALLOWED_CTA_LOCATIONS[context.ctaLocation] !== true) return null;
+          return context;
+        } catch (_error) {
+          return null;
+        }
+      }
+      function clearGoogleContext() {
+        try { sessionStorage.removeItem(GOOGLE_CONTEXT_KEY); } catch (_error) {}
       }
       function ctaLocation() {
         var match = String(location.search || "").match(/[?&]cta=([^&]+)/);
@@ -335,6 +404,97 @@
           return null;
         }
       }
+      function handoffIds(body) {
+        var context = handoffContext();
+        if (context && typeof context.anonymousId === "string" && typeof context.sessionId === "string") {
+          body.anonymousId = context.anonymousId;
+          body.sessionId = context.sessionId;
+        }
+        return body;
+      }
+      function authStorage() {
+        return {
+          getItem: function (key) {
+            if (key === SUPABASE_PKCE_VERIFIER_KEY) {
+              try { return sessionStorage.getItem(key); } catch (_error) { return null; }
+            }
+            return Object.prototype.hasOwnProperty.call(supabaseMemory, key) ? supabaseMemory[key] : null;
+          },
+          setItem: function (key, value) {
+            if (key === SUPABASE_PKCE_VERIFIER_KEY) {
+              try { sessionStorage.setItem(key, String(value)); } catch (_error) {}
+              return;
+            }
+            supabaseMemory[key] = String(value);
+          },
+          removeItem: function (key) {
+            if (key === SUPABASE_PKCE_VERIFIER_KEY) {
+              try { sessionStorage.removeItem(key); } catch (_error) {}
+              delete supabaseMemory[key];
+              return;
+            }
+            delete supabaseMemory[key];
+          }
+        };
+      }
+      function clearPkceVerifier() {
+        try { sessionStorage.removeItem(SUPABASE_PKCE_VERIFIER_KEY); } catch (_error) {}
+        delete supabaseMemory[SUPABASE_PKCE_VERIFIER_KEY];
+      }
+      function getSupabaseClient() {
+        if (supabaseClient) return supabaseClient;
+        if (!window.supabase || typeof window.supabase.createClient !== "function") throw new Error("Supabase Auth is unavailable");
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
+            flowType: "pkce",
+            storage: authStorage()
+          }
+        });
+        return supabaseClient;
+      }
+      function oauthCode() {
+        try { return new URLSearchParams(location.search || "").get("code") || ""; } catch (_error) { return ""; }
+      }
+      function oauthError() {
+        try {
+          var params = new URLSearchParams(location.search || "");
+          var reason = params.get("error_code") || params.get("error") || "";
+          return /^[a-z0-9_]{1,48}$/.test(reason) ? reason : reason ? "oauth_error" : "";
+        } catch (_error) {
+          return "";
+        }
+      }
+      function cleanOAuthUrl() {
+        try { history.replaceState(null, "", "/get-started"); } catch (_error) {}
+      }
+      function googleFailureReason(result, fallback) {
+        if (result && result.data && typeof result.data.error === "string") return result.data.error;
+        return fallback || "unknown";
+      }
+      function supabaseExchangeFailureReason(error) {
+        var name = error && typeof error.name === "string" ? error.name : "";
+        var message = error && typeof error.message === "string" ? error.message : "";
+        var value = (message || name).toLowerCase();
+        if (value === "invalid_token" || value === "pkce_code_verifier_not_found" || value === "bad_code_verifier" || value === "invalid_grant") return "invalid_token";
+        if (name === "TypeError" || name === "AuthRetryableFetchError" || /failed to fetch|network|timeout|server|5[0-9][0-9]/.test(value)) return "network";
+        return "invalid_token";
+      }
+      function showGoogleFallback(reason, failOpen) {
+        if (failOpen) revealFallback();
+        track("gate_google_failed", { cta_location: (readGoogleContext() || {}).ctaLocation || CTA_LOCATION, reason: reason });
+        clearGoogleContext();
+        setNotice(googleNotice, COPY.googleFallback);
+        show("email");
+      }
+      function handleGoogleError(reason) {
+        cleanOAuthUrl();
+        clearPkceVerifier();
+        googleButton.disabled = false;
+        showGoogleFallback(reason || "oauth_error", false);
+      }
 
       function postJson(path, body) {
         return fetch(path, {
@@ -354,6 +514,25 @@
         downloadEmail.textContent = claim.email;
         show("download");
       }
+
+      googleButton.addEventListener("click", function () {
+        setNotice(googleNotice, "");
+        var context = writeGoogleContext();
+        googleButton.disabled = true;
+        track("gate_google_started", { cta_location: context.ctaLocation });
+        Promise.resolve().then(function () {
+          return getSupabaseClient().auth.signInWithOAuth({
+            provider: "google",
+            options: { redirectTo: SUPABASE_REDIRECT_TO, skipBrowserRedirect: false }
+          });
+        }).then(function (result) {
+          if (result && result.error) throw result.error;
+        }).catch(function () {
+          googleButton.disabled = false;
+          clearPkceVerifier();
+          showGoogleFallback("oauth_start_failed", false);
+        });
+      });
 
       emailForm.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -414,12 +593,7 @@
         var token = codeInput.value.replace(/\s+/g, "");
         setError(codeError, "");
         if (!/^[0-9]{6}$/.test(token)) return setError(codeError, COPY.codeMalformed);
-        var body = { email: state.email, token: token, challenge: state.challenge, ctaLocation: CTA_LOCATION };
-        var context = handoffContext();
-        if (context && typeof context.anonymousId === "string" && typeof context.sessionId === "string") {
-          body.anonymousId = context.anonymousId;
-          body.sessionId = context.sessionId;
-        }
+        var body = handoffIds({ email: state.email, token: token, challenge: state.challenge, ctaLocation: CTA_LOCATION });
         submitCode.disabled = true;
         postJson(CLAIM_PATH, body).then(function (result) {
           submitCode.disabled = false;
@@ -455,8 +629,64 @@
         track("handoff_link_clicked", { cta_location: CTA_LOCATION });
       });
 
+      function handleGoogleReturn(code) {
+        var context = readGoogleContext();
+        var claimCtaLocation = context ? context.ctaLocation : CTA_LOCATION;
+        googleButton.disabled = true;
+        var pendingClaim = null;
+        function finishGoogleAuth() {
+          return Promise.resolve().then(function () {
+            try { return getSupabaseClient().auth.signOut({ scope: "local" }); } catch (_error) { return null; }
+          }).catch(function () {
+            return null;
+          }).then(function () {
+            cleanOAuthUrl();
+            clearPkceVerifier();
+            googleButton.disabled = false;
+          });
+        }
+        Promise.resolve().then(function () {
+          return getSupabaseClient().auth.exchangeCodeForSession(code);
+        }).then(function (result) {
+          if (result && result.error) throw result.error;
+          if (!result || !result.data || !result.data.session || typeof result.data.session.access_token !== "string") {
+            throw new Error("invalid_token");
+          }
+          return postJson(CLAIM_PATH, handoffIds({ accessToken: result.data.session.access_token, ctaLocation: claimCtaLocation }));
+        }).then(function (result) {
+          if (!result.ok || typeof result.data.claimId !== "string" || typeof result.data.secret !== "string") {
+            var reason = googleFailureReason(result, result.status === 0 ? "network" : "claim_failed");
+            return finishGoogleAuth().then(function () {
+              showGoogleFallback(reason, result.status === 404 || result.status >= 500 || result.status === 0);
+              return null;
+            });
+          }
+          var data = result.data;
+          pendingClaim = { claimId: data.claimId, secret: data.secret, expiresAt: data.expiresAt, email: "your Google account" };
+          return finishGoogleAuth().then(function () {
+            writeClaim(pendingClaim);
+            clearGoogleContext();
+            track("gate_google_completed", { cta_location: claimCtaLocation });
+            showDownload(pendingClaim);
+            track("gate_download_started", { cta_location: claimCtaLocation, trigger: "auto" });
+            location.assign("/download");
+            return pendingClaim;
+          });
+        }).catch(function (error) {
+          var reason = supabaseExchangeFailureReason(error);
+          return finishGoogleAuth().then(function () {
+            showGoogleFallback(reason, reason === "network");
+          });
+        });
+      }
+
       var restored = readClaim();
-      if (restored) showDownload(restored); else show("email");
+      if (restored) showDownload(restored); else {
+        show("email");
+        var code = oauthCode();
+        var error = oauthError();
+        if (code) handleGoogleReturn(code); else if (error) handleGoogleError(error);
+      }
       // Last line on purpose: any throw above leaves the fail-open download link visible.
       fallback.hidden = true;
     })();

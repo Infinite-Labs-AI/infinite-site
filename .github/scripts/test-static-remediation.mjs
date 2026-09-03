@@ -93,9 +93,19 @@ assert.deepEqual(packageJson.devDependencies, {
   "@vercel/functions": "3.7.6",
   "infinite-tag": "0.6.0",
 });
+assert.deepEqual(packageJson.dependencies, {
+  "@supabase/supabase-js": "2.89.0",
+});
 const packageLock = JSON.parse(read("package-lock.json"));
+assert.equal(packageLock.packages[""].dependencies["@supabase/supabase-js"], "2.89.0");
 assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.6.0");
 assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.6.0");
+assert.equal(packageLock.packages["node_modules/@supabase/supabase-js"].version, "2.89.0");
+assert.equal(
+  read("assets/supabase-js-2.89.0.js"),
+  read("node_modules/@supabase/supabase-js/dist/umd/supabase.js"),
+  "the vendored Supabase UMD must stay byte-identical to the pinned npm package",
+);
 assert.equal(
   packageLock.packages["node_modules/infinite-tag"].resolved,
   "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.6.0.tgz",
@@ -163,6 +173,7 @@ assert.match(privacy, /window\.infinitePrivacyChoices/);
 assert.match(privacy, /Google Analytics, PostHog, and any configured campaign pixels do not initialize unless you grant/);
 assert.match(privacy, /<strong>Get-started sign-in handoff:<\/strong>/);
 assert.match(privacy, /one-time sign-in grant.*48 hours.*redeemed once/is);
+assert.match(privacy, /Google sign-in via Supabase Auth.*site never stores your Google token/is);
 assert.match(privacy, /one-way hash of the claim secret \(never the secret itself\)/);
 assert.match(privacy, /removed after 90 days/);
 assert.doesNotMatch(privacy, /Desktop handoff attribution|cannot sign you in/, "the anonymous-attribution wording is gone");
@@ -196,10 +207,12 @@ assert.match(ledgerContract, /data-download-location.*package-owned.*click liste
 assert.doesNotMatch(ledgerContract, /placement is currently unavailable|future package release/i);
 assert.match(ledgerContract, /## Get-started sign-in handoff/);
 assert.match(ledgerContract, /\/infinite\/auth\/otp.*\/infinite\/auth\/handoff\/claim/is);
+assert.match(ledgerContract, /accessToken.*invalid_token.*google_provider_required/is);
 assert.doesNotMatch(ledgerContract, new RegExp(`${retiredBuildFlag}|Wave 2, dormant`));
 assert.match(dataInventory, /app_download_click.*bounded CTA location.*destination path/is);
 assert.doesNotMatch(dataInventory, /download placement is unavailable/i);
 assert.match(dataInventory, /Get-started sign-in claim/);
+assert.match(dataInventory, /Google sign-in via Supabase Auth.*site never stores your Google token/is);
 assert.doesNotMatch(dataInventory, new RegExp(retiredBuildFlag));
 
 const siteAudit = read("scripts/verify-site-audit.mjs");
@@ -215,6 +228,7 @@ const headerValue = (key) => headers.find((header) => header.key.toLowerCase() =
 
 assert.equal(headerValue("Content-Security-Policy-Report-Only"), undefined);
 assert.match(headerValue("Content-Security-Policy") ?? "", /frame-ancestors 'none'/);
+assert.match(headerValue("Content-Security-Policy") ?? "", /connect-src[^;]*https:\/\/wdxjduorvpayxixpmskf\.supabase\.co/, "Google PKCE exchange must be able to reach Supabase Auth");
 assert.match(headerValue("Content-Security-Policy") ?? "", /report-uri \/api\/csp-report/);
 assert.match(headerValue("Content-Security-Policy") ?? "", /report-to csp-endpoint/);
 assert.doesNotMatch(headerValue("Content-Security-Policy") ?? "", /fonts\.(?:googleapis|gstatic)\.com/);

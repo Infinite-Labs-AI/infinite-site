@@ -18,7 +18,11 @@ assert.match(html, /<li>Open the DMG<\/li>\s*<li>Drag Infinite to Applications<\
 assert.match(html, /id="gate-download-again"[^>]*>Download again</);
 assert.match(html, /id="gate-open-infinite"[^>]*>Open Infinite</);
 assert.match(html, /id="gate-resend"[^>]*>Resend code</);
-assert.doesNotMatch(html, /skip/i, "hard gate: no skip link");
+assert.match(html, /id="gate-google"[^>]*>Continue with Google</);
+assert.match(html, /id="gate-google-notice"[^>]*role="status"/);
+const visibleHtml = html.replace(/<script\b[\s\S]*?<\/script>/gi, "").replace(/<style\b[\s\S]*?<\/style>/gi, "");
+assert.doesNotMatch(visibleHtml, />[^<]*skip[^<]*</i, "hard gate: no visible skip link");
+assert.doesNotMatch(visibleHtml, /href="\/download"[^>]*>[^<]*skip/i, "hard gate: no direct skip-to-download CTA");
 
 // Every download is a /download click: the two anchors carry a bounded placement marker
 // (test-prepare-static-deploy enumerates the built dist and fails on a markerless one).
@@ -36,13 +40,16 @@ assert.doesNotMatch(html, /id="gate-open-infinite"[^>]*href=/, "the claim secret
 // The privacy boundary: never read the tag's storage, never reference the retired Wave 2 endpoint.
 assert.doesNotMatch(html, /infinite_analytics_visitor|infinite_analytics_session/);
 assert.doesNotMatch(html, /["']\/infinite\/handoff["']/);
-assert.doesNotMatch(html, /<script\b[^>]*\bsrc=/, "no external scripts: one inline script only");
+const scriptSources = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map((match) => match[1]);
+assert.deepEqual(scriptSources, ["/assets/supabase-js-2.89.0.js"], "Supabase JS is vendored under self because CSP blocks CDNs");
 
 // ── Behaviour harness ─────────────────────────────────────────────────────────────────────────
 // Drives the page's ONE inline script inside node:vm against a minimal DOM built from the ids in
 // the source. The script's DOM surface is deliberately tiny (getElementById, hidden, disabled,
 // value, textContent, href, addEventListener, focus) so this harness stays small and honest.
 const CLAIM_KEY = "infinite_get_started_claim";
+const GOOGLE_CONTEXT_KEY = "infinite_get_started_google_context";
+const PKCE_VERIFIER_KEY = "sb-wdxjduorvpayxixpmskf-auth-token-code-verifier";
 const OTP_PATH = "/infinite/auth/otp";
 const CLAIM_PATH = "/infinite/auth/handoff/claim";
 const CLAIM = {
@@ -51,7 +58,16 @@ const CLAIM = {
   expiresAt: "2026-09-05T10:00:00.000Z",
 };
 
-function createPage({ consent = "granted", responses = {}, handoffContext, storedClaim, search = "" } = {}) {
+function createPage({
+  consent = "granted",
+  responses = {},
+  handoffContext,
+  storedClaim,
+  storedGoogleContext,
+  storedPkceVerifier,
+  search = "",
+  supabaseAuth = {},
+} = {}) {
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
   assert.equal(scripts.length, 1, "the page carries exactly one inline script");
   const elements = new Map();
@@ -84,24 +100,98 @@ function createPage({ consent = "granted", responses = {}, handoffContext, store
   }
   const fetchCalls = [];
   const assigned = [];
+  const replaced = [];
   const captures = [];
   const gtagCalls = [];
-  const storage = new Map(storedClaim ? [[CLAIM_KEY, JSON.stringify(storedClaim)]] : []);
+  const storage = new Map([
+    ...(storedClaim ? [[CLAIM_KEY, JSON.stringify(storedClaim)]] : []),
+    ...(storedGoogleContext ? [[GOOGLE_CONTEXT_KEY, JSON.stringify(storedGoogleContext)]] : []),
+    ...(storedPkceVerifier ? [[PKCE_VERIFIER_KEY, storedPkceVerifier]] : []),
+  ]);
+  const localStorageWrites = [];
+  const supabaseCalls = {
+    createClient: [],
+    autoExchange: [],
+    signInWithOAuth: [],
+    exchangeCodeForSession: [],
+    signOut: [],
+  };
   const queues = Object.fromEntries(Object.entries(responses).map(([path, list]) => [path, [...list]]));
+  const authStorageProbeValues = [];
   const window = {
     posthog: { capture: (name, properties) => captures.push([name, cloneJson(properties)]) },
     gtag: (...args) => gtagCalls.push(args.map((arg) => cloneJson(arg))),
+    supabase: {
+      createClient: (url, key, options) => {
+        supabaseCalls.createClient.push({ url, key, options: cloneJson(options) });
+        assert.notEqual(options.auth.storage, context.localStorage, "Supabase auth must not receive localStorage");
+        assert.equal(options.auth.persistSession, false);
+        assert.equal(options.auth.autoRefreshToken, false);
+        assert.equal(options.auth.detectSessionInUrl, false, "manual exchange owns the callback so Supabase cannot consume the verifier before claim minting");
+        assert.equal(options.auth.flowType, "pkce");
+        if (options.auth.detectSessionInUrl && context.location.search.includes("code=")) {
+          supabaseCalls.autoExchange.push(new URLSearchParams(context.location.search).get("code"));
+          options.auth.storage.removeItem(PKCE_VERIFIER_KEY);
+        }
+        options.auth.storage.setItem("supabase.probe", "memory-only");
+        authStorageProbeValues.push(options.auth.storage.getItem("supabase.probe"));
+        return {
+          auth: {
+            signInWithOAuth: (args) => {
+              supabaseCalls.signInWithOAuth.push(cloneJson(args));
+              options.auth.storage.setItem(PKCE_VERIFIER_KEY, "pkce-verifier");
+              if (supabaseAuth.signInWithOAuth instanceof Error) return Promise.resolve({ data: null, error: supabaseAuth.signInWithOAuth });
+              return Promise.resolve(supabaseAuth.signInWithOAuth ?? { data: { provider: "google" }, error: null });
+            },
+            exchangeCodeForSession: (code) => {
+              supabaseCalls.exchangeCodeForSession.push(code);
+              if (supabaseAuth.requireCodeVerifier && options.auth.storage.getItem(PKCE_VERIFIER_KEY) !== "pkce-verifier") {
+                return Promise.resolve({ data: null, error: new Error("pkce_code_verifier_not_found") });
+              }
+              if (supabaseAuth.exchangeCodeForSession instanceof Error) return Promise.resolve({ data: null, error: supabaseAuth.exchangeCodeForSession });
+              return Promise.resolve(
+                supabaseAuth.exchangeCodeForSession ?? { data: { session: { access_token: "google-access-token" } }, error: null },
+              );
+            },
+            signOut: (args) => {
+              supabaseCalls.signOut.push(cloneJson(args));
+              return Promise.resolve({ error: supabaseAuth.signOutError ?? null });
+            },
+          },
+        };
+      },
+    },
   };
   if (consent === "granted") window.__infiniteConsentGate = (start) => start();
   if (consent === "withheld") window.__infiniteConsentGate = () => {};
   if (handoffContext !== undefined) window.__infiniteHandoffContext = () => handoffContext;
-  const context = {
+  let context;
+  context = {
     window,
     document: { getElementById: (id) => elements.get(id) ?? null },
-    location: { search, assign: (href) => assigned.push(href) },
+    location: {
+      search,
+      pathname: "/get-started",
+      origin: "https://infinite.fast",
+      href: `https://infinite.fast/get-started${search}`,
+      assign: (href) => assigned.push(href),
+    },
+    history: {
+      replaceState: (_state, _title, href) => {
+        replaced.push(href);
+        context.location.href = new URL(href, context.location.href).href;
+        context.location.search = new URL(context.location.href).search;
+      },
+    },
     sessionStorage: {
       getItem: (key) => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, String(value)),
+      removeItem: (key) => storage.delete(key),
+    },
+    localStorage: {
+      getItem: () => null,
+      setItem: (key, value) => localStorageWrites.push([key, String(value)]),
+      removeItem: (key) => localStorageWrites.push([key, null]),
     },
     fetch: (path, init) => {
       fetchCalls.push({ path, init, body: JSON.parse(init.body) });
@@ -118,8 +208,15 @@ function createPage({ consent = "granted", responses = {}, handoffContext, store
     encodeURIComponent,
     decodeURIComponent,
     Promise,
+    URL,
+    URLSearchParams,
     console,
   };
+  window.location = context.location;
+  window.history = context.history;
+  window.sessionStorage = context.sessionStorage;
+  window.localStorage = context.localStorage;
+  context.supabase = window.supabase;
   context.globalThis = context;
   runInNewContext(scripts[0], context);
   const fire = async (id, name) => {
@@ -130,11 +227,16 @@ function createPage({ consent = "granted", responses = {}, handoffContext, store
     el: (id) => elements.get(id),
     fetchCalls,
     assigned,
+    replaced,
     captures,
     gtagCalls,
     storage,
+    localStorageWrites,
+    supabaseCalls,
+    authStorageProbeValues,
     submit: (id) => fire(id, "submit"),
     click: (id) => fire(id, "click"),
+    settle,
   };
 }
 
@@ -157,6 +259,150 @@ const err = (status, error) => ({ status, body: { error } });
   assert.equal(page.el("gate-step-code").hidden, true);
   assert.equal(page.el("gate-step-download").hidden, true);
   assert.equal(page.fetchCalls.length, 0, "nothing is requested before the visitor acts");
+}
+
+{
+  const page = createPage({ search: "?cta=pricing&utm_source=x&utm_medium=cpc&utm_campaign=fall&gclid=SECRET&fbclid=FBSECRET" });
+  await page.click("gate-google");
+  assert.deepEqual(page.supabaseCalls.signInWithOAuth, [
+    {
+      provider: "google",
+      options: {
+        redirectTo: "https://infinite.fast/get-started",
+        skipBrowserRedirect: false,
+      },
+    },
+  ]);
+  assert.equal(page.supabaseCalls.createClient.length, 1);
+  assert.equal(page.supabaseCalls.createClient[0].url, "https://wdxjduorvpayxixpmskf.supabase.co");
+  assert.match(page.supabaseCalls.createClient[0].key, /^eyJ/);
+  assert.deepEqual(page.authStorageProbeValues, ["memory-only"]);
+  assert.deepEqual(page.localStorageWrites, [], "the Google auth client is never given browser localStorage");
+  assert.equal(page.storage.get(PKCE_VERIFIER_KEY), "pkce-verifier", "only the PKCE verifier survives the OAuth redirect in same-origin sessionStorage");
+  const stored = JSON.parse(page.storage.get(GOOGLE_CONTEXT_KEY));
+  assert.deepEqual(stored, {
+    ctaLocation: "pricing",
+    gateMethod: "google",
+    utm: { source: "x", medium: "cpc", campaign: "fall" },
+    clickIds: { gclid: true, fbclid: true, msclkid: false, ttclid: false },
+  });
+  assert.doesNotMatch(page.storage.get(GOOGLE_CONTEXT_KEY), /SECRET|FBSECRET/, "click id values are not stored across the OAuth redirect");
+  assert.deepEqual(page.captures, [["gate_google_started", { cta_location: "pricing" }]]);
+  assert.deepEqual(page.gtagCalls, page.captures.map(([name, properties]) => ["event", name, properties]));
+}
+
+{
+  const page = createPage({
+    search: "?code=pkce-code&state=supabase-state",
+    storedGoogleContext: {
+      ctaLocation: "navigation",
+      gateMethod: "google",
+      utm: { source: "x", medium: "cpc", campaign: "fall" },
+      clickIds: { gclid: true, fbclid: false, msclkid: true, ttclid: false },
+    },
+    storedPkceVerifier: "pkce-verifier",
+    handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1" },
+    responses: { [CLAIM_PATH]: [ok(CLAIM)] },
+    supabaseAuth: { requireCodeVerifier: true },
+  });
+  await page.settle();
+  assert.deepEqual(page.supabaseCalls.exchangeCodeForSession, ["pkce-code"]);
+  assert.deepEqual(page.supabaseCalls.autoExchange, [], "Supabase must not auto-exchange the URL before the explicit claim flow");
+  assert.deepEqual(page.fetchCalls[0].body, {
+    accessToken: "google-access-token",
+    ctaLocation: "navigation",
+    anonymousId: "anon-1",
+    sessionId: "sess-1",
+  });
+  assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
+  assert.deepEqual(page.replaced, ["/get-started"]);
+  assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false, "the PKCE verifier is cleared after the code exchange");
+  assert.equal(page.storage.has(GOOGLE_CONTEXT_KEY), false, "the post-redirect attribution context is single-use");
+  assert.equal(page.el("gate-step-download").hidden, false);
+  assert.deepEqual(page.assigned, ["/download"]);
+  assert.deepEqual(page.localStorageWrites, [], "the Google return path never writes Supabase state to localStorage");
+  assert.deepEqual(page.captures, [
+    ["gate_google_completed", { cta_location: "navigation" }],
+    ["gate_download_started", { cta_location: "navigation", trigger: "auto" }],
+  ]);
+  assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls]), /supabase-state|pkce-code|google-access-token/, "OAuth code/token are not sent to analytics");
+}
+
+for (const [status, error, reason] of [
+  [400, "google_provider_required", "google_provider_required"],
+  [401, "invalid_token", "invalid_token"],
+]) {
+  const page = createPage({
+    search: "?code=pkce-code",
+    storedPkceVerifier: "pkce-verifier",
+    responses: { [CLAIM_PATH]: [err(status, error)] },
+    supabaseAuth: { requireCodeVerifier: true },
+  });
+  await page.settle();
+  assert.equal(page.el("gate-step-email").hidden, false);
+  assert.equal(page.el("gate-google-notice").hidden, false);
+  assert.match(page.el("gate-google-notice").textContent, /Google sign-in didn.t complete/);
+  assert.equal(page.el("gate-fallback").hidden, true, "provider/token failures fall back to email, not direct-download bypass");
+  assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
+  assert.deepEqual(page.replaced, ["/get-started"]);
+  assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
+  assert.deepEqual(page.captures, [["gate_google_failed", { cta_location: "get-started", reason }]]);
+}
+
+{
+  const page = createPage({
+    search: "?code=pkce-code",
+    storedPkceVerifier: "pkce-verifier",
+    supabaseAuth: { requireCodeVerifier: true, exchangeCodeForSession: new TypeError("Failed to fetch") },
+  });
+  await page.settle();
+  assert.equal(page.el("gate-step-email").hidden, false);
+  assert.equal(page.el("gate-google-notice").hidden, false);
+  assert.equal(page.el("gate-fallback").hidden, false, "a Supabase exchange network failure keeps the fail-open direct download visible");
+  assert.equal(page.fetchCalls.length, 0, "no claim request fires without an access token");
+  assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
+  assert.deepEqual(page.replaced, ["/get-started"]);
+  assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
+  assert.deepEqual(page.captures, [["gate_google_failed", { cta_location: "get-started", reason: "network" }]]);
+}
+
+{
+  const page = createPage({
+    search: "?error=access_denied&error_description=raw-secret-description",
+    storedGoogleContext: {
+      ctaLocation: "hero",
+      gateMethod: "google",
+      utm: { source: "", medium: "", campaign: "" },
+      clickIds: { gclid: false, fbclid: false, msclkid: false, ttclid: false },
+    },
+    storedPkceVerifier: "pkce-verifier",
+  });
+  await page.settle();
+  assert.equal(page.el("gate-step-email").hidden, false);
+  assert.equal(page.el("gate-google-notice").hidden, false);
+  assert.equal(page.el("gate-fallback").hidden, true);
+  assert.deepEqual(page.supabaseCalls.createClient, [], "OAuth error callbacks do not need a Supabase client");
+  assert.deepEqual(page.fetchCalls, []);
+  assert.deepEqual(page.replaced, ["/get-started"]);
+  assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
+  assert.equal(page.storage.has(GOOGLE_CONTEXT_KEY), false);
+  assert.deepEqual(page.captures, [["gate_google_failed", { cta_location: "hero", reason: "access_denied" }]]);
+  assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls]), /raw-secret-description/, "OAuth descriptions are not sent to analytics");
+}
+
+{
+  const page = createPage({
+    search: "?code=pkce-code",
+    storedPkceVerifier: "pkce-verifier",
+    responses: { [CLAIM_PATH]: [new TypeError("Failed to fetch")] },
+    supabaseAuth: { requireCodeVerifier: true },
+  });
+  await page.settle();
+  assert.equal(page.el("gate-step-email").hidden, false);
+  assert.equal(page.el("gate-google-notice").hidden, false);
+  assert.equal(page.el("gate-fallback").hidden, false, "a Google claim network failure keeps the fail-open direct download visible");
+  assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
+  assert.deepEqual(page.captures, [["gate_google_failed", { cta_location: "get-started", reason: "network" }]]);
 }
 
 {

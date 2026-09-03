@@ -44,17 +44,24 @@ now fail if those bytes ever reappear. The cloud attribution routes
 
 `/get-started` (a static page built like every other, spec:
 `1bu-1/docs/superpowers/specs/2026-09-03-email-gated-download-design.md`) gates the installer behind
-an emailed 6-digit code. It calls the cloud through two same-origin rewrites, so no CORS exists:
+Google sign-in or an emailed 6-digit code. Google sign-in uses Supabase Auth; the site never stores
+the visitor's Google token, keeps OAuth tokens in memory, stores only the PKCE code verifier in
+same-tab `sessionStorage` across the redirect, clears that verifier after return, and signs out
+locally immediately after the one-time claim is minted.
+It calls the cloud through same-origin rewrites, so no CORS exists:
 
 ```text
 POST /infinite/auth/otp            -> https://api.ultima.inc/api/auth/otp             { email }                 -> { ok, challenge }
 POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { email, token, challenge, anonymousId?, sessionId?, ctaLocation? } -> { claimId, secret, expiresAt, emailSent }
+POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { accessToken, anonymousId?, sessionId?, ctaLocation? }              -> { claimId, secret, expiresAt, emailSent }
 ```
 
-A claim is minted **only after the code verifies** (the same challenge HMAC and `profiles` ensure as
-`/api/auth/otp/verify`); a typed email alone never yields anything. The server stores only
-`sha256(secret)`, the verified email and profile id, the CTA location, and the timestamps. The claim
-expires after 48 hours, redeems once, and is deleted after 90 days. The page keeps
+A claim is minted **only after Google verifies server-side or the code verifies** (the same challenge
+HMAC and `profiles` ensure as `/api/auth/otp/verify`); a typed email alone never yields anything. The
+Google route rejects `invalid_token` (401) and `google_provider_required` (400), then the page falls
+back to the email-code path. The server stores only `sha256(secret)`, the verified email and profile
+id, the CTA location, and the timestamps. The claim expires after 48 hours, redeems once, and is
+deleted after 90 days. The page keeps
 `{ claimId, secret, email, expiresAt }` in `sessionStorage` so a refresh keeps the **Open Infinite**
 button (`infinite://handoff/v1?claim_id=...&secret=...`) working; the raw secret exists in that
 browser, that URL and the confirmation email, and nowhere else.
@@ -72,10 +79,14 @@ hits the server `/download` redirect lane, and renders **Download again** as
 at `/get-started?cta=<origin>` and carry `data-analytics-cta-id="get-started"` plus
 `data-analytics-cta-location="<origin>"`, which is what makes them `site_click` events (the runtime
 emits `site_click` only from that pair). `/get-started` sends the bounded origin token as
-`ctaLocation` on the claim POST; direct or invalid entries fall back to `get-started`. The page's own
-funnel events - `gate_email_submitted`, `gate_code_verified`, `gate_download_started { trigger }`,
-`handoff_link_clicked` - go to PostHog and GA4 behind `window.__infiniteConsentGate` and never to the
-ledger, whose event enum is unchanged.
+`ctaLocation` on both email and Google claim POSTs; direct or invalid entries fall back to
+`get-started`. Before the Google OAuth redirect, the page stores only the origin CTA, UTM source /
+medium / campaign values, click-id presence booleans, `gate_method=google`, and Supabase's PKCE
+code verifier in `sessionStorage`; it never stores raw click-id values or OAuth tokens there. The
+page's own funnel events - `gate_email_submitted`,
+`gate_code_verified`, `gate_google_started`, `gate_google_completed`, `gate_google_failed { reason }`,
+`gate_download_started { trigger }`, `handoff_link_clicked` - go to PostHog and GA4 behind
+`window.__infiniteConsentGate` and never to the ledger, whose event enum is unchanged.
 
 Fail-open: the page's source renders a plain `<a href="/download">` link; a successfully initialised
 script hides it, and any script failure, network failure or 5xx reveals it again. A wrong or
