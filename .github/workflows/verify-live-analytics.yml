@@ -77,6 +77,7 @@ jobs:
       matrix:
         contract:
           - test-inject-analytics.mjs
+          - test-get-started-page.mjs
           - test-routing-middleware.mjs
           - test-static-remediation.mjs
           - test-public-site-graph.mjs

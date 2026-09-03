@@ -14,6 +14,7 @@ const MAIN_SITE_FILES = [
   "llms.txt",
   "privacy/index.html",
   "terms/index.html",
+  "get-started/index.html",
   "tools/index.html",
   "compare/index.html",
 ];
@@ -65,6 +66,16 @@ assert.deepEqual(
     destination: "https://api.ultima.inc/api/analytics/events/collect",
   },
   "Infinite browser events must use the exact same-origin public collect rewrite",
+);
+assert.deepEqual(
+  rewrites.find((rewrite) => rewrite.source === "/infinite/auth/otp"),
+  { source: "/infinite/auth/otp", destination: "https://api.ultima.inc/api/auth/otp" },
+  "the get-started page requests its sign-in code through a same-origin rewrite (no CORS)",
+);
+assert.deepEqual(
+  rewrites.find((rewrite) => rewrite.source === "/infinite/auth/handoff/claim"),
+  { source: "/infinite/auth/handoff/claim", destination: "https://api.ultima.inc/api/auth/handoff/claim" },
+  "the get-started page mints its one-time sign-in claim through a same-origin rewrite (no CORS)",
 );
 assert.equal(existsSync(new URL("../../api/download.js", import.meta.url)), false, "the native /download redirect must not become a function");
 assert.equal(existsSync(new URL("../workflows/deploy-pages.yml", import.meta.url)), false, "Vercel is the only production host");
