@@ -39,6 +39,11 @@ process.env.POSTHOG_API_HOST ||= "/ingest";
 process.env.POSTHOG_UI_HOST ||= "https://eu.posthog.com";
 process.env.POSTHOG_PROJECT_TOKEN ||=
   "phc_wUuv4hpsa4jfi6fNSzWU9t3JSKneFHusRunsYenhjndJ";
+// The Meta pixel has NO default here on purpose. It bootstraps only when INFINITE_META_PIXEL_ID (the
+// numeric Pixel/Dataset ID from Meta Events Manager → Data sources → the infinite.fast pixel → Settings)
+// is set on the site's Vercel project; the injector validates the shape and fails the build on anything
+// else. Absent ⇒ no fbq, no connect.facebook.net request, and /get-started's CompleteRegistration dedup
+// mirror is a guarded no-op. Never add a fallback id: a placeholder pixel sends every event into nowhere.
 
 const deployEntries = [
   "agents",

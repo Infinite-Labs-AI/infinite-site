@@ -16,24 +16,34 @@ const distDir = join(repoRoot, "dist");
 // fixture so this contract tests OUR build, not the app's uptime.
 const dataset = await serveDatasetFixture();
 
-try {
-  assertPublicSiteManifest();
+const productionBuildEnv = {
+  INFINITE_PRODUCTION_HOSTS: "infinite.fast,www.infinite.fast",
+  INFINITE_SITE_SOURCE_ARTIFACT: JSON.stringify({
+    siteSourceKey: "site_production_dormant",
+    collectPath: "/infinite/ledger",
+    productionHosts: ["infinite.fast", "www.infinite.fast"],
+    staticProxy: "vercel",
+  }),
+  VERCEL_ENV: "production",
+  LAUNCH_VIDEOS_DATASET_URL: dataset.url,
+  // The Meta pixel is DARK until the founder sets INFINITE_META_PIXEL_ID on the Vercel project.
+  // Pin it empty here so a developer's shell can't light it, and set the RETIRED name to its old
+  // placeholder to prove that name (and that id) can never ship a pixel again.
+  INFINITE_META_PIXEL_ID: "",
+  META_PIXEL_ID: "1234567890",
+};
+
+function buildProductionDist(extraEnv = {}) {
   execFileSync("node", [join(repoRoot, "scripts/prepare-static-deploy.cjs")], {
     cwd: repoRoot,
-    env: {
-      ...process.env,
-      INFINITE_PRODUCTION_HOSTS: "infinite.fast,www.infinite.fast",
-      INFINITE_SITE_SOURCE_ARTIFACT: JSON.stringify({
-        siteSourceKey: "site_production_dormant",
-        collectPath: "/infinite/ledger",
-        productionHosts: ["infinite.fast", "www.infinite.fast"],
-        staticProxy: "vercel",
-      }),
-      VERCEL_ENV: "production",
-      LAUNCH_VIDEOS_DATASET_URL: dataset.url,
-    },
+    env: { ...process.env, ...productionBuildEnv, ...extraEnv },
     stdio: "pipe",
   });
+}
+
+try {
+  assertPublicSiteManifest();
+  buildProductionDist();
 
   const homepage = readFileSync(join(distDir, "index.html"), "utf8");
   assert.doesNotMatch(homepage, /https:\/\/www\.infinite\.fast/);
@@ -91,6 +101,24 @@ try {
   assert.match(homepage, /window\.infinitePrivacyChoices/);
   assert.match(homepage, /var hosts = \["infinite\.fast","www\.infinite\.fast"\]/);
 
+  // ── Meta pixel: dark until configured ────────────────────────────────────────────────────────
+  // Without INFINITE_META_PIXEL_ID no page carries a pixel bootstrap, a connect.facebook.net
+  // reference, or the fbevents loader — so the browser never contacts Meta. /get-started's dedup
+  // mirror references window.fbq behind a typeof guard, which is why the sweep targets the
+  // bootstrap + network bytes rather than the bare token; the homepage has no fbq token at all.
+  for (const file of walkFiles(distDir)) {
+    if (!file.endsWith(".html")) continue;
+    assert.doesNotMatch(
+      readFileSync(file, "utf8"),
+      /fbq\("init"|connect\.facebook\.net|fbevents\.js|Meta Pixel Code/,
+      `${file.slice(distDir.length)}: no Meta pixel bytes may ship without INFINITE_META_PIXEL_ID (the retired META_PIXEL_ID name is inert)`,
+    );
+  }
+  assert.doesNotMatch(homepage, /fbq/, "the homepage carries no fbq reference at all when the pixel is unconfigured");
+  const darkGate = readFileSync(join(distDir, "get-started/index.html"), "utf8");
+  assert.match(darkGate, /typeof window\.fbq !== "function"/, "the gate's dedup mirror stays a guarded no-op when the pixel never loaded");
+  assert.doesNotMatch(darkGate, /fbq\("init"/);
+
   // ── Download-CTA placement coverage (audit report-05 finding 8) ──────────────────────────
   // Every /download CTA in the BUILT output must carry a placement marker
   // (data-download-location or data-analytics-cta-location), or "which button produces
@@ -136,6 +164,27 @@ try {
     htmlDocumentPaths(distDir).sort(),
     "middleware.js KNOWN_DOCUMENT_PATHS must exactly match the built dist HTML page set — update the manifest whenever a document page is added or removed",
   );
+
+  // ── Meta pixel: lit ONLY by INFINITE_META_PIXEL_ID ───────────────────────────────────────────
+  // A second production build with the real-shaped id: every page bootstraps the pixel with that
+  // exact id inside the shared consent gate (third gated lane), and /get-started carries it too so
+  // window.fbq exists for the CompleteRegistration dedup mirror after a claim mints.
+  const META_PIXEL_ID = "123456789012345";
+  buildProductionDist({ INFINITE_META_PIXEL_ID: META_PIXEL_ID });
+  const litHomepage = readFileSync(join(distDir, "index.html"), "utf8");
+  assert.match(litHomepage, new RegExp(`fbq\\("init", "${META_PIXEL_ID}"\\)`), "the configured id reaches the pixel bootstrap");
+  assert.equal((litHomepage.match(/fbq\("init"/g) ?? []).length, 1, "exactly one pixel bootstrap per page");
+  assert.match(litHomepage, /https:\/\/connect\.facebook\.net\/en_US\/fbevents\.js/);
+  assert.equal((litHomepage.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 3, "PostHog, GA4 and the Meta pixel must all defer through the shared consent gate");
+  assert.ok(
+    litHomepage.indexOf("window.__infiniteConsentGate = function") < litHomepage.indexOf('fbq("init"'),
+    "the consent gate must be defined before the pixel bootstrap",
+  );
+  assert.doesNotMatch(litHomepage, /1234567890"/, "the retired placeholder id never ships, even when the pixel is configured");
+  const litGate = readFileSync(join(distDir, "get-started/index.html"), "utf8");
+  assert.match(litGate, new RegExp(`fbq\\("init", "${META_PIXEL_ID}"\\)`), "the gate page carries the same pixel so the dedup mirror has a window.fbq to call");
+  assert.equal((litGate.match(/fbq\("init"/g) ?? []).length, 1);
+  assert.match(litGate, /window\.fbq\("track", "CompleteRegistration", \{\}, \{ eventID: /, "the built gate page still carries the dedup mirror");
 } finally {
   dataset.close();
   rmSync(distDir, { recursive: true, force: true });

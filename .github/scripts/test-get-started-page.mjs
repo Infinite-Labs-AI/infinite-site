@@ -43,6 +43,16 @@ assert.doesNotMatch(html, /["']\/infinite\/handoff["']/);
 const scriptSources = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map((match) => match[1]);
 assert.deepEqual(scriptSources, ["/assets/supabase-js-2.89.0.js"], "Supabase JS is vendored under self because CSP blocks CDNs");
 
+// Ad conversion signals (2026-09-03): Meta's _fbc/_fbp cookies and a URL gclid ride the claim POST
+// IN FLIGHT only. The page reads them at POST time, never persists them, and never bootstraps the
+// pixel itself — only the env-gated injector does, so without INFINITE_META_PIXEL_ID window.fbq
+// does not exist and the dedup mirror is a guarded no-op.
+assert.match(html, /document\.cookie/, "fbc/fbp are read from Meta's own first-party cookies at claim time");
+assert.doesNotMatch(html, /setItem\([^)]*\b(?:fbc|fbp|gclid)\b/i, "click ids are never written to browser storage");
+assert.match(html, /window\.fbq\("track", "CompleteRegistration", \{\}, \{ eventID: /, "the dedup mirror uses Meta's eventID option with the claim id");
+assert.match(html, /typeof window\.fbq !== "function"/, "the mirror is a no-op when the pixel never loaded");
+assert.doesNotMatch(html, /fbq\("init"|connect\.facebook\.net|fbevents\.js/, "the page never bootstraps the pixel — only the env-gated injector does");
+
 // ── Behaviour harness ─────────────────────────────────────────────────────────────────────────
 // Drives the page's ONE inline script inside node:vm against a minimal DOM built from the ids in
 // the source. The script's DOM surface is deliberately tiny (getElementById, hidden, disabled,
@@ -108,6 +118,15 @@ const MALFORMED_ATTRIBUTION = {
   has_ttclid: true,
   landing_path: "/?gclid=RAW_GCLID#frag",
 };
+// Meta's own first-party cookies (fb.<subdomainIndex>.<creationMs>.<payload>) and a Google click id
+// exactly as a real browser would hold them at claim time. The distinctive fragments feed the
+// at-rest sweep: none of them may ever appear in sessionStorage, localStorage, or an analytics call.
+const FBP_COOKIE = "fb.1.1725350400000.1909486452";
+const FBC_COOKIE = "fb.1.1725350412345.IwAR0kX9_test-fbclid.Payload";
+const AD_COOKIES = `_ga=GA1.1.111.222; _fbp=${FBP_COOKIE}; _fbc=${FBC_COOKIE}; infinite_analytics_consent=granted`;
+const GCLID = "CjwKCAjw_test-gclid_Value-1";
+const CLICK_ID_MATERIAL = /1725350400000|1725350412345|1909486452|IwAR0kX9|CjwKCAjw/;
+const META_MIRROR = ["track", "CompleteRegistration", {}, { eventID: CLAIM.claimId }];
 
 function createPage({
   consent = "granted",
@@ -120,6 +139,10 @@ function createPage({
   existingSessionStorage,
   search = "",
   supabaseAuth = {},
+  // document.cookie as the browser would expose it; an Error makes the getter throw (blocked cookies).
+  cookies = "",
+  // true = the env-gated Meta pixel snippet ran and defined window.fbq; false = unconfigured (prod today).
+  pixel = false,
 } = {}) {
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
   assert.equal(scripts.length, 1, "the page carries exactly one inline script");
@@ -156,6 +179,9 @@ function createPage({
   const replaced = [];
   const captures = [];
   const gtagCalls = [];
+  const fbqCalls = [];
+  // Ordered record of fetches and fbq calls, so a test can prove the mirror fired AFTER the claim.
+  const timeline = [];
   const storage = existingSessionStorage ?? new Map();
   if (storedClaim) storage.set(CLAIM_KEY, JSON.stringify(storedClaim));
   if (storedGoogleContext) storage.set(GOOGLE_CONTEXT_KEY, JSON.stringify(storedGoogleContext));
@@ -243,10 +269,23 @@ function createPage({
   if (consent === "granted") window.__infiniteConsentGate = (start) => start();
   if (consent === "withheld") window.__infiniteConsentGate = () => {};
   if (handoffContext !== undefined) window.__infiniteHandoffContext = () => handoffContext;
+  if (pixel) {
+    window.fbq = (...args) => {
+      const call = args.map((arg) => cloneJson(arg));
+      fbqCalls.push(call);
+      timeline.push(["fbq", ...call]);
+    };
+  }
   let context;
   context = {
     window,
-    document: { getElementById: (id) => elements.get(id) ?? null },
+    document: {
+      getElementById: (id) => elements.get(id) ?? null,
+      get cookie() {
+        if (cookies instanceof Error) throw cookies;
+        return cookies;
+      },
+    },
     location: {
       search,
       pathname: "/get-started",
@@ -277,6 +316,7 @@ function createPage({
     },
     fetch: (path, init) => {
       fetchCalls.push({ path, init, body: JSON.parse(init.body) });
+      timeline.push(["fetch", path]);
       const reply = queues[path]?.shift();
       if (!reply) return Promise.reject(new Error(`unexpected fetch ${path}`));
       if (reply instanceof Error) return Promise.reject(reply);
@@ -312,6 +352,8 @@ function createPage({
     replaced,
     captures,
     gtagCalls,
+    fbqCalls,
+    timeline,
     identifies,
     posthogCalls,
     storage,
@@ -344,6 +386,18 @@ const GOOGLE_FAILURE_REASONS = new Set([
   "csp_or_network",
   "server_error",
 ]);
+
+// §14 at-rest sweep: after any flow, no click-id material or field name may sit in sessionStorage,
+// localStorage, the stored claim, or any PostHog/GA4 call. (The in-flight claim body is the ONE
+// place they may appear, and only for the request that forwards them.)
+function assertNoClickIdsAtRest(page) {
+  assert.doesNotMatch(JSON.stringify([...page.storage.entries()]), CLICK_ID_MATERIAL, "sessionStorage never holds fbc/fbp/gclid material");
+  assert.doesNotMatch(JSON.stringify([...page.storage.entries()]), /"(?:fbc|fbp|gclid)"/, "no click-id field is ever persisted");
+  assert.deepEqual(page.localStorageWrites, [], "localStorage is never written by the gate");
+  assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls, page.identifies]), CLICK_ID_MATERIAL, "PostHog/GA4 never receive click-id values");
+  assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls]), /fbc|fbp|gclid/i, "no click-id property reaches an analytics provider");
+  assert.doesNotMatch(JSON.stringify(page.fbqCalls), /a@b\.co|founder@|s3cr3t|fb\.1\.|CjwKCAjw/, "the Meta mirror carries no email, secret, or click-id value");
+}
 
 function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
   assert.equal(GOOGLE_FAILURE_REASONS.has(reason), true, `${reason} is a bounded Google failure reason`);
@@ -426,7 +480,8 @@ function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
   assert.deepEqual(returnPage.identifies, [USER_ID], "Google claim success identifies the site PostHog person by Supabase UUID");
   assert.deepEqual(returnPage.assigned, ["/download"]);
   assert.equal(returnPage.el("gate-step-download").hidden, false);
-  assert.doesNotMatch(JSON.stringify(returnPage.fetchCalls), /SECRET|RAW_/, "claim payload carries click-id booleans only, never raw click-id values");
+  assert.doesNotMatch(JSON.stringify(returnPage.fetchCalls), /SECRET|RAW_/, "a landing-URL gclid never survives the OAuth redirect: the return URL has none and the stash holds only booleans");
+  assert.deepEqual(returnPage.fbqCalls, [], "no pixel configured → no Meta mirror");
   assert.doesNotMatch(JSON.stringify([returnPage.captures, returnPage.gtagCalls, returnPage.identifies]), /SECRET|RAW_|google-access-token|founder@example\.com|claim_id|s3cr3t/, "analytics never receive raw click ids, tokens, email, claim id, or secret");
   assert.deepEqual(
     [...survivingSessionStorage.keys()].filter((key) => key === SUPABASE_STORAGE_KEY || key.startsWith(`${SUPABASE_STORAGE_KEY}-`)),
@@ -489,6 +544,8 @@ for (const [status, error, reason] of [
     storedPkceVerifier: "pkce-verifier",
     responses: { [CLAIM_PATH]: [err(status, error)] },
     supabaseAuth: { requireCodeVerifier: true },
+    cookies: AD_COOKIES,
+    pixel: true,
   });
   await page.settle();
   assert.equal(page.el("gate-step-email").hidden, false);
@@ -500,6 +557,8 @@ for (const [status, error, reason] of [
   assert.deepEqual(page.replaced, ["/get-started"]);
   assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
   assertGoogleFailureEvent(page, reason);
+  assert.deepEqual(page.fbqCalls, [], `a ${status} claim is not a registration — nothing is mirrored to Meta`);
+  assertNoClickIdsAtRest(page);
 }
 
 {
@@ -663,7 +722,8 @@ for (const [status, error, reason] of [
   assert.deepEqual(page.assigned, ["/download"], "the download auto-starts exactly once via location.assign");
   assert.deepEqual(JSON.parse(page.storage.get(CLAIM_KEY)), { ...CLAIM, email: "founder@example.com" });
   assert.equal(page.el("gate-fallback").hidden, true);
-  assert.doesNotMatch(JSON.stringify(page.fetchCalls), /EAIa|RAW_/, "claim payload carries click-id booleans only, never raw click-id values");
+  assert.doesNotMatch(JSON.stringify(page.fetchCalls), /EAIa|RAW_/, "without Meta cookies or a URL gclid the claim carries the presence booleans only");
+  assert.deepEqual(page.fbqCalls, [], "no pixel configured → no Meta mirror");
   assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls, page.identifies]), /EAIa|RAW_|founder@example\.com|s3cr3t|claim_id/, "analytics never receive raw click ids, email as PostHog id, or handoff secrets");
   await page.click("gate-open-infinite");
   assert.deepEqual(page.assigned, [
@@ -828,7 +888,7 @@ for (const handoffContext of [null, undefined]) {
 }
 
 {
-  const page = createPage({ storedClaim: { ...CLAIM, email: "a@b.co" } });
+  const page = createPage({ storedClaim: { ...CLAIM, email: "a@b.co" }, cookies: AD_COOKIES, pixel: true });
   assert.equal(page.el("gate-step-download").hidden, false);
   assert.equal(page.el("gate-step-email").hidden, true);
   assert.equal(page.el("gate-download-email").textContent, "a@b.co");
@@ -837,6 +897,167 @@ for (const handoffContext of [null, undefined]) {
   await page.click("gate-open-infinite");
   assert.match(page.assigned[0], /^infinite:\/\/handoff\/v1\?claim_id=/);
   assert.equal(page.fetchCalls.length, 0);
+  assert.deepEqual(page.fbqCalls, [], "a refresh restores the claim without re-mirroring a registration to Meta");
+}
+
+// ── Ad conversion signals: click ids ride the claim IN FLIGHT only; Meta dedup mirror ─────────────
+// The cloud (1bu-1 #3088) sends CompleteRegistration to Meta server-side with event_id = claimId and
+// accepts optional fbc / fbp / gclid on the claim body to forward within the SAME invocation. The
+// browser's half: read Meta's own _fbc/_fbp cookies (and a gclid only if it is literally on THIS
+// page's URL) at POST time, never persist them, and after the 200 fire the same event with the same
+// eventID through the pixel so Meta collapses browser + server into one conversion.
+{
+  const page = createPage({
+    search: "?cta=hero",
+    cookies: AD_COOKIES,
+    pixel: true,
+    storedAttribution: ATTRIBUTION,
+    handoffContext: null,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  assert.deepEqual(page.fetchCalls[0].body, { email: "a@b.co" }, "the OTP request carries no click ids — only the claim that mints does");
+  page.el("gate-code").value = "123456";
+  await page.submit("gate-form-code");
+  assert.deepEqual(page.fetchCalls[1].body, {
+    email: "a@b.co",
+    token: "123456",
+    challenge: "c",
+    ctaLocation: "hero",
+    ...CLAIM_ATTRIBUTION,
+    fbc: FBC_COOKIE,
+    fbp: FBP_COOKIE,
+  }, "Meta's own _fbc/_fbp cookie values are read at POST time and forwarded verbatim; the presence booleans stay; no gclid because none is on this page's URL");
+  assert.equal("gclid" in page.fetchCalls[1].body, false, "gclid is omitted, not sent empty");
+  assert.deepEqual(page.fbqCalls, [META_MIRROR], "the browser mirror is CompleteRegistration with eventID = the server's claim id, and empty custom data");
+  const claimAt = page.timeline.findIndex(([kind, path]) => kind === "fetch" && path === CLAIM_PATH);
+  const mirrorAt = page.timeline.findIndex(([kind]) => kind === "fbq");
+  assert.ok(claimAt !== -1 && mirrorAt > claimAt, "the mirror fires only after the claim request, never before");
+  assert.deepEqual(page.identifies, [USER_ID]);
+  assert.deepEqual(page.assigned, ["/download"]);
+  assert.equal(page.el("gate-step-download").hidden, false);
+  assertNoClickIdsAtRest(page);
+}
+{
+  const page = createPage({
+    search: "?code=pkce-code&state=supabase-state",
+    cookies: AD_COOKIES,
+    pixel: true,
+    storedGoogleContext: { ctaLocation: "pricing", gateMethod: "google" },
+    storedPkceVerifier: "pkce-verifier",
+    responses: { [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    supabaseAuth: { requireCodeVerifier: true },
+  });
+  await page.settle();
+  assert.deepEqual(page.fetchCalls[0].body, {
+    accessToken: "google-access-token",
+    ctaLocation: "pricing",
+    fbc: FBC_COOKIE,
+    fbp: FBP_COOKIE,
+  }, "the Google proof path forwards the same cookies; the OAuth return URL never carries a gclid");
+  assert.deepEqual(page.fbqCalls, [META_MIRROR], "the Google path mirrors the registration with the same claim id");
+  const claimAt = page.timeline.findIndex(([kind, path]) => kind === "fetch" && path === CLAIM_PATH);
+  assert.ok(page.timeline.findIndex(([kind]) => kind === "fbq") > claimAt, "the mirror fires after the claim, on the Google path too");
+  assert.deepEqual(page.assigned, ["/download"]);
+  assert.deepEqual(
+    [...page.storage.keys()].filter((key) => key === SUPABASE_STORAGE_KEY || key.startsWith(`${SUPABASE_STORAGE_KEY}-`)),
+    [],
+    "the Supabase purge still runs with the ad-signal additions",
+  );
+  assertNoClickIdsAtRest(page);
+}
+{
+  const page = createPage({
+    search: `?cta=hero&gclid=${GCLID}&fbclid=IwAR0urlonly`,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "123456";
+  await page.submit("gate-form-code");
+  assert.deepEqual(page.fetchCalls[1].body, {
+    email: "a@b.co",
+    token: "123456",
+    challenge: "c",
+    ctaLocation: "hero",
+    gclid: GCLID,
+  }, "a gclid is forwarded ONLY when it is literally on the /get-started URL at POST time; a URL fbclid is never synthesised into fbc and no cookie means no fbc/fbp");
+  assert.deepEqual(page.fbqCalls, [], "no pixel → no mirror, and the gate still completes");
+  assert.deepEqual(page.assigned, ["/download"]);
+  assertNoClickIdsAtRest(page);
+}
+{
+  const page = createPage({
+    search: `?cta=hero&gclid=${encodeURIComponent("has spaces;and=semicolons")}`,
+    cookies: `_fbc=fb.1.notms.IwAR0bad; _fbp=fb.1.1725350400000.${"A".repeat(513)}`,
+    pixel: true,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "123456";
+  await page.submit("gate-form-code");
+  assert.deepEqual(
+    Object.keys(page.fetchCalls[1].body).sort(),
+    ["challenge", "ctaLocation", "email", "token"],
+    "values failing Meta's fb.<idx>.<ms>.<payload> cookie shape or the URL-safe gclid shape (the cloud's exact rules) never leave the browser",
+  );
+  assert.deepEqual(page.fbqCalls, [META_MIRROR], "the mirror does not depend on the cookies");
+  assert.deepEqual(page.assigned, ["/download"]);
+}
+{
+  const page = createPage({
+    cookies: new Error("SecurityError: cookies are blocked"),
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "123456";
+  await page.submit("gate-form-code");
+  assert.deepEqual(
+    Object.keys(page.fetchCalls[1].body).sort(),
+    ["challenge", "ctaLocation", "email", "token"],
+    "blocked cookie access is not an error: the optional fields are simply omitted",
+  );
+  assert.deepEqual(page.assigned, ["/download"], "the gate completes exactly as before");
+  assert.equal(page.el("gate-step-download").hidden, false);
+  assert.equal(page.el("gate-fallback").hidden, true);
+}
+{
+  const page = createPage({
+    consent: "withheld",
+    search: `?gclid=${GCLID}`,
+    cookies: AD_COOKIES,
+    pixel: true,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "123456";
+  await page.submit("gate-form-code");
+  assert.deepEqual(
+    Object.keys(page.fetchCalls[1].body).sort(),
+    ["challenge", "ctaLocation", "email", "token"],
+    "without a consent grant (DNT/GPC undecided, saved denial) no ad-network identifier is read or forwarded — the hashed-email conversion stays the server's business",
+  );
+  assert.deepEqual(page.fbqCalls, [], "a withheld consent gate means no Meta mirror even if a stale fbq exists");
+  assert.deepEqual(page.assigned, ["/download"], "the flow itself is not consent-gated");
+  assertNoClickIdsAtRest(page);
+}
+{
+  const page = createPage({
+    cookies: AD_COOKIES,
+    pixel: true,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [err(400, "Invalid or expired code")] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "999999";
+  await page.submit("gate-form-code");
+  assert.deepEqual(page.fbqCalls, [], "a rejected code is not a registration — nothing is mirrored");
+  assert.equal(page.el("gate-fallback").hidden, true);
+  assertNoClickIdsAtRest(page);
 }
 {
   const page = createPage({ storedClaim: { claimId: "x" } });

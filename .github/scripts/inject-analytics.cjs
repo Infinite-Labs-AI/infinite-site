@@ -54,7 +54,7 @@ void (async () => {
     ga4,
     ga4DownloadSnippet(process.env.GOOGLE_ANALYTICS_TAG_ID),
     xPixelSnippet(process.env.X_PIXEL_ID),
-    metaPixelSnippet(process.env.META_PIXEL_ID),
+    metaPixelSnippet(resolveMetaPixelId(process.env.INFINITE_META_PIXEL_ID)),
     runtime,
     privacyConsentPromptSnippet(productionHosts),
   ].filter(Boolean);
@@ -79,6 +79,22 @@ void (async () => {
 
 function nonEmpty(value) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+// The Meta pixel is DARK until configured — no default, no placeholder. INFINITE_META_PIXEL_ID is the
+// numeric Pixel/Dataset ID from Meta Events Manager (Data sources → the infinite.fast pixel → Settings),
+// set on the site's Vercel project only. The retired META_PIXEL_ID name is deliberately not read, so a
+// stale value there can never resurrect the pixel. A value that is not a real-shaped id fails the build
+// loudly: a pixel bootstrapped with a wrong id looks alive while sending every event into nowhere.
+function resolveMetaPixelId(value) {
+  const pixelId = nonEmpty(value);
+  if (!pixelId) return undefined;
+  if (!/^[0-9]{15,16}$/.test(pixelId)) {
+    throw new Error(
+      "INFINITE_META_PIXEL_ID must be the numeric 15-16 digit Meta Pixel/Dataset ID from Events Manager (Data sources → pixel → Settings); refusing to ship an unrecognisable pixel id.",
+    );
+  }
+  return pixelId;
 }
 
 function parseProductionHosts(value) {
@@ -473,6 +489,10 @@ function xPixelSnippet(pixelId) {
   </script>`;
 }
 
+// Present only when resolveMetaPixelId() returned a real id. Besides PageView, the pixel exists so
+// /get-started can fire fbq("track", "CompleteRegistration", {}, { eventID: claimId }) after a claim
+// mints — the same event_id the cloud sends through the Conversions API, so Meta dedups browser+server
+// into one conversion. Without this snippet window.fbq is undefined and that mirror is a guarded no-op.
 function metaPixelSnippet(pixelId) {
   if (!pixelId) return "";
   return `  <!-- Meta Pixel Code -->

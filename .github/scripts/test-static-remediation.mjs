@@ -134,9 +134,18 @@ assert.match(injector, /window\.__infiniteConsentGate = function/);
 assert.match(injector, /typeof window\.gtag !== "function"/);
 assert.match(injector, /window\.infinitePrivacyChoices = renderWhenReady/);
 assert.match(injector, /hosts\.indexOf\(location\.hostname\.toLowerCase\(\)/);
+// Meta pixel (2026-09-03): dark until INFINITE_META_PIXEL_ID is set on the Vercel project. The
+// retired META_PIXEL_ID name is not read, no placeholder id exists anywhere in the build, and the
+// deploy script never defaults the pixel id the way it defaults GA4/PostHog.
+assert.match(injector, /process\.env\.INFINITE_META_PIXEL_ID/, "the Meta pixel id comes from INFINITE_META_PIXEL_ID only");
+assert.doesNotMatch(injector, /process\.env\.META_PIXEL_ID/, "the retired META_PIXEL_ID name must not be read");
+assert.doesNotMatch(injector, /1234567890/, "no placeholder pixel id in the injector");
 const deployPreparation = read("scripts/prepare-static-deploy.cjs");
 assert.match(deployPreparation, /execFileSync\(process\.execPath, \[path\.join\(repoRoot, "\.github\/scripts\/inject-analytics\.cjs"\)\]/);
 assert.doesNotMatch(deployPreparation, /require\(path\.join\(repoRoot, "\.github\/scripts\/inject-analytics\.cjs"\)\)/);
+assert.match(deployPreparation, /INFINITE_META_PIXEL_ID/, "the deploy script documents where the pixel id comes from");
+assert.doesNotMatch(deployPreparation, /META_PIXEL_ID\s*(?:\|\|=|=)/, "the deploy script must never default or assign a pixel id — a fake id must never ship again");
+assert.doesNotMatch(deployPreparation, /1234567890/, "no placeholder pixel id in the deploy script");
 
 const homepage = read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html");
 assert.match(homepage, /data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation"/);
@@ -175,6 +184,15 @@ assert.match(privacy, /<strong>Get-started sign-in handoff:<\/strong>/);
 assert.match(privacy, /one-time sign-in grant.*48 hours.*redeemed once/is);
 assert.match(privacy, /Google sign-in via Supabase Auth.*session storage.*purges every Supabase auth key/is);
 assert.match(privacy, /never writes Google tokens to local storage/is);
+// Ad conversion measurement (2026-09-03): the Meta pixel exists only when configured; at sign-up the
+// browser forwards Meta's own cookies to our server in the claim request and we do not store them;
+// the server reports the conversion to Meta / Google with a one-way hash of the verified email.
+assert.match(privacy, /<strong>Advertising conversion measurement:<\/strong>/);
+assert.match(privacy, /Advertising conversion measurement:.*Meta pixel.*only when.*configured/is);
+assert.match(privacy, /Advertising conversion measurement:.*<code>_fbc<\/code>.*<code>_fbp<\/code>.*same request.*not store/is);
+assert.match(privacy, /Advertising conversion measurement:.*one-way hash of the verified email/is);
+assert.match(privacy, /Advertising conversion measurement:.*Google click identifier.*only if.*get-started/is);
+assert.match(privacy, /Advertising conversion measurement:.*(?:consent|permitted|grant)/is, "the ad-signal forwarding is described as consent-qualified");
 assert.match(privacy, /one-way hash of the claim secret \(never the secret itself\)/);
 assert.match(privacy, /removed after 90 days/);
 assert.doesNotMatch(privacy, /Desktop handoff attribution|cannot sign you in/, "the anonymous-attribution wording is gone");
@@ -210,9 +228,18 @@ assert.match(ledgerContract, /## Get-started sign-in handoff/);
 assert.match(ledgerContract, /\/infinite\/auth\/otp.*\/infinite\/auth\/handoff\/claim/is);
 assert.match(ledgerContract, /accessToken.*invalid_token.*google_provider_required/is);
 assert.doesNotMatch(ledgerContract, new RegExp(`${retiredBuildFlag}|Wave 2, dormant`));
+// Ad conversion signals (2026-09-03): the claim body's optional in-flight fields, the env-gated pixel,
+// and the dedup mirror contract are documented where the claim contract lives.
+assert.match(ledgerContract, /## Ad conversion signals/);
+assert.match(ledgerContract, /fbc\?, fbp\?, gclid\?/, "both claim POST shapes document the optional in-flight click-id fields");
+assert.match(ledgerContract, /INFINITE_META_PIXEL_ID/);
+assert.match(ledgerContract, /fbq\("track", "CompleteRegistration", \{\}, \{ eventID: claimId \}\)/);
+assert.match(ledgerContract, /in flight.*never at rest/is);
+assert.match(ledgerContract, /gclid.*only (?:if|when) it is\s+literally on the `\/get-started` URL/is);
 assert.match(dataInventory, /app_download_click.*bounded CTA location.*destination path/is);
 assert.doesNotMatch(dataInventory, /download placement is unavailable/i);
 assert.match(dataInventory, /Get-started sign-in claim/);
+assert.match(dataInventory, /In-flight ad click identifiers/, "the inventory names the click ids that pass through without resting");
 assert.match(dataInventory, /Google sign-in via Supabase Auth.*sessionStorage.*purges every Supabase auth key/is);
 assert.match(dataInventory, /never writes Google tokens to local storage/is);
 assert.doesNotMatch(dataInventory, new RegExp(retiredBuildFlag));

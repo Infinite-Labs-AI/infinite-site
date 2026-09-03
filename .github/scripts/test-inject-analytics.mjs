@@ -50,6 +50,9 @@ try {
     POSTHOG_PROJECT_TOKEN: "phc_test_project_token",
     GOOGLE_ANALYTICS_TAG_ID: "G-TEST1234",
     X_PIXEL_ID: "x-test-pixel",
+    // The Meta pixel id comes from INFINITE_META_PIXEL_ID ONLY (a real-shaped 15-digit id here). The
+    // retired META_PIXEL_ID name is set to its old placeholder to prove it can no longer light anything.
+    INFINITE_META_PIXEL_ID: "123456789012345",
     META_PIXEL_ID: "1234567890",
     INFINITE_SITE_SOURCE_KEY: "site_synthetic_test",
     INFINITE_PRODUCTION_HOSTS: "infinite.fast,www.infinite.fast",
@@ -67,6 +70,8 @@ try {
     assert.equal((html.match(/www\.googletagmanager\.com\/gtag\/js/g) ?? []).length, 1, "one direct GA loader definition per page");
     assert.equal((html.match(/twq\("config"/g) ?? []).length, 1, "one optional X pixel per page");
     assert.equal((html.match(/fbq\("init"/g) ?? []).length, 1, "one optional Meta pixel per page");
+    assert.match(html, /fbq\("init", "123456789012345"\)/, "the pixel bootstraps with the INFINITE_META_PIXEL_ID value");
+    assert.doesNotMatch(html, /1234567890"/, "the retired META_PIXEL_ID name (and its placeholder) never reaches a page");
     assert.doesNotMatch(html, /send_page_view:\s*false/);
     assert.doesNotMatch(html, /data-infinite-consent-controller="managed"/);
     assert.match(html, /"consent":\{"mode":"not_required"\}/);
@@ -283,9 +288,17 @@ try {
       INFINITE_PRODUCTION_HOSTS: "infinite.fast",
       INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact("site_production_dormant", ["infinite.fast"]),
       VERCEL_ENV: "production",
+      // No INFINITE_META_PIXEL_ID: the pixel must be completely absent even with the retired name set.
+      META_PIXEL_ID: "1234567890",
     });
     const dormantHtml = readFileSync(join(dormantDir, "dist/index.html"), "utf8");
     assert.doesNotMatch(dormantHtml, /"siteSourceKey":/);
+    assert.doesNotMatch(
+      dormantHtml,
+      /fbq|connect\.facebook\.net|fbevents\.js|Meta Pixel Code/,
+      "without INFINITE_META_PIXEL_ID the page carries zero Meta bytes — the retired META_PIXEL_ID name is not read",
+    );
+    assert.equal((dormantHtml.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 2, "only PostHog and GA4 are gated lanes when no pixel is configured");
     const dormant = executeAnalytics(dormantHtml, { storedConsent: "granted" });
     assert.equal(dormant.infiniteBodies.length, 0, "missing source key keeps Infinite dormant");
     assert.equal(dormant.gaConfigs().length, 1, "missing Infinite source does not disable GA4");
@@ -378,6 +391,31 @@ try {
     );
   } finally {
     rmSync(wrongKeyDir, { recursive: true, force: true });
+  }
+
+  // ── Meta pixel id must be a real Events Manager id ───────────────────────────────────────────
+  // A pixel bootstrapped with a wrong id looks alive and sends every event into nowhere, so the
+  // build fails loudly instead. Meta Pixel/Dataset IDs are 15-16 digit numbers; the old
+  // "1234567890" placeholder is exactly the kind of value this refuses.
+  for (const badPixelId of ["1234567890", "pixel-123456789012345", "12345678901234567"]) {
+    const badPixelDir = mkdtempSync(join(tmpdir(), "infinite-analytics-bad-pixel-"));
+    try {
+      mkdirSync(join(badPixelDir, "dist"), { recursive: true });
+      writeFileSync(join(badPixelDir, "dist/index.html"), page("Bad pixel"));
+      assert.throws(
+        () => runInjector(badPixelDir, {
+          INFINITE_PRODUCTION_HOSTS: "infinite.fast",
+          INFINITE_SITE_SOURCE_ARTIFACT: sourceArtifact("site_production", ["infinite.fast"]),
+          VERCEL_ENV: "production",
+          INFINITE_META_PIXEL_ID: badPixelId,
+        }),
+        (error) => String(error.stderr).includes("INFINITE_META_PIXEL_ID"),
+        `INFINITE_META_PIXEL_ID=${JSON.stringify(badPixelId)} must fail the build with a message naming the variable`,
+      );
+      assert.doesNotMatch(readFileSync(join(badPixelDir, "dist/index.html"), "utf8"), /fbq/, "a refused pixel id injects nothing");
+    } finally {
+      rmSync(badPixelDir, { recursive: true, force: true });
+    }
   }
 
   // ── Wave 2 browser-led handoff is RETIRED (2026-09-03) ───────────────────────────────────────

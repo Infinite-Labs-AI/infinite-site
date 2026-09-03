@@ -52,9 +52,14 @@ It calls the cloud through same-origin rewrites, so no CORS exists:
 
 ```text
 POST /infinite/auth/otp            -> https://api.ultima.inc/api/auth/otp             { email }                 -> { ok, challenge }
-POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { email, token, challenge, anonymousId?, sessionId?, ctaLocation? } -> { claimId, secret, expiresAt, emailSent }
-POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { accessToken, anonymousId?, sessionId?, ctaLocation? }              -> { claimId, secret, expiresAt, emailSent }
+POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { email, token, challenge, anonymousId?, sessionId?, ctaLocation?, fbc?, fbp?, gclid? } -> { claimId, secret, expiresAt, emailSent, userId }
+POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { accessToken, anonymousId?, sessionId?, ctaLocation?, fbc?, fbp?, gclid? }              -> { claimId, secret, expiresAt, emailSent, userId }
 ```
+
+(Both claim shapes also carry the first-touch campaign fields - `utmSource` … `landingPath` and the
+`hasGclid` / `hasFbclid` / `hasMsclkid` / `hasTtclid` presence booleans - described below. `fbc?`, `fbp?`,
+`gclid?` are the in-flight ad click identifiers of the "Ad conversion signals" section; the server
+drops malformed values silently, never a 400.)
 
 A claim is minted **only after Google verifies server-side or the code verifies** (the same challenge
 HMAC and `profiles` ensure as `/api/auth/otp/verify`); a typed email alone never yields anything. The
@@ -91,6 +96,40 @@ page's own funnel events - `gate_email_submitted`,
 Fail-open: the page's source renders a plain `<a href="/download">` link; a successfully initialised
 script hides it, and any script failure, network failure or 5xx reveals it again. A wrong or
 expired code (400) and a rate limit (429) do not - the gate is hard by design.
+
+## Ad conversion signals
+
+The cloud (1bu-1 PR #3088) reports two identified conversions server-side - Meta Conversions API
+`CompleteRegistration` with `event_id = claimId` at claim mint and `Purchase` with
+`event_id = <subscription id>` at the first paid invoice, plus the Google Ads equivalents (Data Manager
+API enhanced conversions) - keyed by `sha256(email)` only. The site owns three browser-side pieces:
+
+1. **Pixel, dark until configured.** `.github/scripts/inject-analytics.cjs` bootstraps the Meta pixel
+   only when `INFINITE_META_PIXEL_ID` (the numeric Pixel/Dataset ID from Meta Events Manager → Data
+   sources → the infinite.fast pixel → Settings) is set on the site's Vercel project. There is no
+   default and no placeholder: absent env ⇒ no `fbq`, no `connect.facebook.net` request. A value that
+   is not a 15-16 digit id fails the build. The retired `META_PIXEL_ID` name is not read. When present,
+   the pixel is the third lane behind `window.__infiniteConsentGate`, exactly like GA4 and PostHog.
+2. **Click ids in flight, never at rest.** At the moment of each claim POST (both proof paths), and
+   only when the consent gate has started analytics, `/get-started` reads `fbc` / `fbp` from Meta's
+   own `_fbc` / `_fbp` first-party cookies and `gclid` from `location.search` - i.e. only if it is
+   literally on the `/get-started` URL at POST time, which it normally is not (it lives on the landing
+   URL, and the first-touch stash deliberately keeps only `has_gclid`). Values are shape-checked with
+   the cloud's exact rules (`fb.<idx>.<ms>.<payload>`; URL-safe gclid) and sent as optional body
+   fields so the SAME server invocation can forward them to Meta / Google and let go. They are never
+   written to `sessionStorage` / `localStorage`, never sent to PostHog / GA4, never logged;
+   `.github/scripts/test-get-started-page.mjs` sweeps both storages and every analytics call after
+   each flow. Consequence: gclid forwarding is effectively off by design, and Google attribution
+   rides enhanced conversions (hashed email) instead.
+3. **Dedup mirror.** After the claim `200` - never before - and only when `window.fbq` exists (pixel
+   configured + consent started), the page fires
+   `fbq("track", "CompleteRegistration", {}, { eventID: claimId })` with the SAME event id the cloud
+   uses server-side, so Meta collapses browser + server into one conversion. Custom data is empty: no
+   email, no secret. There is no browser `Purchase` mirror (it completes in Stripe Checkout).
+
+Gate invariant: every piece is additive. Cookie-less visitors, blocked cookie access, a withheld
+consent gate and an unconfigured pixel all complete the gate exactly as before; the claim body only
+ever gains optional fields.
 
 ## Consent and privacy signals
 
