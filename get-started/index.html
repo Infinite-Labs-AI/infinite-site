@@ -199,7 +199,7 @@
             <p id="gate-email-error" class="error" role="alert" hidden></p>
             <button id="gate-submit-email" class="button" type="submit">Continue</button>
           </form>
-          <p class="fine">Google sign-in uses Supabase Auth; the site never stores your Google token. Email sends a 6-digit code. <a href="../privacy/">Privacy</a></p>
+          <p class="fine">Google sign-in uses Supabase Auth; any same-tab token storage is purged after verification. Email sends a 6-digit code. <a href="../privacy/">Privacy</a></p>
         </section>
 
         <section id="gate-step-code" aria-labelledby="gate-code-label" hidden>
@@ -248,7 +248,8 @@
       var SUPABASE_URL = "https://wdxjduorvpayxixpmskf.supabase.co";
       var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkeGpkdW9ydnBheXhpeHBtc2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0Njc0NzMsImV4cCI6MjA4MzA0MzQ3M30.wTsxXgy784NHWjFxox1jkfiNZ4vXydEzlumC5v8NMtA";
       var SUPABASE_REDIRECT_TO = "https://infinite.fast/get-started";
-      var SUPABASE_PKCE_VERIFIER_KEY = "sb-wdxjduorvpayxixpmskf-auth-token-code-verifier";
+      var SUPABASE_STORAGE_KEY = "sb-wdxjduorvpayxixpmskf-auth-token";
+      var SUPABASE_PKCE_VERIFIER_KEY = SUPABASE_STORAGE_KEY + "-code-verifier";
       var ALLOWED_CTA_LOCATIONS = {
         "get-started": true,
         navigation: true,
@@ -415,20 +416,20 @@
       function authStorage() {
         return {
           getItem: function (key) {
-            if (key === SUPABASE_PKCE_VERIFIER_KEY) {
+            if (key === SUPABASE_STORAGE_KEY || key.indexOf(SUPABASE_STORAGE_KEY + "-") === 0) {
               try { return sessionStorage.getItem(key); } catch (_error) { return null; }
             }
             return Object.prototype.hasOwnProperty.call(supabaseMemory, key) ? supabaseMemory[key] : null;
           },
           setItem: function (key, value) {
-            if (key === SUPABASE_PKCE_VERIFIER_KEY) {
+            if (key === SUPABASE_STORAGE_KEY || key.indexOf(SUPABASE_STORAGE_KEY + "-") === 0) {
               try { sessionStorage.setItem(key, String(value)); } catch (_error) {}
               return;
             }
             supabaseMemory[key] = String(value);
           },
           removeItem: function (key) {
-            if (key === SUPABASE_PKCE_VERIFIER_KEY) {
+            if (key === SUPABASE_STORAGE_KEY || key.indexOf(SUPABASE_STORAGE_KEY + "-") === 0) {
               try { sessionStorage.removeItem(key); } catch (_error) {}
               delete supabaseMemory[key];
               return;
@@ -437,16 +438,28 @@
           }
         };
       }
-      function clearPkceVerifier() {
+      function purgeSupabaseAuthStorage() {
+        try {
+          for (var index = sessionStorage.length - 1; index >= 0; index -= 1) {
+            var key = sessionStorage.key(index);
+            if (key === SUPABASE_STORAGE_KEY || (key && key.indexOf(SUPABASE_STORAGE_KEY + "-") === 0)) {
+              sessionStorage.removeItem(key);
+            }
+          }
+        } catch (_error) {}
         try { sessionStorage.removeItem(SUPABASE_PKCE_VERIFIER_KEY); } catch (_error) {}
+        delete supabaseMemory[SUPABASE_STORAGE_KEY];
         delete supabaseMemory[SUPABASE_PKCE_VERIFIER_KEY];
+        delete supabaseMemory[SUPABASE_STORAGE_KEY + "-user"];
       }
       function getSupabaseClient() {
         if (supabaseClient) return supabaseClient;
         if (!window.supabase || typeof window.supabase.createClient !== "function") throw new Error("Supabase Auth is unavailable");
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
           auth: {
-            persistSession: false,
+            // PKCE redirects destroy page memory, so Supabase must use the sessionStorage-backed
+            // adapter. We purge every Supabase auth key immediately after the claim attempt.
+            persistSession: true,
             autoRefreshToken: false,
             detectSessionInUrl: false,
             flowType: "pkce",
@@ -491,7 +504,7 @@
       }
       function handleGoogleError(reason) {
         cleanOAuthUrl();
-        clearPkceVerifier();
+        purgeSupabaseAuthStorage();
         googleButton.disabled = false;
         showGoogleFallback(reason || "oauth_error", false);
       }
@@ -529,7 +542,7 @@
           if (result && result.error) throw result.error;
         }).catch(function () {
           googleButton.disabled = false;
-          clearPkceVerifier();
+          purgeSupabaseAuthStorage();
           showGoogleFallback("oauth_start_failed", false);
         });
       });
@@ -641,7 +654,7 @@
             return null;
           }).then(function () {
             cleanOAuthUrl();
-            clearPkceVerifier();
+            purgeSupabaseAuthStorage();
             googleButton.disabled = false;
           });
         }

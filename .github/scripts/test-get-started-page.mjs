@@ -49,6 +49,7 @@ assert.deepEqual(scriptSources, ["/assets/supabase-js-2.89.0.js"], "Supabase JS 
 // value, textContent, href, addEventListener, focus) so this harness stays small and honest.
 const CLAIM_KEY = "infinite_get_started_claim";
 const GOOGLE_CONTEXT_KEY = "infinite_get_started_google_context";
+const SUPABASE_STORAGE_KEY = "sb-wdxjduorvpayxixpmskf-auth-token";
 const PKCE_VERIFIER_KEY = "sb-wdxjduorvpayxixpmskf-auth-token-code-verifier";
 const OTP_PATH = "/infinite/auth/otp";
 const CLAIM_PATH = "/infinite/auth/handoff/claim";
@@ -65,6 +66,7 @@ function createPage({
   storedClaim,
   storedGoogleContext,
   storedPkceVerifier,
+  existingSessionStorage,
   search = "",
   supabaseAuth = {},
 } = {}) {
@@ -103,11 +105,10 @@ function createPage({
   const replaced = [];
   const captures = [];
   const gtagCalls = [];
-  const storage = new Map([
-    ...(storedClaim ? [[CLAIM_KEY, JSON.stringify(storedClaim)]] : []),
-    ...(storedGoogleContext ? [[GOOGLE_CONTEXT_KEY, JSON.stringify(storedGoogleContext)]] : []),
-    ...(storedPkceVerifier ? [[PKCE_VERIFIER_KEY, storedPkceVerifier]] : []),
-  ]);
+  const storage = existingSessionStorage ?? new Map();
+  if (storedClaim) storage.set(CLAIM_KEY, JSON.stringify(storedClaim));
+  if (storedGoogleContext) storage.set(GOOGLE_CONTEXT_KEY, JSON.stringify(storedGoogleContext));
+  if (storedPkceVerifier) storage.set(PKCE_VERIFIER_KEY, storedPkceVerifier);
   const localStorageWrites = [];
   const supabaseCalls = {
     createClient: [],
@@ -125,36 +126,49 @@ function createPage({
       createClient: (url, key, options) => {
         supabaseCalls.createClient.push({ url, key, options: cloneJson(options) });
         assert.notEqual(options.auth.storage, context.localStorage, "Supabase auth must not receive localStorage");
-        assert.equal(options.auth.persistSession, false);
+        assert.equal(options.auth.persistSession, true, "PKCE requires persisted custom storage across the Google redirect");
         assert.equal(options.auth.autoRefreshToken, false);
         assert.equal(options.auth.detectSessionInUrl, false, "manual exchange owns the callback so Supabase cannot consume the verifier before claim minting");
         assert.equal(options.auth.flowType, "pkce");
+        const supabaseMemoryStorage = new Map();
+        const effectiveAuthStorage = options.auth.persistSession
+          ? options.auth.storage
+          : {
+              getItem: (itemKey) => supabaseMemoryStorage.get(itemKey) ?? null,
+              setItem: (itemKey, value) => supabaseMemoryStorage.set(itemKey, String(value)),
+              removeItem: (itemKey) => supabaseMemoryStorage.delete(itemKey),
+            };
         if (options.auth.detectSessionInUrl && context.location.search.includes("code=")) {
           supabaseCalls.autoExchange.push(new URLSearchParams(context.location.search).get("code"));
-          options.auth.storage.removeItem(PKCE_VERIFIER_KEY);
+          effectiveAuthStorage.removeItem(PKCE_VERIFIER_KEY);
         }
-        options.auth.storage.setItem("supabase.probe", "memory-only");
-        authStorageProbeValues.push(options.auth.storage.getItem("supabase.probe"));
+        effectiveAuthStorage.setItem("supabase.probe", "memory-only");
+        authStorageProbeValues.push(effectiveAuthStorage.getItem("supabase.probe"));
         return {
           auth: {
             signInWithOAuth: (args) => {
               supabaseCalls.signInWithOAuth.push(cloneJson(args));
-              options.auth.storage.setItem(PKCE_VERIFIER_KEY, "pkce-verifier");
+              effectiveAuthStorage.setItem(PKCE_VERIFIER_KEY, "pkce-verifier");
               if (supabaseAuth.signInWithOAuth instanceof Error) return Promise.resolve({ data: null, error: supabaseAuth.signInWithOAuth });
               return Promise.resolve(supabaseAuth.signInWithOAuth ?? { data: { provider: "google" }, error: null });
             },
             exchangeCodeForSession: (code) => {
               supabaseCalls.exchangeCodeForSession.push(code);
-              if (supabaseAuth.requireCodeVerifier && options.auth.storage.getItem(PKCE_VERIFIER_KEY) !== "pkce-verifier") {
+              if (supabaseAuth.requireCodeVerifier && effectiveAuthStorage.getItem(PKCE_VERIFIER_KEY) !== "pkce-verifier") {
                 return Promise.resolve({ data: null, error: new Error("pkce_code_verifier_not_found") });
               }
               if (supabaseAuth.exchangeCodeForSession instanceof Error) return Promise.resolve({ data: null, error: supabaseAuth.exchangeCodeForSession });
+              effectiveAuthStorage.setItem(SUPABASE_STORAGE_KEY, JSON.stringify({ access_token: "google-access-token" }));
+              effectiveAuthStorage.setItem(`${SUPABASE_STORAGE_KEY}-user`, JSON.stringify({ user: { id: "google-user" } }));
+              effectiveAuthStorage.setItem(`${SUPABASE_STORAGE_KEY}-refresh-probe`, "refresh-token-probe");
               return Promise.resolve(
                 supabaseAuth.exchangeCodeForSession ?? { data: { session: { access_token: "google-access-token" } }, error: null },
               );
             },
             signOut: (args) => {
               supabaseCalls.signOut.push(cloneJson(args));
+              effectiveAuthStorage.removeItem(SUPABASE_STORAGE_KEY);
+              effectiveAuthStorage.removeItem(`${SUPABASE_STORAGE_KEY}-user`);
               return Promise.resolve({ error: supabaseAuth.signOutError ?? null });
             },
           },
@@ -187,6 +201,10 @@ function createPage({
       getItem: (key) => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, String(value)),
       removeItem: (key) => storage.delete(key),
+      key: (index) => [...storage.keys()][index] ?? null,
+      get length() {
+        return storage.size;
+      },
     },
     localStorage: {
       getItem: () => null,
@@ -289,6 +307,44 @@ const err = (status, error) => ({ status, body: { error } });
   assert.doesNotMatch(page.storage.get(GOOGLE_CONTEXT_KEY), /SECRET|FBSECRET/, "click id values are not stored across the OAuth redirect");
   assert.deepEqual(page.captures, [["gate_google_started", { cta_location: "pricing" }]]);
   assert.deepEqual(page.gtagCalls, page.captures.map(([name, properties]) => ["event", name, properties]));
+}
+
+{
+  const survivingSessionStorage = new Map();
+  const firstPage = createPage({
+    search: "?cta=hero&utm_source=x&utm_medium=cpc&utm_campaign=fall&gclid=SECRET",
+    existingSessionStorage: survivingSessionStorage,
+  });
+  await firstPage.click("gate-google");
+  assert.equal(
+    survivingSessionStorage.get(PKCE_VERIFIER_KEY),
+    "pkce-verifier",
+    "the PKCE verifier must be in sessionStorage before Google destroys the page context",
+  );
+
+  const returnPage = createPage({
+    search: "?code=pkce-code&state=supabase-state",
+    existingSessionStorage: survivingSessionStorage,
+    handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1" },
+    responses: { [CLAIM_PATH]: [ok(CLAIM)] },
+    supabaseAuth: { requireCodeVerifier: true },
+  });
+  await returnPage.settle();
+  assert.deepEqual(returnPage.supabaseCalls.exchangeCodeForSession, ["pkce-code"]);
+  assert.deepEqual(returnPage.fetchCalls[0].body, {
+    accessToken: "google-access-token",
+    ctaLocation: "hero",
+    anonymousId: "anon-1",
+    sessionId: "sess-1",
+  });
+  assert.deepEqual(returnPage.assigned, ["/download"]);
+  assert.equal(returnPage.el("gate-step-download").hidden, false);
+  assert.deepEqual(
+    [...survivingSessionStorage.keys()].filter((key) => key === SUPABASE_STORAGE_KEY || key.startsWith(`${SUPABASE_STORAGE_KEY}-`)),
+    [],
+    "Supabase PKCE/session keys are purged from sessionStorage immediately after the claim POST resolves",
+  );
+  assert.deepEqual(returnPage.localStorageWrites, [], "the OAuth redirect path never writes Supabase state to localStorage");
 }
 
 {

@@ -44,10 +44,10 @@ now fail if those bytes ever reappear. The cloud attribution routes
 
 `/get-started` (a static page built like every other, spec:
 `1bu-1/docs/superpowers/specs/2026-09-03-email-gated-download-design.md`) gates the installer behind
-Google sign-in or an emailed 6-digit code. Google sign-in uses Supabase Auth; the site never stores
-the visitor's Google token, keeps OAuth tokens in memory, stores only the PKCE code verifier in
-same-tab `sessionStorage` across the redirect, clears that verifier after return, and signs out
-locally immediately after the one-time claim is minted.
+Google sign-in or an emailed 6-digit code. Google sign-in uses Supabase Auth with same-tab
+`sessionStorage` for the PKCE redirect exchange; OAuth tokens may live there only for the few
+seconds needed to mint the one-time claim, then the page signs out locally and purges every
+Supabase auth key. The site never writes Google tokens to local storage.
 It calls the cloud through same-origin rewrites, so no CORS exists:
 
 ```text
@@ -81,8 +81,8 @@ at `/get-started?cta=<origin>` and carry `data-analytics-cta-id="get-started"` p
 emits `site_click` only from that pair). `/get-started` sends the bounded origin token as
 `ctaLocation` on both email and Google claim POSTs; direct or invalid entries fall back to
 `get-started`. Before the Google OAuth redirect, the page stores only the origin CTA, UTM source /
-medium / campaign values, click-id presence booleans, `gate_method=google`, and Supabase's PKCE
-code verifier in `sessionStorage`; it never stores raw click-id values or OAuth tokens there. The
+medium / campaign values, click-id presence booleans, `gate_method=google`, and Supabase's same-tab
+PKCE state in `sessionStorage`; it never stores raw click-id values or OAuth tokens in local storage. The
 page's own funnel events - `gate_email_submitted`,
 `gate_code_verified`, `gate_google_started`, `gate_google_completed`, `gate_google_failed { reason }`,
 `gate_download_started { trigger }`, `handoff_link_clicked` - go to PostHog and GA4 behind

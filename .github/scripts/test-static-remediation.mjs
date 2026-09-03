@@ -173,7 +173,8 @@ assert.match(privacy, /window\.infinitePrivacyChoices/);
 assert.match(privacy, /Google Analytics, PostHog, and any configured campaign pixels do not initialize unless you grant/);
 assert.match(privacy, /<strong>Get-started sign-in handoff:<\/strong>/);
 assert.match(privacy, /one-time sign-in grant.*48 hours.*redeemed once/is);
-assert.match(privacy, /Google sign-in via Supabase Auth.*site never stores your Google token/is);
+assert.match(privacy, /Google sign-in via Supabase Auth.*session storage.*purges every Supabase auth key/is);
+assert.match(privacy, /never writes Google tokens to local storage/is);
 assert.match(privacy, /one-way hash of the claim secret \(never the secret itself\)/);
 assert.match(privacy, /removed after 90 days/);
 assert.doesNotMatch(privacy, /Desktop handoff attribution|cannot sign you in/, "the anonymous-attribution wording is gone");
@@ -212,7 +213,8 @@ assert.doesNotMatch(ledgerContract, new RegExp(`${retiredBuildFlag}|Wave 2, dorm
 assert.match(dataInventory, /app_download_click.*bounded CTA location.*destination path/is);
 assert.doesNotMatch(dataInventory, /download placement is unavailable/i);
 assert.match(dataInventory, /Get-started sign-in claim/);
-assert.match(dataInventory, /Google sign-in via Supabase Auth.*site never stores your Google token/is);
+assert.match(dataInventory, /Google sign-in via Supabase Auth.*sessionStorage.*purges every Supabase auth key/is);
+assert.match(dataInventory, /never writes Google tokens to local storage/is);
 assert.doesNotMatch(dataInventory, new RegExp(retiredBuildFlag));
 
 const siteAudit = read("scripts/verify-site-audit.mjs");

@@ -20,12 +20,13 @@ Status: production behavior inventory. Founder/counsel review and exact processo
 | Get-started sign-in claim: random claim UUID, SHA-256 claim-secret hash, Google-verified or email-code-verified email and profile id, originating CTA location, user agent, issue/expiry/redemption timestamps, redeeming install id, and - when `infinite-tag@0.6.0` returns a consent-qualified context - the ledger's rotating visitor/session ids | One-time desktop sign-in after Google sign-in or email-code verification on `/get-started`; `redeemed_at IS NULL` doubles as "verified on the site, never opened the app" | 90 days, bounded job; profile deletion cascades | Service role only; no member/public RLS. The raw claim secret is never stored; it exists only in the visitor's browser, the `infinite://handoff/v1` URL, and the confirmation email |
 
 A sign-in claim is created only after Google verifies through Supabase Auth or the 6-digit code
-emailed from `/get-started` verifies; a typed email alone creates nothing. Google sign-in via Supabase Auth keeps OAuth tokens in memory, uses same-tab `sessionStorage` only for the PKCE code verifier needed to complete the redirect, clears that verifier after return, and the site never stores your Google token. Browser visitor/session ids ride along when the consent-gated `window.__infiniteHandoffContext()`
+emailed from `/get-started` verifies; a typed email alone creates nothing. Google sign-in via Supabase Auth uses same-tab `sessionStorage` for the PKCE redirect exchange; OAuth tokens may live there only for the few seconds needed to mint the one-time claim, then the page signs out locally and purges every Supabase auth key. The site never writes Google tokens to local storage. Browser visitor/session ids ride along when the consent-gated `window.__infiniteHandoffContext()`
 accessor returns a context; it returns null under Do Not Track, Global Privacy Control without a site
 grant, a saved denial, blocked storage, an unverified host, or a dormant site source. The ids are
 never inferred from IP address, user agent, or timing. Before the Google OAuth redirect, the page
 stores only the originating CTA, UTM source / medium / campaign values, click-id presence booleans
-(not raw click-id values), and `gate_method=google` in session storage. The claim expires after 48
+(not raw click-id values), and `gate_method=google` in session storage alongside Supabase's same-tab
+PKCE state. The claim expires after 48
 hours and redeems once; redeeming it signs the desktop app in to the account whose email was just
 verified and authorizes nothing else.
 
