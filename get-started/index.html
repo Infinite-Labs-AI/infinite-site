@@ -483,21 +483,33 @@
       function cleanOAuthUrl() {
         try { history.replaceState(null, "", "/get-started"); } catch (_error) {}
       }
+      function normalizeGoogleFailureReason(value, fallback) {
+        var reason = typeof value === "string" ? value.toLowerCase() : "";
+        if (/pkce_code_verifier_not_found|bad_code_verifier|missing_?verifier|code verifier/.test(reason)) return "missing_verifier";
+        if (reason === "invalid_grant" || /invalid grant/.test(reason)) return "invalid_grant";
+        if (reason === "invalid_token" || /invalid token|access token|jwt/.test(reason)) return "invalid_token";
+        if (reason === "google_provider_required") return "google_provider_required";
+        if (reason === "rate_limited" || /rate.?limit|too many/.test(reason)) return "rate_limited";
+        if (/failed to fetch|network|timeout|csp|connect-src|cors/.test(reason)) return "csp_or_network";
+        if (/server|5[0-9][0-9]|database|unavailable/.test(reason)) return "server_error";
+        return fallback || "invalid_token";
+      }
       function googleFailureReason(result, fallback) {
-        if (result && result.data && typeof result.data.error === "string") return result.data.error;
-        return fallback || "unknown";
+        if (result && result.status === 429) return "rate_limited";
+        if (result && result.status >= 500) return "server_error";
+        if (result && (result.status === 0 || result.status === 404)) return "csp_or_network";
+        return normalizeGoogleFailureReason(result && result.data && result.data.error, fallback || "invalid_token");
       }
       function supabaseExchangeFailureReason(error) {
         var name = error && typeof error.name === "string" ? error.name : "";
         var message = error && typeof error.message === "string" ? error.message : "";
         var value = (message || name).toLowerCase();
-        if (value === "invalid_token" || value === "pkce_code_verifier_not_found" || value === "bad_code_verifier" || value === "invalid_grant") return "invalid_token";
-        if (name === "TypeError" || name === "AuthRetryableFetchError" || /failed to fetch|network|timeout|server|5[0-9][0-9]/.test(value)) return "network";
-        return "invalid_token";
+        if (name === "TypeError" || name === "AuthRetryableFetchError") return "csp_or_network";
+        return normalizeGoogleFailureReason(value, "invalid_token");
       }
       function showGoogleFallback(reason, failOpen) {
         if (failOpen) revealFallback();
-        track("gate_google_failed", { cta_location: (readGoogleContext() || {}).ctaLocation || CTA_LOCATION, reason: reason });
+        track("gate_google_failed", { cta_location: (readGoogleContext() || {}).ctaLocation || CTA_LOCATION, reason: normalizeGoogleFailureReason(reason, "invalid_token") });
         clearGoogleContext();
         setNotice(googleNotice, COPY.googleFallback);
         show("email");
@@ -540,10 +552,10 @@
           });
         }).then(function (result) {
           if (result && result.error) throw result.error;
-        }).catch(function () {
+        }).catch(function (error) {
           googleButton.disabled = false;
           purgeSupabaseAuthStorage();
-          showGoogleFallback("oauth_start_failed", false);
+          showGoogleFallback(supabaseExchangeFailureReason(error), false);
         });
       });
 
@@ -668,7 +680,7 @@
           return postJson(CLAIM_PATH, handoffIds({ accessToken: result.data.session.access_token, ctaLocation: claimCtaLocation }));
         }).then(function (result) {
           if (!result.ok || typeof result.data.claimId !== "string" || typeof result.data.secret !== "string") {
-            var reason = googleFailureReason(result, result.status === 0 ? "network" : "claim_failed");
+            var reason = googleFailureReason(result, result.status === 0 ? "csp_or_network" : "invalid_token");
             return finishGoogleAuth().then(function () {
               showGoogleFallback(reason, result.status === 404 || result.status >= 500 || result.status === 0);
               return null;
@@ -688,7 +700,7 @@
         }).catch(function (error) {
           var reason = supabaseExchangeFailureReason(error);
           return finishGoogleAuth().then(function () {
-            showGoogleFallback(reason, reason === "network");
+            showGoogleFallback(reason, reason === "csp_or_network" || reason === "server_error");
           });
         });
       }

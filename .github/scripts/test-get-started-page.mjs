@@ -269,6 +269,27 @@ async function settle() {
 
 const ok = (body) => ({ status: 200, body });
 const err = (status, error) => ({ status, body: { error } });
+const GOOGLE_FAILURE_REASONS = new Set([
+  "missing_verifier",
+  "invalid_grant",
+  "invalid_token",
+  "google_provider_required",
+  "rate_limited",
+  "csp_or_network",
+  "server_error",
+]);
+
+function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
+  assert.equal(GOOGLE_FAILURE_REASONS.has(reason), true, `${reason} is a bounded Google failure reason`);
+  const expected = [["gate_google_failed", { cta_location: ctaLocation, reason }]];
+  assert.deepEqual(page.captures, expected);
+  assert.deepEqual(page.gtagCalls, expected.map(([name, properties]) => ["event", name, properties]));
+  assert.doesNotMatch(
+    JSON.stringify([page.captures, page.gtagCalls]),
+    /a@b\.co|s3cr3t|claim_id|supabase-state|pkce-code|google-access-token|raw-secret-description/,
+    "Google failure diagnostics never include email, token, code, claim id, or secret material",
+  );
+}
 
 {
   const page = createPage();
@@ -404,7 +425,72 @@ for (const [status, error, reason] of [
   assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
   assert.deepEqual(page.replaced, ["/get-started"]);
   assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
-  assert.deepEqual(page.captures, [["gate_google_failed", { cta_location: "get-started", reason }]]);
+  assertGoogleFailureEvent(page, reason);
+}
+
+{
+  const page = createPage({
+    search: "?code=pkce-code",
+    storedPkceVerifier: "pkce-verifier",
+    responses: { [CLAIM_PATH]: [err(500, "database_unavailable")] },
+    supabaseAuth: { requireCodeVerifier: true },
+  });
+  await page.settle();
+  assert.equal(page.el("gate-step-email").hidden, false);
+  assert.equal(page.el("gate-google-notice").hidden, false);
+  assert.equal(page.el("gate-fallback").hidden, false, "a Google claim server failure keeps the fail-open direct download visible");
+  assert.deepEqual(page.assigned, [], "Google claim failures do not start the installer download");
+  assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
+  assert.deepEqual(page.replaced, ["/get-started"]);
+  assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
+  assertGoogleFailureEvent(page, "server_error");
+}
+
+{
+  const page = createPage({
+    search: "?code=pkce-code",
+    supabaseAuth: { requireCodeVerifier: true },
+  });
+  await page.settle();
+  assert.equal(page.el("gate-step-email").hidden, false);
+  assert.equal(page.el("gate-google-notice").hidden, false);
+  assert.equal(page.el("gate-fallback").hidden, true);
+  assert.equal(page.fetchCalls.length, 0, "no claim request fires without the PKCE verifier");
+  assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
+  assert.deepEqual(page.replaced, ["/get-started"]);
+  assertGoogleFailureEvent(page, "missing_verifier");
+}
+
+{
+  const page = createPage({
+    search: "?code=pkce-code",
+    storedPkceVerifier: "pkce-verifier",
+    supabaseAuth: { requireCodeVerifier: true, exchangeCodeForSession: new Error("invalid_grant") },
+  });
+  await page.settle();
+  assert.equal(page.el("gate-step-email").hidden, false);
+  assert.equal(page.el("gate-google-notice").hidden, false);
+  assert.equal(page.el("gate-fallback").hidden, true);
+  assert.equal(page.fetchCalls.length, 0, "no claim request fires when Supabase rejects the code");
+  assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
+  assert.deepEqual(page.replaced, ["/get-started"]);
+  assertGoogleFailureEvent(page, "invalid_grant");
+}
+
+{
+  const page = createPage({
+    search: "?code=pkce-code",
+    storedPkceVerifier: "pkce-verifier",
+    supabaseAuth: { requireCodeVerifier: true, exchangeCodeForSession: new Error("server 500 unavailable") },
+  });
+  await page.settle();
+  assert.equal(page.el("gate-step-email").hidden, false);
+  assert.equal(page.el("gate-google-notice").hidden, false);
+  assert.equal(page.el("gate-fallback").hidden, false, "a Supabase exchange server failure keeps the fail-open direct download visible");
+  assert.equal(page.fetchCalls.length, 0, "no claim request fires when Supabase cannot exchange the code");
+  assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
+  assert.deepEqual(page.replaced, ["/get-started"]);
+  assertGoogleFailureEvent(page, "server_error");
 }
 
 {
@@ -421,7 +507,7 @@ for (const [status, error, reason] of [
   assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
   assert.deepEqual(page.replaced, ["/get-started"]);
   assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
-  assert.deepEqual(page.captures, [["gate_google_failed", { cta_location: "get-started", reason: "network" }]]);
+  assertGoogleFailureEvent(page, "csp_or_network");
 }
 
 {
@@ -444,8 +530,7 @@ for (const [status, error, reason] of [
   assert.deepEqual(page.replaced, ["/get-started"]);
   assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
   assert.equal(page.storage.has(GOOGLE_CONTEXT_KEY), false);
-  assert.deepEqual(page.captures, [["gate_google_failed", { cta_location: "hero", reason: "access_denied" }]]);
-  assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls]), /raw-secret-description/, "OAuth descriptions are not sent to analytics");
+  assertGoogleFailureEvent(page, "invalid_token", "hero");
 }
 
 {
@@ -460,7 +545,7 @@ for (const [status, error, reason] of [
   assert.equal(page.el("gate-google-notice").hidden, false);
   assert.equal(page.el("gate-fallback").hidden, false, "a Google claim network failure keeps the fail-open direct download visible");
   assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false);
-  assert.deepEqual(page.captures, [["gate_google_failed", { cta_location: "get-started", reason: "network" }]]);
+  assertGoogleFailureEvent(page, "csp_or_network");
 }
 
 {
