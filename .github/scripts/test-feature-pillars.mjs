@@ -148,23 +148,7 @@ assert.deepEqual(
   ["/", ...featurePaths],
   "manifest must atomically activate the homepage plus all seven feature documents in binding order",
 );
-assert.equal(PUBLIC_ROUTES.length, 22, "final public graph has exactly 22 routes, including the noindex get-started gate");
-assert.deepEqual(
-  PUBLIC_ROUTES.find((route) => route.path === "/get-started/"),
-  {
-    id: "get-started",
-    path: "/get-started/",
-    source: "get-started/index.html",
-    owner: "site",
-    indexable: false,
-    documentLog: true,
-    footer: false,
-    title: "Get started with Infinite",
-    llmsSummary: "Email verification gate for downloading Infinite for Mac and opening the desktop app already signed in.",
-    sitemap: null,
-  },
-  "get-started is a public document but not an indexable/site-footer route",
-);
+assert.equal(PUBLIC_ROUTES.length, 21, "final public graph has exactly 21 documents");
 assert.deepEqual(
   FOOTER_COLUMNS[0]?.links.map(({ label, href, ctaId }) => ({ label, href, ctaId })),
   [

@@ -14,7 +14,6 @@ const MAIN_SITE_FILES = [
   "llms.txt",
   "privacy/index.html",
   "terms/index.html",
-  "get-started/index.html",
   "tools/index.html",
   "compare/index.html",
 ];
@@ -42,7 +41,6 @@ assert.doesNotMatch(sitemap, /https:\/\/www\.infinite\.fast/);
 assert.equal(sitemap, renderSitemapXml(SITEMAP_ROUTES), "sitemap.xml must be generated from the public site manifest");
 
 const expectedLastmodByPath = new Map(SITEMAP_ROUTES.map((route) => [route.path, route.sitemap.lastmod]));
-assert.equal(expectedLastmodByPath.get("/privacy/"), "2026-09-03", "/privacy/ has an honest per-route lastmod");
 
 const urlBlocks = [...sitemap.matchAll(/<url>\s*<loc>(https:\/\/infinite\.fast[^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
 assert.equal(urlBlocks.length, expectedLastmodByPath.size, "sitemap should contain exactly the expected apex URLs");
@@ -68,21 +66,6 @@ assert.deepEqual(
   },
   "Infinite browser events must use the exact same-origin public collect rewrite",
 );
-assert.deepEqual(
-  rewrites.find((rewrite) => rewrite.source === "/infinite/auth/otp"),
-  { source: "/infinite/auth/otp", destination: "https://api.ultima.inc/api/auth/otp" },
-  "the get-started page requests its sign-in code through a same-origin rewrite (no CORS)",
-);
-assert.deepEqual(
-  rewrites.find((rewrite) => rewrite.source === "/infinite/auth/handoff/claim"),
-  { source: "/infinite/auth/handoff/claim", destination: "https://api.ultima.inc/api/auth/handoff/claim" },
-  "the get-started page mints its one-time sign-in claim through a same-origin rewrite (no CORS)",
-);
-assert.equal(
-  rewrites.some((rewrite) => rewrite.source === "/infinite/handoff"),
-  false,
-  "the Wave 2 /infinite/handoff rewrite is retired — the get-started page owns the handoff",
-);
 assert.equal(existsSync(new URL("../../api/download.js", import.meta.url)), false, "the native /download redirect must not become a function");
 assert.equal(existsSync(new URL("../workflows/deploy-pages.yml", import.meta.url)), false, "Vercel is the only production host");
 
@@ -93,19 +76,9 @@ assert.deepEqual(packageJson.devDependencies, {
   "@vercel/functions": "3.7.6",
   "infinite-tag": "0.6.0",
 });
-assert.deepEqual(packageJson.dependencies, {
-  "@supabase/supabase-js": "2.89.0",
-});
 const packageLock = JSON.parse(read("package-lock.json"));
-assert.equal(packageLock.packages[""].dependencies["@supabase/supabase-js"], "2.89.0");
 assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.6.0");
 assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.6.0");
-assert.equal(packageLock.packages["node_modules/@supabase/supabase-js"].version, "2.89.0");
-assert.equal(
-  read("assets/supabase-js-2.89.0.js"),
-  read("node_modules/@supabase/supabase-js/dist/umd/supabase.js"),
-  "the vendored Supabase UMD must stay byte-identical to the pinned npm package",
-);
 assert.equal(
   packageLock.packages["node_modules/infinite-tag"].resolved,
   "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.6.0.tgz",
@@ -120,13 +93,6 @@ const injector = read(".github/scripts/inject-analytics.cjs");
 assert.match(injector, /await import\("infinite-tag"\)/);
 assert.match(injector, /gtag\("event", "app_download_clicked"/);
 assert.doesNotMatch(injector, /_1BU|\/api\/events\/track|custom_app_download_redirect|appDownloadTrackingSnippet|link_text/);
-const retiredSnippetName = "download" + "Handoff" + "Snippet";
-const retiredBuildFlag = ["INFINITE", "HANDOFF", "ENABLED"].join("_");
-assert.doesNotMatch(
-  injector,
-  new RegExp(`${retiredSnippetName}|${retiredBuildFlag}|infinite-handoff-card`),
-  "the Wave 2 attribution snippet is deleted, not flagged off",
-);
 // Consent gating (2026-08-04): the shared gate exists, the download bridge refuses to
 // preventDefault without an initialized gtag, and the banner carries the host gate + the
 // manual revocation hook.
@@ -140,25 +106,12 @@ assert.doesNotMatch(deployPreparation, /require\(path\.join\(repoRoot, "\.github
 
 const homepage = read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html");
 assert.match(homepage, /data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation"/);
-// Every "Get Infinite" CTA sends the visitor through the email gate. The anchor keeps its
-// data-download-location token AND carries the managed-CTA pair, because infinite-tag emits
-// site_click only from data-analytics-cta-id + data-analytics-cta-location.
-for (const location of ["navigation", "hero", "pricing", "pricing-matrix", "final-cta"]) {
-  assert.match(
-    homepage,
-    new RegExp(`href="/get-started\\?cta=${location}" data-download-location="${location}" data-analytics-cta-id="get-started" data-analytics-cta-location="${location}"`),
-    `${location} CTA must point at /get-started with the originating CTA in the URL and the managed-CTA pair`,
-  );
+for (const location of ["navigation", "hero", "pricing", "final-cta"]) {
+  assert.match(homepage, new RegExp(`href="/download"[^>]*data-download-location="${location}"`));
 }
-assert.equal((homepage.match(/href="\/get-started\?cta=/g) ?? []).length, 6, "six gate CTAs on the homepage carry origin CTA query parameters");
-const directHomepageDownloadAnchors = (homepage.match(/<a\b[^>]*href="\/download"[^>]*>/g) ?? []).filter(
-  (anchor) => !/data-analytics-cta-location="site-footer"/.test(anchor),
-);
-assert.deepEqual(directHomepageDownloadAnchors, [], "no non-footer homepage anchor bypasses the gate");
-assert.match(homepage, /"downloadUrl": "https:\/\/infinite\.fast\/download"/, "the SoftwareApplication schema still names the installer route");
 
 const privacy = read("privacy/index.html");
-assert.match(privacy, /Last updated: 3 September 2026/);
+assert.match(privacy, /Last updated: 19 August 2026/);
 assert.match(privacy, /Website visitor analytics/i);
 assert.match(privacy, /90 days/i);
 assert.match(privacy, /25 months/i);
@@ -171,12 +124,6 @@ assert.doesNotMatch(privacy, /Browser analytics is off until|Privacy choices/);
 assert.match(privacy, /Manage analytics preferences/);
 assert.match(privacy, /window\.infinitePrivacyChoices/);
 assert.match(privacy, /Google Analytics, PostHog, and any configured campaign pixels do not initialize unless you grant/);
-assert.match(privacy, /<strong>Get-started sign-in handoff:<\/strong>/);
-assert.match(privacy, /one-time sign-in grant.*48 hours.*redeemed once/is);
-assert.match(privacy, /Google sign-in via Supabase Auth.*site never stores your Google token/is);
-assert.match(privacy, /one-way hash of the claim secret \(never the secret itself\)/);
-assert.match(privacy, /removed after 90 days/);
-assert.doesNotMatch(privacy, /Desktop handoff attribution|cannot sign you in/, "the anonymous-attribution wording is gone");
 assert.match(privacy, /Content Security Policy.*sanitized.*document.*blocked.*directive.*disposition/is);
 assert.match(privacy, /Content Security Policy.*query strings.*script samples.*security diagnostics/is);
 assert.doesNotMatch(privacy, /We do not host, receive, store, or have access to that data\./);
@@ -205,15 +152,8 @@ assert.match(ledgerContract, /registry.*latest.*0\.3\.1/is);
 assert.match(ledgerContract, /app_download_click.*cta_location.*destination_path/is);
 assert.match(ledgerContract, /data-download-location.*package-owned.*click listener/is);
 assert.doesNotMatch(ledgerContract, /placement is currently unavailable|future package release/i);
-assert.match(ledgerContract, /## Get-started sign-in handoff/);
-assert.match(ledgerContract, /\/infinite\/auth\/otp.*\/infinite\/auth\/handoff\/claim/is);
-assert.match(ledgerContract, /accessToken.*invalid_token.*google_provider_required/is);
-assert.doesNotMatch(ledgerContract, new RegExp(`${retiredBuildFlag}|Wave 2, dormant`));
 assert.match(dataInventory, /app_download_click.*bounded CTA location.*destination path/is);
 assert.doesNotMatch(dataInventory, /download placement is unavailable/i);
-assert.match(dataInventory, /Get-started sign-in claim/);
-assert.match(dataInventory, /Google sign-in via Supabase Auth.*site never stores your Google token/is);
-assert.doesNotMatch(dataInventory, new RegExp(retiredBuildFlag));
 
 const siteAudit = read("scripts/verify-site-audit.mjs");
 assert.match(siteAudit, /renderInfiniteBrowserTag/);
@@ -228,7 +168,6 @@ const headerValue = (key) => headers.find((header) => header.key.toLowerCase() =
 
 assert.equal(headerValue("Content-Security-Policy-Report-Only"), undefined);
 assert.match(headerValue("Content-Security-Policy") ?? "", /frame-ancestors 'none'/);
-assert.match(headerValue("Content-Security-Policy") ?? "", /connect-src[^;]*https:\/\/wdxjduorvpayxixpmskf\.supabase\.co/, "Google PKCE exchange must be able to reach Supabase Auth");
 assert.match(headerValue("Content-Security-Policy") ?? "", /report-uri \/api\/csp-report/);
 assert.match(headerValue("Content-Security-Policy") ?? "", /report-to csp-endpoint/);
 assert.doesNotMatch(headerValue("Content-Security-Policy") ?? "", /fonts\.(?:googleapis|gstatic)\.com/);

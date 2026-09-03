@@ -77,7 +77,6 @@ jobs:
       matrix:
         contract:
           - test-inject-analytics.mjs
-          - test-get-started-page.mjs
           - test-routing-middleware.mjs
           - test-static-remediation.mjs
           - test-public-site-graph.mjs
@@ -160,6 +159,9 @@ jobs:
           EXPECTED_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           EXPECTED_GA_TAG_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_TAG_ID }}
           EXPECTED_INFINITE_SITE_SOURCE_KEY: ${{ vars.EXPECTED_INFINITE_SITE_SOURCE_KEY }}
+          # Browser-led desktop handoff (Wave 2): flip the repo variable TOGETHER with the Vercel
+          # INFINITE_HANDOFF_ENABLED build flag — the verifier enforces presence when 1, absence otherwise.
+          EXPECTED_HANDOFF_ENABLED: ${{ vars.EXPECTED_HANDOFF_ENABLED }}
           REQUIRE_SYNTHETIC_RECEIPTS: ${{ vars.REQUIRE_SYNTHETIC_RECEIPTS }}
           SYNTHETIC_SITE_SOURCE_KEY: ${{ secrets.SYNTHETIC_SITE_SOURCE_KEY }}
           ANALYTICS_RECEIPT_URL: ${{ vars.ANALYTICS_RECEIPT_URL }}

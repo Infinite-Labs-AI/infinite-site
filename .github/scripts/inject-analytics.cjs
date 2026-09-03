@@ -12,6 +12,11 @@ void (async () => {
     ? parseSourceArtifact(configuredSourceArtifact)
     : undefined;
   const siteSourceKey = isProductionBuild ? configuredSourceKey : undefined;
+  // Site half of the two-keyed browser->desktop handoff enablement (the cloud half is
+  // INFINITE_HANDOFF_ATTRIBUTION_ENABLED). Unset/0 emits ZERO handoff bytes.
+  const handoffEnabled = isProductionBuild
+    && process.env.INFINITE_HANDOFF_ENABLED === "1"
+    && Boolean(siteSourceKey);
 
   if (isProductionBuild && productionHosts.length === 0) {
     throw new Error("Production analytics require INFINITE_PRODUCTION_HOSTS from verified site-source bindings.");
@@ -55,6 +60,7 @@ void (async () => {
     xPixelSnippet(process.env.X_PIXEL_ID),
     metaPixelSnippet(process.env.META_PIXEL_ID),
     runtime,
+    handoffEnabled ? downloadHandoffSnippet() : "",
     privacyConsentPromptSnippet(productionHosts),
   ].filter(Boolean);
 
@@ -228,27 +234,28 @@ function posthogSnippet({ apiHost, uiHost, projectToken }) {
         (e.__SV = 1));
     })(document, window.posthog || []);
     var NO_REPLAY_PATHS = ["/startup-launch-videos"];
-    var SENSITIVE_PATHS = ["/get-started"];
-    var POSTHOG_PATH_HERE = location.pathname;
-    if (POSTHOG_PATH_HERE.length > 1 && POSTHOG_PATH_HERE.charAt(POSTHOG_PATH_HERE.length - 1) === "/") {
-      POSTHOG_PATH_HERE = POSTHOG_PATH_HERE.slice(0, -1);
+    var NO_REPLAY_HERE = location.pathname;
+    if (NO_REPLAY_HERE.length > 1 && NO_REPLAY_HERE.charAt(NO_REPLAY_HERE.length - 1) === "/") {
+      NO_REPLAY_HERE = NO_REPLAY_HERE.slice(0, -1);
     }
-    var POSTHOG_SENSITIVE_HERE = SENSITIVE_PATHS.indexOf(POSTHOG_PATH_HERE) !== -1;
     posthog.init(${JSON.stringify(projectToken)}, {
       api_host: ${JSON.stringify(apiHost)},${uiHostLine}
       defaults: "2026-01-30",
-      // Session replay is OFF on the Launch Video Leaderboard and on sensitive auth/download flows.
+      // Session replay is OFF on the Launch Video Leaderboard, and ONLY there.
       //
-      // The leaderboard is excluded for performance. /get-started renders a verified email and keeps
-      // a one-time desktop handoff claim client-side, so it also disables PostHog autocapture and
-      // replay. The page still emits explicit bounded funnel events after consent.
+      // That page is a ~50-row table people scroll and hover. rrweb snapshots the ~1,900-node DOM,
+      // installs a document-wide MutationObserver, and has to serialise ~1,800 element removals and
+      // additions every time someone sorts or pages it. Replay is not worth that on a page whose
+      // only interaction is browsing a ranking.
       //
-      // Add a path to one of the lists above to exclude another page; a trailing slash is ignored.
+      // Every other page keeps replay. Heatmaps and performance capture are untouched everywhere —
+      // an earlier revision disabled all three site-wide, which was not the intent.
+      //
+      // Add a path to NO_REPLAY_PATHS to exclude another page; a trailing slash is ignored.
       // NOTE: no regex literal here on purpose. This snippet is built inside a JS template literal,
       // where a backslash is an escape sequence — writing /\/+$/ emits //+$/, which is a line
       // comment, and silently truncates the rest of the line.
-      disable_session_recording: POSTHOG_SENSITIVE_HERE || NO_REPLAY_PATHS.indexOf(POSTHOG_PATH_HERE) !== -1,
-      autocapture: POSTHOG_SENSITIVE_HERE ? false : undefined,
+      disable_session_recording: NO_REPLAY_PATHS.indexOf(NO_REPLAY_HERE) !== -1,
     });
     posthog.register({ platform: "website" });
     });
@@ -422,6 +429,150 @@ function ga4DownloadSnippet(tagId) {
         if (sameTab) setTimeout(follow, 1000);
       } catch (_error) {}
     });
+  </script>`;
+}
+
+// ── Browser-led desktop attribution handoff (Wave 2) ─────────────────────────────────────────
+// Emitted ONLY for a production build with a verified site source key AND
+// INFINITE_HANDOFF_ENABLED=1. When off, the build carries zero handoff bytes.
+//
+// WHAT IT DOES: on a same-origin /download click by a CONSENT-QUALIFIED visitor (the accessor
+// itself is the consent gate — it returns null under DNT/GPC or a saved denial), mint a one-time
+// claim in the browser, post it same-origin, send the DMG to a NEW tab, and retain this page with
+// one explicit "Open Infinite" button. The user's single click on that button is the only
+// browser->app transition; nothing here auto-opens the custom scheme.
+//
+// WHY THE CAPTURE PHASE (load-bearing): the GA4 download bridge above is a BUBBLE listener that,
+// for an ordinary same-tab click, calls preventDefault() and re-navigates THIS tab once GA4
+// acknowledges delivery — which would destroy the very page the "Open Infinite" button lives on.
+// A capture-phase listener on document always runs before any bubble listener on document, so this
+// handler sets target="_blank" BEFORE the bridge reads anchor.getAttribute("target"); the bridge
+// then classifies the click as new-tab and leaves the navigation entirely alone. Snippet ORDER
+// cannot buy that (the bridge is emitted earlier by design); the phase can.
+//
+// WHY IT NEVER CALLS preventDefault(): every failure path — no accessor, no context, no crypto, a
+// refused beacon, any thrown error — must still download. The anchor's own default navigation is
+// the download, so we only ever ADD to the click, never take it over. The canonical server-side
+// /download attempt (the real Downloads number) is unchanged either way.
+//
+// TODO(pin infinite-tag >= 0.6.0): `window.__infiniteHandoffContext` ships in infinite-tag 0.6.0,
+// published 2026-08-19 and pinned here as 0.6.0 — before that, package.json pinned 0.3.5, so on those bytes the
+// accessor is simply absent and this whole flow is inert (it takes the ordinary no-context path).
+// Pin >= 0.6.0 exactly, record the tarball receipt in docs/analytics/first-party-ledger-contract.md,
+// and only then flip INFINITE_HANDOFF_ENABLED. Flipping the flag against 0.3.5 would ship a
+// permanently dead card that never appears — dormant, but a lie in the rollout checklist.
+function downloadHandoffSnippet() {
+  return `  <script>
+    (function () {
+      var CARD_ID = "infinite-handoff-card";
+      var CARD_CSS = "position:fixed;right:20px;bottom:20px;z-index:2147482900;width:340px;max-width:calc(100vw - 40px);padding:20px 22px;border-radius:16px;background:#111318;color:#f5f6f8;font:14px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 16px 60px rgba(0,0,0,0.45);";
+      var BTN_PRIMARY = "display:block;padding:11px 18px;border-radius:10px;background:#f5f6f8;color:#111318;font:inherit;font-size:15px;font-weight:600;text-align:center;text-decoration:none;";
+      var BTN_SECONDARY = "display:block;margin-top:8px;padding:11px 18px;border:1px solid rgba(245,246,248,0.35);border-radius:10px;background:transparent;color:#f5f6f8;font:inherit;font-size:14px;text-align:center;text-decoration:none;";
+      var DISMISS_CSS = "position:absolute;top:10px;right:12px;padding:2px 6px;border:0;background:transparent;color:rgba(245,246,248,0.6);font:inherit;font-size:18px;line-height:1;cursor:pointer;";
+      var card = null;
+      var openLink = null;
+
+      function base64url(bytes) {
+        var binary = "";
+        for (var i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/g, "");
+      }
+      function randomBytes(length) {
+        var bytes = new Uint8Array(length);
+        crypto.getRandomValues(bytes);
+        return bytes;
+      }
+      // RFC 4122 v4 from the same CSPRNG as the secret, so one capability check covers both and the
+      // id always satisfies the server's strict v4 parser (crypto.randomUUID is unavailable on
+      // insecure contexts and older Safari, which would silently drop those visitors).
+      function uuidV4() {
+        var bytes = randomBytes(16);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        var hex = [];
+        for (var i = 0; i < 16; i += 1) hex.push((bytes[i] + 0x100).toString(16).slice(1));
+        return hex.slice(0, 4).join("") + "-" + hex.slice(4, 6).join("") + "-" + hex.slice(6, 8).join("")
+          + "-" + hex.slice(8, 10).join("") + "-" + hex.slice(10, 16).join("");
+      }
+      function textEl(tag, css, text) {
+        var el = document.createElement(tag);
+        if (css) el.style.cssText = css;
+        if (text) el.appendChild(document.createTextNode(text));
+        return el;
+      }
+      function buildCard() {
+        card = document.createElement("div");
+        card.id = CARD_ID;
+        card.setAttribute("role", "status");
+        card.setAttribute("aria-live", "polite");
+        card.style.cssText = CARD_CSS;
+        var dismiss = textEl("button", DISMISS_CSS, "\\u00d7");
+        dismiss.setAttribute("type", "button");
+        dismiss.setAttribute("aria-label", "Dismiss");
+        dismiss.addEventListener("click", function () {
+          if (card && card.parentNode) card.parentNode.removeChild(card);
+        });
+        card.appendChild(dismiss);
+        card.appendChild(textEl("h2", "margin:0 0 6px;font-size:16px;font-weight:700;", "Download started"));
+        card.appendChild(textEl("p", "margin:0 0 14px;color:rgba(245,246,248,0.8);", "Install Infinite, then come back here and click Open Infinite."));
+        openLink = textEl("a", BTN_PRIMARY, "Open Infinite");
+        card.appendChild(openLink);
+        var again = textEl("a", BTN_SECONDARY, "Download again");
+        again.href = "/download";
+        card.appendChild(again);
+      }
+      // A later valid Download REPLACES this card's claim; it never stacks a second card, and the
+      // clicked anchor is never detached mid-dispatch (that would risk cancelling its navigation).
+      function showCard(claimId, claimSecret) {
+        if (!card) buildCard();
+        openLink.href = "infinite://handoff/v1?claim_id=" + encodeURIComponent(claimId)
+          + "&secret=" + encodeURIComponent(claimSecret);
+        if (!card.parentNode) document.body.appendChild(card);
+      }
+      function downloadAnchor(event) {
+        if (event.defaultPrevented) return null;
+        var target = event.target && typeof event.target.closest === "function" ? event.target : null;
+        var anchor = target && target.closest("a[href]");
+        if (!anchor) return null;
+        var destination = new URL(anchor.href, location.href);
+        if (destination.origin !== location.origin) return null;
+        if (destination.pathname.replace(/\\/+$/, "") !== "/download") return null;
+        return anchor;
+      }
+      document.addEventListener("click", function (event) {
+        try {
+          var anchor = downloadAnchor(event);
+          if (!anchor) return;
+          var context = typeof window.__infiniteHandoffContext === "function" ? window.__infiniteHandoffContext() : null;
+          if (!context) return;
+          if (typeof context.siteSourceKey !== "string" || typeof context.anonymousId !== "string"
+            || typeof context.sessionId !== "string" || typeof context.url !== "string") return;
+          var claimId = uuidV4();
+          var claimSecret = base64url(randomBytes(32));
+          var body = JSON.stringify({
+            siteSourceKey: context.siteSourceKey,
+            claimId: claimId,
+            claimSecret: claimSecret,
+            anonymousId: context.anonymousId,
+            sessionId: context.sessionId,
+            occurredAt: new Date().toISOString(),
+            url: context.url
+          });
+          if (typeof navigator.sendBeacon !== "function" || !navigator.sendBeacon("/infinite/handoff", body)) {
+            void fetch("/infinite/handoff", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: body,
+              keepalive: true,
+              credentials: "same-origin"
+            }).catch(function () {});
+          }
+          anchor.target = "_blank";
+          anchor.rel = "noopener";
+          showCard(claimId, claimSecret);
+        } catch (_error) {}
+      }, true);
+    })();
   </script>`;
 }
 

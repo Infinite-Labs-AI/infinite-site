@@ -26,8 +26,6 @@ for (const path of KNOWN_DOCUMENT_PATHS) {
 
 const canonicalFixtures = [
   ["https://infinite.fast/", "/"],
-  ["https://infinite.fast/get-started", "/get-started/"],
-  ["https://infinite.fast/get-started/", "/get-started/"],
   ["https://infinite.fast/privacy", "/privacy/"],
   ["https://infinite.fast/privacy/", "/privacy/"],
   ["https://infinite.fast//tools//?secret=redacted#fragment", "/tools/"],

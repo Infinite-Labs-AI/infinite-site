@@ -35,12 +35,10 @@ const expectedRoutes = [
   "/compare/infinite-vs-blaze/",
   "/compare/infinite-vs-okara/",
   "/compare/infinite-vs-ploy/",
-  "/get-started/",
   "/startup-launch-videos/",
   "/privacy/",
   "/terms/",
 ];
-const expectedSitemapRoutes = expectedRoutes.filter((path) => path !== "/get-started/");
 const siteFooterLegacyClass = /\b(?:wrangle-footer|seo-footer)\b/;
 const expectedRouteFields = [
   "documentLog",
@@ -218,17 +216,17 @@ function assertManifest() {
   assert.deepEqual(
     PUBLIC_ROUTES.map((route) => route.path),
     expectedRoutes,
-    "manifest must contain exactly the final 22 public document routes in canonical order",
+    "manifest must contain exactly the final 21 public document routes in canonical order",
   );
   assert.deepEqual(
     SITEMAP_ROUTES.map((route) => route.path),
-    expectedSitemapRoutes,
-    "sitemap route export must exclude the noindex get-started gate",
+    expectedRoutes,
+    "sitemap route export must be derived from the same 14-route manifest",
   );
   assert.deepEqual(
     [...KNOWN_DOCUMENT_PATHS],
     expectedRoutes,
-    "middleware document path export must include every normalized public document route",
+    "middleware document path export must come from the same 14-route manifest",
   );
   assert.equal(DOWNLOAD_PATH, "/download", "manifest must export the server-owned download path");
   assert.equal(new Set(PUBLIC_ROUTES.map((route) => route.path)).size, expectedRoutes.length, "route paths must be unique");
@@ -241,22 +239,16 @@ function assertManifest() {
     assert.match(route.id, /^[a-z0-9-]+$/, `${route.path}: route id must be bounded kebab-case`);
     assert.equal(typeof route.source, "string", `${route.path}: route must name its source`);
     assert.equal(typeof route.owner, "string", `${route.path}: route must name its owner`);
+    assert.equal(route.indexable, true, `${route.path}: Task 2 routes must be indexable`);
     assert.equal(route.documentLog, true, `${route.path}: Task 2 routes must be document-loggable`);
+    assert.equal(route.footer, true, `${route.path}: Task 2 routes must receive the site footer`);
     assert.equal(typeof route.title, "string");
     assert.ok(route.title.length > 0, `${route.path}: route must have a title`);
     assert.equal(typeof route.llmsSummary, "string");
     assert.ok(route.llmsSummary.length > 0, `${route.path}: route must have an llmsSummary`);
-    if (route.path === "/get-started/") {
-      assert.equal(route.indexable, false, `${route.path}: download gate must stay noindex`);
-      assert.equal(route.footer, false, `${route.path}: download gate keeps its focused footer instead of the site graph footer`);
-      assert.equal(route.sitemap, null, `${route.path}: noindex download gate must not appear in sitemap.xml`);
-    } else {
-      assert.equal(route.indexable, true, `${route.path}: public marketing routes must be indexable`);
-      assert.equal(route.footer, true, `${route.path}: public marketing routes must receive the site footer`);
-      assert.match(route.sitemap.lastmod, /^\d{4}-\d{2}-\d{2}$/, `${route.path}: route must carry an ISO sitemap.lastmod`);
-      assert.match(route.sitemap.changefreq, /^(daily|weekly|monthly|yearly)$/, `${route.path}: route must carry a valid sitemap.changefreq`);
-      assert.match(route.sitemap.priority, /^(?:0\.[0-9]|1\.0)$/, `${route.path}: route must carry a valid sitemap.priority`);
-    }
+    assert.match(route.sitemap.lastmod, /^\d{4}-\d{2}-\d{2}$/, `${route.path}: route must carry an ISO sitemap.lastmod`);
+    assert.match(route.sitemap.changefreq, /^(daily|weekly|monthly|yearly)$/, `${route.path}: route must carry a valid sitemap.changefreq`);
+    assert.match(route.sitemap.priority, /^(?:0\.[0-9]|1\.0)$/, `${route.path}: route must carry a valid sitemap.priority`);
   }
 
   assert.deepEqual(FOOTER_COLUMNS, expectedFooterColumns, "final footer columns must include the activated Product destinations");
@@ -337,14 +329,6 @@ function assertBuiltGraph(targetDir) {
 function assertFooterShape(routePath, body, label) {
   const totalFooterCount = (body.match(/<footer\b/g) ?? []).length;
   const canonicalFooterCount = (body.match(/<footer\b[^>]*data-site-footer="public-route-graph-v1"/g) ?? []).length;
-  if (routePath === "/get-started/") {
-    assert.equal(canonicalFooterCount, 0, `${label}: download gate must not receive the canonical site footer`);
-    assert.equal(totalFooterCount, 1, `${label}: download gate must keep one focused footer`);
-    assert.doesNotMatch(body, siteFooterLegacyClass, `${label}: legacy site footer classes must be removed`);
-    assert.match(body, /Privacy/, `${label}: focused footer must keep legal links`);
-    assert.match(body, /Terms/, `${label}: focused footer must keep legal links`);
-    return;
-  }
   assert.equal(canonicalFooterCount, 1, `${label}: must have exactly one canonical site footer`);
   assert.doesNotMatch(body, siteFooterLegacyClass, `${label}: legacy site footer classes must be removed`);
   assert.match(body, /© 2026 Ultima AI, Inc\./, `${label}: legal footer text must use the verified legal entity`);

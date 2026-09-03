@@ -17,7 +17,13 @@ let drainRequests = 0;
 let receiptRequests = 0;
 let forbiddenProbeRequests = 0;
 let runtimeSiteSourceKey = "";
-let servesRetiredHandoffBytes = false;
+/** Wave 2 browser->desktop handoff: whether the served page carries the handoff bytes, and how the
+ *  same-origin claim endpoint answers a health probe. Both are toggled per verifier run. */
+let servesHandoffBytes = false;
+let handoffEndpointStatus = 204;
+/** Every request the verifier makes to the claim endpoint — a guardrail run must probe its health
+ *  and NEVER issue a claim, so the recorded methods are asserted to be OPTIONS only. */
+const handoffRequests = [];
 /** Every request the verifier makes, so the "a guardrail run is not a visit" contract can be
  *  asserted at the end: `{ method, pathname, purpose }`. */
 const observedProbes = [];
@@ -53,6 +59,16 @@ const server = createServer(async (request, response) => {
     forbiddenProbeRequests += 1;
     response.writeHead(404, { "cache-control": "no-store" });
     response.end("not found");
+    return;
+  }
+  if (url.pathname === "/infinite/handoff") {
+    handoffRequests.push(request.method);
+    response.writeHead(handoffEndpointStatus, {
+      "access-control-allow-methods": "POST, OPTIONS",
+      "access-control-allow-headers": "content-type",
+      "cache-control": "no-store",
+    });
+    response.end();
     return;
   }
   if (url.pathname === "/infinite/ledger" && request.method === "POST") {
@@ -141,7 +157,7 @@ const server = createServer(async (request, response) => {
     <script>var ga = "https://www.googletagmanager.com/gtag/js?id=G-TEST"; gtag("config", "G-TEST"); document.addEventListener("click", function (event) { var anchor = event.target.closest("a[href]"); var destination = new URL(anchor.href); if (destination.pathname !== "/download") return; if (typeof window.gtag !== "function") return; gtag("event", "app_download_clicked", { cta_location: "hero", destination_path: "/download", event_callback: function () {}, event_timeout: 1000 }); });</script>
     <script>window.infinitePrivacyChoices = function () {};</script>
     <script data-infinite-runtime="managed">var runtimeConfig = {${runtimeSiteSourceKey ? `"siteSourceKey":"${runtimeSiteSourceKey}",` : ""}"collectPath":"/infinite/ledger","consent":{"mode":"not_required"}};</script>
-    ${servesRetiredHandoffBytes ? '<script>var card = document.createElement("div"); card.id = "infinite-handoff-card"; card.dataset.open = "infinite://handoff/v1?claim_id=x&secret=y";</script>' : ""}
+    ${servesHandoffBytes ? `<script>document.addEventListener("click", function () { var context = typeof window.__infiniteHandoffContext === "function" ? window.__infiniteHandoffContext() : null; if (!context) return; navigator.sendBeacon("/infinite/handoff", "{}"); var card = document.createElement("div"); card.id = "infinite-handoff-card"; card.dataset.open = "infinite://handoff/v1?claim_id=x&secret=y"; }, true);</script>` : ""}
   </head><body></body></html>`);
 });
 
@@ -232,22 +248,55 @@ try {
   assert.match(permanentRedirect.stderr, /HEAD expected 307/);
   downloadRedirectStatus = 307;
 
-  // ── Wave 2 browser-led handoff is RETIRED (2026-09-03) ───────────────────────────────────────
-  // The verifier no longer has an "enabled" direction: the retired bytes must be ABSENT on every
-  // live page, always. A deploy that resurrects them is red.
-  servesRetiredHandoffBytes = true;
+  // ── Browser-led desktop handoff (Wave 2) ─────────────────────────────────────────────────────
+  // The site half is two-keyed and ships OFF. The verifier pins BOTH directions, because each has
+  // its own way of going silently wrong: an "enabled" deploy whose bytes never shipped looks fine
+  // to every other check, and a dormant deploy that leaked the flow would be attribution running
+  // before the privacy disclosure is approved.
+  const handoffMissing = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+    ...commonEnv,
+    REQUIRE_SYNTHETIC_RECEIPTS: "0",
+    EXPECTED_HANDOFF_ENABLED: "1",
+  });
+  assert.notEqual(handoffMissing.code, 0, "an enabled handoff expectation must fail when the live bytes are absent");
+  assert.match(handoffMissing.stderr, /handoff/i);
+
+  servesHandoffBytes = true;
+  const probesBeforeDormantRun = handoffRequests.length;
   const handoffLeaked = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
     ...commonEnv,
     REQUIRE_SYNTHETIC_RECEIPTS: "0",
   });
-  assert.notEqual(handoffLeaked.code, 0, "retired handoff bytes on a live page must fail the guardrail");
-  assert.match(handoffLeaked.stderr, /retired handoff/i);
-  servesRetiredHandoffBytes = false;
-  assert.equal(
-    observedProbes.some((probe) => probe.pathname === "/infinite/handoff"),
-    false,
-    "the verifier never probes the removed /infinite/handoff rewrite",
+  assert.notEqual(handoffLeaked.code, 0, "handoff bytes on a dormant deployment must fail the guardrail");
+  assert.match(handoffLeaked.stderr, /handoff/i);
+  assert.equal(handoffRequests.length, probesBeforeDormantRun, "the dormant branch must not even probe the claim endpoint");
+
+  const handoffEnabled = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+    ...commonEnv,
+    REQUIRE_SYNTHETIC_RECEIPTS: "0",
+    EXPECTED_HANDOFF_ENABLED: "1",
+  });
+  assert.equal(handoffEnabled.code, 0, handoffEnabled.stderr || handoffEnabled.stdout);
+  assert.match(handoffEnabled.stdout, /PASS\s+\/infinite\/handoff/);
+  assert.equal(handoffRequests.length, probesBeforeDormantRun + 1, "an enabled run probes the claim endpoint exactly once");
+  assert.deepEqual(
+    [...new Set(handoffRequests)],
+    ["OPTIONS"],
+    "the health probe must never issue a claim",
   );
+  // No claim id, secret, or source key may ever reach the log.
+  assert.doesNotMatch(handoffEnabled.stdout, /claim_id=|secret=|site_live_guardrail/);
+
+  handoffEndpointStatus = 405;
+  const handoffUnhealthy = await execute(process.execPath, [join(repoRoot, "scripts/verify-live-analytics.mjs")], {
+    ...commonEnv,
+    REQUIRE_SYNTHETIC_RECEIPTS: "0",
+    EXPECTED_HANDOFF_ENABLED: "1",
+  });
+  assert.notEqual(handoffUnhealthy.code, 0, "an unhealthy claim endpoint must fail the guardrail");
+  assert.match(handoffUnhealthy.stderr, /handoff/i);
+  handoffEndpointStatus = 204;
+  servesHandoffBytes = false;
 
   // ── A guardrail run is not a visit ───────────────────────────────────────────────────────────
   // Every LIVE probe must carry `Purpose: prefetch`, which middleware.js `isPrefetch()` reads and
@@ -263,7 +312,7 @@ try {
       `live probe ${probe.method} ${probe.pathname} must send "Purpose: prefetch" — it would otherwise be counted as a production document request`,
     );
   }
-  for (const pathname of ["/", "/tools/", "/ingest/static/array.js", "/download", "/api/csp-report", "/sdk/infinite.js", "/get-started/"]) {
+  for (const pathname of ["/", "/tools/", "/ingest/static/array.js", "/download", "/api/csp-report", "/sdk/infinite.js", "/infinite/handoff"]) {
     assert.ok(
       liveProbes.some((probe) => probe.pathname === pathname),
       `expected a live probe for ${pathname} in the prefetch-declared set`,

@@ -52,12 +52,11 @@ try {
 function assertHomepage(html, label) {
   const privateRepositoryName = ["1bu", "1"].join("-");
   assert.equal(html.includes(privateRepositoryName), false, `${label}: private repository name must not appear`);
-  assert.match(html, /href="\/get-started\?cta=/, `${label}: primary desktop download gate remains visible with origin CTA attribution`);
-  assert.match(html, /href="\/download"/, `${label}: footer direct download remains visible`);
+  assert.match(html, /href="\/download"/, `${label}: desktop download remains visible`);
   assert.match(html, /data-agent-install/, `${label}: terminal install panel is present`);
   assert.ok(
-    html.indexOf('href="/get-started?cta=') < html.indexOf("data-agent-install"),
-    `${label}: primary desktop download gate must precede the secondary terminal install panel`,
+    html.indexOf('href="/download"') < html.indexOf("data-agent-install"),
+    `${label}: primary desktop download must precede the secondary terminal install panel`,
   );
   assert.match(html, new RegExp(escapeRegExp(installCommand)), `${label}: exact published installer is visible`);
   assert.doesNotMatch(html, /Dashboard metrics use demo data\./, `${label}: rejected demo-data label is absent`);
