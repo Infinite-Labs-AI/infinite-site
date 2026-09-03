@@ -136,11 +136,11 @@ assert.match(homepage, /data-analytics-cta-id="view-pricing" data-analytics-cta-
 for (const location of ["navigation", "hero", "pricing", "pricing-matrix", "final-cta"]) {
   assert.match(
     homepage,
-    new RegExp(`href="/get-started" data-download-location="${location}" data-analytics-cta-id="get-started" data-analytics-cta-location="${location}"`),
-    `${location} CTA must point at /get-started with the managed-CTA pair`,
+    new RegExp(`href="/get-started\\?cta=${location}" data-download-location="${location}" data-analytics-cta-id="get-started" data-analytics-cta-location="${location}"`),
+    `${location} CTA must point at /get-started with the originating CTA in the URL and the managed-CTA pair`,
   );
 }
-assert.equal((homepage.match(/href="\/get-started"/g) ?? []).length, 6, "six gate CTAs on the homepage");
+assert.equal((homepage.match(/href="\/get-started\?cta=/g) ?? []).length, 6, "six gate CTAs on the homepage carry origin CTA query parameters");
 const directHomepageDownloadAnchors = (homepage.match(/<a\b[^>]*href="\/download"[^>]*>/g) ?? []).filter(
   (anchor) => !/data-analytics-cta-location="site-footer"/.test(anchor),
 );

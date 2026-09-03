@@ -224,7 +224,15 @@
       var STORAGE_KEY = "infinite_get_started_claim";
       var OTP_PATH = "/infinite/auth/otp";
       var CLAIM_PATH = "/infinite/auth/handoff/claim";
-      var CTA_LOCATION = "get-started";
+      var ALLOWED_CTA_LOCATIONS = {
+        "get-started": true,
+        navigation: true,
+        hero: true,
+        pricing: true,
+        "pricing-matrix": true,
+        "final-cta": true
+      };
+      var CTA_LOCATION = ctaLocation();
       var COPY = {
         emailInvalid: "Enter the email you’ll sign in with.",
         emailRateLimited: "Too many codes requested. Wait a few minutes, then try again.",
@@ -304,12 +312,22 @@
       function writeClaim(claim) {
         try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(claim)); } catch (_error) {}
       }
+      function ctaLocation() {
+        var match = String(location.search || "").match(/[?&]cta=([^&]+)/);
+        if (!match) return "get-started";
+        try {
+          var value = decodeURIComponent(match[1].replace(/\+/g, " "));
+          return ALLOWED_CTA_LOCATIONS[value] === true ? value : "get-started";
+        } catch (_error) {
+          return "get-started";
+        }
+      }
       function handoffUrl(claim) {
         return "infinite://handoff/v1?claim_id=" + encodeURIComponent(claim.claimId) + "&secret=" + encodeURIComponent(claim.secret);
       }
       // The tag's consent-gated accessor is the ONLY source of browser ids: null under DNT/GPC or a
-      // saved denial, absent on infinite-tag 0.6.0 - in both cases we send neither id. Never read
-      // the tag's persisted visitor/session keys directly.
+      // saved denial, absent only on older/runtime-suppressed contexts. Never read the tag's persisted
+      // visitor/session keys directly.
       function handoffContext() {
         try {
           return typeof window.__infiniteHandoffContext === "function" ? window.__infiniteHandoffContext() : null;

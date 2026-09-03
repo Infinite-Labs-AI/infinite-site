@@ -52,11 +52,11 @@ try {
 function assertHomepage(html, label) {
   const privateRepositoryName = ["1bu", "1"].join("-");
   assert.equal(html.includes(privateRepositoryName), false, `${label}: private repository name must not appear`);
-  assert.match(html, /href="\/get-started"/, `${label}: primary desktop download gate remains visible`);
+  assert.match(html, /href="\/get-started\?cta=/, `${label}: primary desktop download gate remains visible with origin CTA attribution`);
   assert.match(html, /href="\/download"/, `${label}: footer direct download remains visible`);
   assert.match(html, /data-agent-install/, `${label}: terminal install panel is present`);
   assert.ok(
-    html.indexOf('href="/get-started"') < html.indexOf("data-agent-install"),
+    html.indexOf('href="/get-started?cta=') < html.indexOf("data-agent-install"),
     `${label}: primary desktop download gate must precede the secondary terminal install panel`,
   );
   assert.match(html, new RegExp(escapeRegExp(installCommand)), `${label}: exact published installer is visible`);

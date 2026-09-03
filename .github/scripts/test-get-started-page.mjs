@@ -51,7 +51,7 @@ const CLAIM = {
   expiresAt: "2026-09-05T10:00:00.000Z",
 };
 
-function createPage({ consent = "granted", responses = {}, handoffContext, storedClaim } = {}) {
+function createPage({ consent = "granted", responses = {}, handoffContext, storedClaim, search = "" } = {}) {
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
   assert.equal(scripts.length, 1, "the page carries exactly one inline script");
   const elements = new Map();
@@ -98,7 +98,7 @@ function createPage({ consent = "granted", responses = {}, handoffContext, store
   const context = {
     window,
     document: { getElementById: (id) => elements.get(id) ?? null },
-    location: { assign: (href) => assigned.push(href) },
+    location: { search, assign: (href) => assigned.push(href) },
     sessionStorage: {
       getItem: (key) => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, String(value)),
@@ -116,6 +116,7 @@ function createPage({ consent = "granted", responses = {}, handoffContext, store
     },
     JSON,
     encodeURIComponent,
+    decodeURIComponent,
     Promise,
     console,
   };
@@ -160,6 +161,7 @@ const err = (status, error) => ({ status, body: { error } });
 
 {
   const page = createPage({
+    search: "?cta=hero",
     responses: { [OTP_PATH]: [ok({ ok: true, challenge: "challenge-1" })], [CLAIM_PATH]: [ok(CLAIM)] },
     handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1", url: "https://infinite.fast/get-started/" },
   });
@@ -180,10 +182,10 @@ const err = (status, error) => ({ status, body: { error } });
     email: "founder@example.com",
     token: "123456",
     challenge: "challenge-1",
-    ctaLocation: "get-started",
+    ctaLocation: "hero",
     anonymousId: "anon-1",
     sessionId: "sess-1",
-  });
+  }, "a consent-qualified infinite-tag 0.6.0 handoff accessor contributes both browser ids and the originating homepage CTA");
   assert.equal(page.el("gate-step-code").hidden, true);
   assert.equal(page.el("gate-step-download").hidden, false);
   assert.equal(page.el("gate-download-email").textContent, "founder@example.com");
@@ -197,6 +199,25 @@ const err = (status, error) => ({ status, body: { error } });
     "/download",
     `infinite://handoff/v1?claim_id=${encodeURIComponent(CLAIM.claimId)}&secret=${encodeURIComponent(CLAIM.secret)}`,
   ]);
+}
+
+for (const [search, expected] of [
+  ["?cta=navigation", "navigation"],
+  ["?cta=pricing", "pricing"],
+  ["?cta=pricing-matrix", "pricing-matrix"],
+  ["?cta=final-cta", "final-cta"],
+  ["?cta=bad%20value", "get-started"],
+  ["", "get-started"],
+]) {
+  const page = createPage({
+    search,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "123456";
+  await page.submit("gate-form-code");
+  assert.equal(page.fetchCalls[1].body.ctaLocation, expected, `${search || "direct entry"} maps to ctaLocation=${expected}`);
 }
 
 for (const handoffContext of [null, undefined]) {
@@ -345,6 +366,7 @@ for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
 // ── Page events: PostHog + GA4 only, behind the shared consent gate, never the ledger ──────────
 {
   const page = createPage({
+    search: "?cta=final-cta",
     responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
   });
   page.el("gate-email").value = "a@b.co";
@@ -358,11 +380,11 @@ for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
     `infinite://handoff/v1?claim_id=${encodeURIComponent(CLAIM.claimId)}&secret=${encodeURIComponent(CLAIM.secret)}`,
   ]);
   assert.deepEqual(page.captures, [
-    ["gate_email_submitted", { cta_location: "get-started" }],
-    ["gate_code_verified", { cta_location: "get-started" }],
-    ["gate_download_started", { cta_location: "get-started", trigger: "auto" }],
-    ["gate_download_started", { cta_location: "get-started", trigger: "again" }],
-    ["handoff_link_clicked", { cta_location: "get-started" }],
+    ["gate_email_submitted", { cta_location: "final-cta" }],
+    ["gate_code_verified", { cta_location: "final-cta" }],
+    ["gate_download_started", { cta_location: "final-cta", trigger: "auto" }],
+    ["gate_download_started", { cta_location: "final-cta", trigger: "again" }],
+    ["handoff_link_clicked", { cta_location: "final-cta" }],
   ]);
   assert.deepEqual(
     page.gtagCalls,

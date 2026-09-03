@@ -48,7 +48,7 @@ an emailed 6-digit code. It calls the cloud through two same-origin rewrites, so
 
 ```text
 POST /infinite/auth/otp            -> https://api.ultima.inc/api/auth/otp             { email }                 -> { ok, challenge }
-POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { email, token, challenge, anonymousId?, sessionId?, ctaLocation? } -> { claimId, secret, expiresAt }
+POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { email, token, challenge, anonymousId?, sessionId?, ctaLocation? } -> { claimId, secret, expiresAt, emailSent }
 ```
 
 A claim is minted **only after the code verifies** (the same challenge HMAC and `profiles` ensure as
@@ -59,21 +59,23 @@ expires after 48 hours, redeems once, and is deleted after 90 days. The page kee
 button (`infinite://handoff/v1?claim_id=...&secret=...`) working; the raw secret exists in that
 browser, that URL and the confirmation email, and nowhere else.
 
-`anonymousId`/`sessionId` ride the claim only when `window.__infiniteHandoffContext()` exists and
-returns a consent-qualified context (null under DNT/GPC or a saved denial). The page never reads
-`infinite_analytics_visitor` / `infinite_analytics_session` directly. `infinite-tag@0.6.0` defines
-the accessor, and the page treats absence or a null return as "send no browser ids."
+`infinite-tag@0.6.0` defines `window.__infiniteHandoffContext()`. `anonymousId`/`sessionId`
+ride the claim when that accessor returns a consent-qualified context; it returns null under
+DNT/GPC without a site grant, a saved denial, blocked storage, an unverified host, or a dormant
+site source. The page never reads `infinite_analytics_visitor` / `infinite_analytics_session`
+directly, and absence or null means browser ids are omitted.
 
 Downloads are unchanged facts: after verification the page runs `location.assign("/download")`, which
 hits the server `/download` redirect lane, and renders **Download again** as
 `<a href="/download" data-download-location="get-started">`, whose browser click fires
 `app_download_click` and the GA4 `app_download_clicked` bridge as before. The homepage CTAs now point
-at `/get-started` and carry
-`data-analytics-cta-id="get-started"` + `data-analytics-cta-location`, which is what makes them
-`site_click` events (the runtime emits `site_click` only from that pair). The page's own funnel
-events - `gate_email_submitted`, `gate_code_verified`, `gate_download_started { trigger }`,
-`handoff_link_clicked` - go to PostHog and GA4 behind `window.__infiniteConsentGate` and never to
-the ledger, whose event enum is unchanged.
+at `/get-started?cta=<origin>` and carry `data-analytics-cta-id="get-started"` plus
+`data-analytics-cta-location="<origin>"`, which is what makes them `site_click` events (the runtime
+emits `site_click` only from that pair). `/get-started` sends the bounded origin token as
+`ctaLocation` on the claim POST; direct or invalid entries fall back to `get-started`. The page's own
+funnel events - `gate_email_submitted`, `gate_code_verified`, `gate_download_started { trigger }`,
+`handoff_link_clicked` - go to PostHog and GA4 behind `window.__infiniteConsentGate` and never to the
+ledger, whose event enum is unchanged.
 
 Fail-open: the page's source renders a plain `<a href="/download">` link; a successfully initialised
 script hides it, and any script failure, network failure or 5xx reveals it again. A wrong or
