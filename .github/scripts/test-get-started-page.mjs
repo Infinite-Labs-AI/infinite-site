@@ -88,8 +88,8 @@ function createPage({ consent = "granted", responses = {}, handoffContext, store
   const storage = new Map(storedClaim ? [[CLAIM_KEY, JSON.stringify(storedClaim)]] : []);
   const queues = Object.fromEntries(Object.entries(responses).map(([path, list]) => [path, [...list]]));
   const window = {
-    posthog: { capture: (name, properties) => captures.push([name, properties]) },
-    gtag: (...args) => gtagCalls.push(args),
+    posthog: { capture: (name, properties) => captures.push([name, cloneJson(properties)]) },
+    gtag: (...args) => gtagCalls.push(args.map((arg) => cloneJson(arg))),
   };
   if (consent === "granted") window.__infiniteConsentGate = (start) => start();
   if (consent === "withheld") window.__infiniteConsentGate = () => {};
@@ -134,6 +134,11 @@ function createPage({ consent = "granted", responses = {}, handoffContext, store
     submit: (id) => fire(id, "submit"),
     click: (id) => fire(id, "click"),
   };
+}
+
+function cloneJson(value) {
+  if (!value || typeof value !== "object") return value;
+  return JSON.parse(JSON.stringify(value));
 }
 
 async function settle() {
@@ -307,5 +312,53 @@ for (const handoffContext of [null, undefined]) {
   assert.equal(page.el("gate-step-email").hidden, false);
   assert.equal(page.el("gate-step-code").hidden, true);
 }
+
+// ── Page events: PostHog + GA4 only, behind the shared consent gate, never the ledger ──────────
+{
+  const page = createPage({
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "123456";
+  await page.submit("gate-form-code");
+  await page.click("gate-download-again");
+  await page.click("gate-open-infinite");
+  assert.deepEqual(page.captures, [
+    ["gate_email_submitted", { cta_location: "get-started" }],
+    ["gate_code_verified", { cta_location: "get-started" }],
+    ["gate_download_started", { cta_location: "get-started", trigger: "auto" }],
+    ["gate_download_started", { cta_location: "get-started", trigger: "again" }],
+    ["handoff_link_clicked", { cta_location: "get-started" }],
+  ]);
+  assert.deepEqual(
+    page.gtagCalls,
+    page.captures.map(([name, properties]) => ["event", name, properties]),
+    "GA4 mirrors the same four events with the same bounded properties",
+  );
+  assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls]), /a@b\.co|s3cr3t|claim_id/, "no email, secret, or claim id ever reaches a provider");
+}
+{
+  const page = createPage({
+    consent: "withheld",
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "123456";
+  await page.submit("gate-form-code");
+  assert.deepEqual(page.captures, [], "a withheld consent gate means no PostHog events");
+  assert.deepEqual(page.gtagCalls, [], "a withheld consent gate means no GA4 events");
+  assert.deepEqual(page.assigned, ["/download"], "the flow itself is not consent-gated");
+}
+{
+  const page = createPage({ consent: "absent", responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })] } });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  assert.deepEqual(page.captures, [], "no gate (un-injected build) means no events, and no throw");
+  assert.equal(page.el("gate-step-code").hidden, false);
+}
+assert.match(html, /window\.__infiniteConsentGate\(function/, "page events defer through the shared consent gate");
+assert.doesNotMatch(html, /\/infinite\/ledger|sendBeacon/, "page events never go to the first-party ledger");
 
 console.log("test-get-started-page: behaviour OK");

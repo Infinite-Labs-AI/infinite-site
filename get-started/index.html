@@ -262,8 +262,24 @@
 
       var state = { email: "", challenge: "" };
 
-      // Filled in by the analytics step (PostHog + GA4 behind the consent gate). No-op until then.
-      function track(_name, _properties) {}
+      // Page events go to PostHog + GA4 ONLY (never the first-party ledger - its event enum is
+      // fixed), and only after the shared consent gate the injector places in <head> has started
+      // us: immediately for a normal visitor, on "Accept All" for a DNT/GPC visitor, never on a
+      // saved denial. Properties are bounded tokens; the email never leaves this page's forms.
+      var analyticsAllowed = false;
+      if (typeof window.__infiniteConsentGate === "function") {
+        window.__infiniteConsentGate(function () { analyticsAllowed = true; });
+      }
+      function track(name, properties) {
+        if (!analyticsAllowed) return;
+        var props = properties || {};
+        try {
+          if (window.posthog && typeof window.posthog.capture === "function") window.posthog.capture(name, props);
+        } catch (_error) {}
+        try {
+          if (typeof window.gtag === "function") window.gtag("event", name, props);
+        } catch (_error) {}
+      }
 
       function show(name) {
         for (var key in steps) steps[key].hidden = key !== name;
