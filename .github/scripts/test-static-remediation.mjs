@@ -117,9 +117,22 @@ assert.doesNotMatch(deployPreparation, /require\(path\.join\(repoRoot, "\.github
 
 const homepage = read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html");
 assert.match(homepage, /data-analytics-cta-id="view-pricing" data-analytics-cta-location="navigation"/);
-for (const location of ["navigation", "hero", "pricing", "final-cta"]) {
-  assert.match(homepage, new RegExp(`href="/download"[^>]*data-download-location="${location}"`));
+// Every "Get Infinite" CTA sends the visitor through the email gate. The anchor keeps its
+// data-download-location token AND carries the managed-CTA pair, because infinite-tag emits
+// site_click only from data-analytics-cta-id + data-analytics-cta-location.
+for (const location of ["navigation", "hero", "pricing", "pricing-matrix", "final-cta"]) {
+  assert.match(
+    homepage,
+    new RegExp(`href="/get-started" data-download-location="${location}" data-analytics-cta-id="get-started" data-analytics-cta-location="${location}"`),
+    `${location} CTA must point at /get-started with the managed-CTA pair`,
+  );
 }
+assert.equal((homepage.match(/href="\/get-started"/g) ?? []).length, 6, "six gate CTAs on the homepage");
+const directHomepageDownloadAnchors = (homepage.match(/<a\b[^>]*href="\/download"[^>]*>/g) ?? []).filter(
+  (anchor) => !/data-analytics-cta-location="site-footer"/.test(anchor),
+);
+assert.deepEqual(directHomepageDownloadAnchors, [], "no non-footer homepage anchor bypasses the gate");
+assert.match(homepage, /"downloadUrl": "https:\/\/infinite\.fast\/download"/, "the SoftwareApplication schema still names the installer route");
 
 const privacy = read("privacy/index.html");
 assert.match(privacy, /Last updated: 19 August 2026/);
