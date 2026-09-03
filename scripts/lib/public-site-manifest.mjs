@@ -233,7 +233,7 @@ export const PUBLIC_ROUTES = deepFreeze([
     owner: "legal",
     title: "Privacy policy",
     llmsSummary: "Infinite's public privacy policy and analytics preference entry point.",
-    lastmod: "2026-08-02",
+    lastmod: "2026-09-03",
     changefreq: "yearly",
     priority: "0.3",
   }),

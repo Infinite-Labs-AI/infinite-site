@@ -42,6 +42,7 @@ assert.doesNotMatch(sitemap, /https:\/\/www\.infinite\.fast/);
 assert.equal(sitemap, renderSitemapXml(SITEMAP_ROUTES), "sitemap.xml must be generated from the public site manifest");
 
 const expectedLastmodByPath = new Map(SITEMAP_ROUTES.map((route) => [route.path, route.sitemap.lastmod]));
+assert.equal(expectedLastmodByPath.get("/privacy/"), "2026-09-03", "/privacy/ has an honest per-route lastmod");
 
 const urlBlocks = [...sitemap.matchAll(/<url>\s*<loc>(https:\/\/infinite\.fast[^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
 assert.equal(urlBlocks.length, expectedLastmodByPath.size, "sitemap should contain exactly the expected apex URLs");
@@ -147,7 +148,7 @@ assert.deepEqual(directHomepageDownloadAnchors, [], "no non-footer homepage anch
 assert.match(homepage, /"downloadUrl": "https:\/\/infinite\.fast\/download"/, "the SoftwareApplication schema still names the installer route");
 
 const privacy = read("privacy/index.html");
-assert.match(privacy, /Last updated: 19 August 2026/);
+assert.match(privacy, /Last updated: 3 September 2026/);
 assert.match(privacy, /Website visitor analytics/i);
 assert.match(privacy, /90 days/i);
 assert.match(privacy, /25 months/i);
@@ -160,6 +161,11 @@ assert.doesNotMatch(privacy, /Browser analytics is off until|Privacy choices/);
 assert.match(privacy, /Manage analytics preferences/);
 assert.match(privacy, /window\.infinitePrivacyChoices/);
 assert.match(privacy, /Google Analytics, PostHog, and any configured campaign pixels do not initialize unless you grant/);
+assert.match(privacy, /<strong>Get-started sign-in handoff:<\/strong>/);
+assert.match(privacy, /one-time sign-in grant.*48 hours.*redeemed once/is);
+assert.match(privacy, /one-way hash of the claim secret \(never the secret itself\)/);
+assert.match(privacy, /removed after 90 days/);
+assert.doesNotMatch(privacy, /Desktop handoff attribution|cannot sign you in/, "the anonymous-attribution wording is gone");
 assert.match(privacy, /Content Security Policy.*sanitized.*document.*blocked.*directive.*disposition/is);
 assert.match(privacy, /Content Security Policy.*query strings.*script samples.*security diagnostics/is);
 assert.doesNotMatch(privacy, /We do not host, receive, store, or have access to that data\./);
@@ -188,8 +194,13 @@ assert.match(ledgerContract, /registry.*latest.*0\.3\.1/is);
 assert.match(ledgerContract, /app_download_click.*cta_location.*destination_path/is);
 assert.match(ledgerContract, /data-download-location.*package-owned.*click listener/is);
 assert.doesNotMatch(ledgerContract, /placement is currently unavailable|future package release/i);
+assert.match(ledgerContract, /## Get-started sign-in handoff/);
+assert.match(ledgerContract, /\/infinite\/auth\/otp.*\/infinite\/auth\/handoff\/claim/is);
+assert.doesNotMatch(ledgerContract, new RegExp(`${retiredBuildFlag}|Wave 2, dormant`));
 assert.match(dataInventory, /app_download_click.*bounded CTA location.*destination path/is);
 assert.doesNotMatch(dataInventory, /download placement is unavailable/i);
+assert.match(dataInventory, /Get-started sign-in claim/);
+assert.doesNotMatch(dataInventory, new RegExp(retiredBuildFlag));
 
 const siteAudit = read("scripts/verify-site-audit.mjs");
 assert.match(siteAudit, /renderInfiniteBrowserTag/);

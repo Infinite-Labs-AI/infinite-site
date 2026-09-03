@@ -32,50 +32,51 @@ Browser delivery is the same-origin path `/infinite/ledger`, rewritten by Vercel
 
 `infinite-tag@0.3.1` maps each valid `data-download-location` marker through its package-owned click listener into the bounded `cta_location` property on `app_download_click`, alongside `destination_path: "/download"`. A small GA4 bridge applies the same bounded properties to one `app_download_clicked` event.
 
-## Browser-led desktop handoff (Wave 2, dormant)
+## Get-started sign-in handoff
 
-A SEPARATE lane from everything above. It is emitted only when the site build has a verified source
-key **and** `INFINITE_HANDOFF_ENABLED=1`; the shipped default is off, and a dormant build carries
-zero handoff bytes (pinned by `.github/scripts/test-inject-analytics.mjs` in both directions, and by
-`scripts/verify-live-analytics.mjs` against the live bytes via `EXPECTED_HANDOFF_ENABLED`).
+The browser-to-desktop handoff is a **sign-in grant, not attribution**. It replaced the "Wave 2"
+attribution snippet on 2026-09-03 - that snippet was live in production from 2026-08-19 but inert,
+because the tag accessor it depended on never shipped in `infinite-tag@0.6.0`. The injector snippet,
+its site-side build flag, the guardrail's repo variable and the `/infinite/handoff` rewrite were
+deleted; `.github/scripts/test-inject-analytics.mjs` and `scripts/verify-live-analytics.mjs` now
+fail if those bytes ever reappear. The cloud attribution routes (`/api/analytics/attribution/handoff/*`)
+are a 1bu-1 concern and were not changed by the site.
 
-When enabled, a click on a same-origin `/download` anchor asks `window.__infiniteHandoffContext()`
-for a consent-qualified context. That accessor is the consent gate: under DNT/GPC or a saved denial
-it returns `null`, and the click then proceeds as an ordinary direct download with nothing minted,
-nothing sent, and nothing rendered. With a context, the browser mints a claim id (UUID v4) and a
-claim secret (32 random bytes, base64url, 43 characters), posts exactly
+`/get-started` (a static page built like every other, spec:
+`1bu-1/docs/superpowers/specs/2026-09-03-email-gated-download-design.md`) gates the installer behind
+an emailed 6-digit code. It calls the cloud through two same-origin rewrites, so no CORS exists:
 
 ```text
-{ siteSourceKey, claimId, claimSecret, anonymousId, sessionId, occurredAt, url }
+POST /infinite/auth/otp            -> https://api.ultima.inc/api/auth/otp             { email }                 -> { ok, challenge }
+POST /infinite/auth/handoff/claim  -> https://api.ultima.inc/api/auth/handoff/claim   { email, token, challenge, anonymousId?, sessionId?, ctaLocation? } -> { claimId, secret, expiresAt }
 ```
 
-to the same-origin path `/infinite/handoff`, which Vercel rewrites to
-`https://api.ultima.inc/api/analytics/attribution/handoff/claim`. Delivery is `navigator.sendBeacon`,
-falling back to one same-origin `keepalive` fetch only when the browser refuses the beacon. The
-server stores only `sha256(secret)`; the raw secret exists in the browser URL and nowhere else.
+A claim is minted **only after the code verifies** (the same challenge HMAC and `profiles` ensure as
+`/api/auth/otp/verify`); a typed email alone never yields anything. The server stores only
+`sha256(secret)`, the verified email and profile id, the CTA location, and the timestamps. The claim
+expires after 48 hours, redeems once, and is deleted after 90 days. The page keeps
+`{ claimId, secret, email, expiresAt }` in `sessionStorage` so a refresh keeps the **Open Infinite**
+button (`infinite://handoff/v1?claim_id=...&secret=...`) working; the raw secret exists in that
+browser, that URL and the confirmation email, and nowhere else.
 
-The DMG opens in a NEW tab and the original page is retained with one card offering
-`infinite://handoff/v1?claim_id=...&secret=...`. The custom scheme is never auto-opened: the user's
-explicit click is the one browser-to-app transition. A later valid `/download` click replaces the
-card's claim instead of stacking a card.
+`anonymousId`/`sessionId` ride the claim only when `window.__infiniteHandoffContext()` exists and
+returns a consent-qualified context (null under DNT/GPC or a saved denial). The page never reads
+`infinite_analytics_visitor` / `infinite_analytics_session` directly. `infinite-tag@0.6.0` defines
+the accessor, and the page treats absence or a null return as "send no browser ids."
 
-Two properties are load-bearing and easy to undo by accident:
+Downloads are unchanged facts: after verification the page runs `location.assign("/download")` and
+renders **Download again** as `<a href="/download" data-download-location="get-started">`, so the
+server attempt marker, `app_download_click`, and the GA4 `app_download_clicked` bridge all fire as
+before. The homepage CTAs now point at `/get-started` and carry
+`data-analytics-cta-id="get-started"` + `data-analytics-cta-location`, which is what makes them
+`site_click` events (the runtime emits `site_click` only from that pair). The page's own funnel
+events - `gate_email_submitted`, `gate_code_verified`, `gate_download_started { trigger }`,
+`handoff_link_clicked` - go to PostHog and GA4 behind `window.__infiniteConsentGate` and never to
+the ledger, whose event enum is unchanged.
 
-- The handler binds in the **capture** phase. The GA4 download bridge is a bubble listener that
-  cancels an ordinary same-tab click and re-navigates this tab; capture is what lets the handoff set
-  `target="_blank"` before the bridge reads it, so the bridge stands down and the retained page —
-  the only place the "Open Infinite" button exists — survives.
-- The handler never calls `preventDefault()`. Every failure path (no accessor, no context, no
-  crypto, refused beacon, thrown error) falls through to the anchor's own navigation, so the
-  download always happens.
-
-`app_download_click` and the server-side `/download` attempt are unchanged; a claim is labelled
-`Attributed handoff start` and is never counted as a download, an installation, or a person.
-
-**Package pin:** the accessor ships in `infinite-tag@0.6.0`, which is not published yet. The site
-pinned `0.3.5` until 2026-08-19 and now pins `0.6.0` (accessor present); the flow was written against the documented accessor shape and was inert without
-it (`typeof window.__infiniteHandoffContext !== "function"` is just another no-context path). Pin
-`>= 0.6.0` and record its tarball receipt before flipping `INFINITE_HANDOFF_ENABLED`.
+Fail-open: the page's source renders a plain `<a href="/download">` link; a successfully initialised
+script hides it, and any script failure, network failure or 5xx reveals it again. A wrong or
+expired code (400) and a rate limit (429) do not - the gate is hard by design.
 
 ## Consent and privacy signals
 
