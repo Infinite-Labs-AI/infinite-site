@@ -98,7 +98,7 @@ function normalizedUtm(url, name) {
 }
 
 /** Click-ID PRESENCE only (audit aggregate-attribution ruling + P39): a boolean saying a
- *  non-empty gclid/fbclid/msclkid rode the request. The RAW VALUE never enters the marker —
+ *  non-empty gclid/fbclid/msclkid/ttclid rode the request. The RAW VALUE never enters the marker —
  *  raw click IDs are high-cardinality user-level identifiers we deliberately do not store. */
 function hasClickId(url, name) {
   const value = url.searchParams.get(name);
@@ -161,6 +161,7 @@ async function logDownloadAttempt(request) {
     hasGclid: hasClickId(url, "gclid"),
     hasFbclid: hasClickId(url, "fbclid"),
     hasMsclkid: hasClickId(url, "msclkid"),
+    hasTtclid: hasClickId(url, "ttclid"),
     assetChannel: ATTEMPT_ASSET_CHANNEL,
     schemaVersion: 1,
   };

@@ -49,14 +49,64 @@ assert.deepEqual(scriptSources, ["/assets/supabase-js-2.89.0.js"], "Supabase JS 
 // value, textContent, href, addEventListener, focus) so this harness stays small and honest.
 const CLAIM_KEY = "infinite_get_started_claim";
 const GOOGLE_CONTEXT_KEY = "infinite_get_started_google_context";
+const ATTRIBUTION_KEY = "infinite_landing_attribution_v1";
 const SUPABASE_STORAGE_KEY = "sb-wdxjduorvpayxixpmskf-auth-token";
 const PKCE_VERIFIER_KEY = "sb-wdxjduorvpayxixpmskf-auth-token-code-verifier";
 const OTP_PATH = "/infinite/auth/otp";
 const CLAIM_PATH = "/infinite/auth/handoff/claim";
+const USER_ID = "123e4567-e89b-42d3-a456-426614174000";
 const CLAIM = {
   claimId: "0b1f5c3e-6d6a-4f5f-9d3b-1f2c3d4e5f60",
   secret: "s3cr3t_base64url-value",
   expiresAt: "2026-09-05T10:00:00.000Z",
+};
+const ATTRIBUTION = {
+  utm_source: "Newsletter",
+  utm_medium: "Email",
+  utm_campaign: "Launch Week",
+  utm_term: "Founder Agent",
+  utm_content: "Hero CTA",
+  has_gclid: true,
+  has_fbclid: false,
+  has_msclkid: true,
+  has_ttclid: true,
+  landing_path: "/",
+};
+const CLAIM_ATTRIBUTION = {
+  utmSource: "Newsletter",
+  utmMedium: "Email",
+  utmCampaign: "Launch Week",
+  utmTerm: "Founder Agent",
+  utmContent: "Hero CTA",
+  hasGclid: true,
+  hasFbclid: false,
+  hasMsclkid: true,
+  hasTtclid: true,
+  landingPath: "/",
+};
+const DIRECT_ATTRIBUTION = {
+  utm_source: "",
+  utm_medium: "",
+  utm_campaign: "",
+  utm_term: "",
+  utm_content: "",
+  has_gclid: false,
+  has_fbclid: false,
+  has_msclkid: false,
+  has_ttclid: false,
+  landing_path: "/terms/",
+};
+const MALFORMED_ATTRIBUTION = {
+  utm_source: "Paid\u0000Search",
+  utm_medium: "CPC",
+  utm_campaign: "B".repeat(140),
+  utm_term: "term\nwith\tcontrols",
+  utm_content: "?gclid=RAW_GCLID",
+  has_gclid: "true",
+  has_fbclid: true,
+  has_msclkid: false,
+  has_ttclid: true,
+  landing_path: "/?gclid=RAW_GCLID#frag",
 };
 
 function createPage({
@@ -65,6 +115,7 @@ function createPage({
   handoffContext,
   storedClaim,
   storedGoogleContext,
+  storedAttribution,
   storedPkceVerifier,
   existingSessionStorage,
   search = "",
@@ -108,8 +159,11 @@ function createPage({
   const storage = existingSessionStorage ?? new Map();
   if (storedClaim) storage.set(CLAIM_KEY, JSON.stringify(storedClaim));
   if (storedGoogleContext) storage.set(GOOGLE_CONTEXT_KEY, JSON.stringify(storedGoogleContext));
+  if (storedAttribution) storage.set(ATTRIBUTION_KEY, JSON.stringify(storedAttribution));
   if (storedPkceVerifier) storage.set(PKCE_VERIFIER_KEY, storedPkceVerifier);
   const localStorageWrites = [];
+  const identifies = [];
+  const posthogCalls = [];
   const supabaseCalls = {
     createClient: [],
     autoExchange: [],
@@ -120,7 +174,17 @@ function createPage({
   const queues = Object.fromEntries(Object.entries(responses).map(([path, list]) => [path, [...list]]));
   const authStorageProbeValues = [];
   const window = {
-    posthog: { capture: (name, properties) => captures.push([name, cloneJson(properties)]) },
+    posthog: {
+      capture: (name, properties) => {
+        const entry = [name, cloneJson(properties)];
+        captures.push(entry);
+        posthogCalls.push(["capture", ...entry]);
+      },
+      identify: (distinctId) => {
+        identifies.push(distinctId);
+        posthogCalls.push(["identify", distinctId]);
+      },
+    },
     gtag: (...args) => gtagCalls.push(args.map((arg) => cloneJson(arg))),
     supabase: {
       createClient: (url, key, options) => {
@@ -248,6 +312,8 @@ function createPage({
     replaced,
     captures,
     gtagCalls,
+    identifies,
+    posthogCalls,
     storage,
     localStorageWrites,
     supabaseCalls,
@@ -301,8 +367,6 @@ const err = (status, error) => ({ status, body: { error } });
   assert.deepEqual(stored, {
     ctaLocation: "pricing",
     gateMethod: "google",
-    utm: { source: "x", medium: "cpc", campaign: "fall" },
-    clickIds: { gclid: true, fbclid: true, msclkid: false, ttclid: false },
   });
   assert.doesNotMatch(page.storage.get(GOOGLE_CONTEXT_KEY), /SECRET|FBSECRET/, "click id values are not stored across the OAuth redirect");
   assert.deepEqual(page.captures, [["gate_google_started", { cta_location: "pricing" }]]);
@@ -310,7 +374,7 @@ const err = (status, error) => ({ status, body: { error } });
 }
 
 {
-  const survivingSessionStorage = new Map();
+  const survivingSessionStorage = new Map([[ATTRIBUTION_KEY, JSON.stringify(ATTRIBUTION)]]);
   const firstPage = createPage({
     search: "?cta=hero&utm_source=x&utm_medium=cpc&utm_campaign=fall&gclid=SECRET",
     existingSessionStorage: survivingSessionStorage,
@@ -326,7 +390,7 @@ const err = (status, error) => ({ status, body: { error } });
     search: "?code=pkce-code&state=supabase-state",
     existingSessionStorage: survivingSessionStorage,
     handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1" },
-    responses: { [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
     supabaseAuth: { requireCodeVerifier: true },
   });
   await returnPage.settle();
@@ -336,9 +400,13 @@ const err = (status, error) => ({ status, body: { error } });
     ctaLocation: "hero",
     anonymousId: "anon-1",
     sessionId: "sess-1",
+    ...CLAIM_ATTRIBUTION,
   });
+  assert.deepEqual(returnPage.identifies, [USER_ID], "Google claim success identifies the site PostHog person by Supabase UUID");
   assert.deepEqual(returnPage.assigned, ["/download"]);
   assert.equal(returnPage.el("gate-step-download").hidden, false);
+  assert.doesNotMatch(JSON.stringify(returnPage.fetchCalls), /SECRET|RAW_/, "claim payload carries click-id booleans only, never raw click-id values");
+  assert.doesNotMatch(JSON.stringify([returnPage.captures, returnPage.gtagCalls, returnPage.identifies]), /SECRET|RAW_|google-access-token|founder@example\.com|claim_id|s3cr3t/, "analytics never receive raw click ids, tokens, email, claim id, or secret");
   assert.deepEqual(
     [...survivingSessionStorage.keys()].filter((key) => key === SUPABASE_STORAGE_KEY || key.startsWith(`${SUPABASE_STORAGE_KEY}-`)),
     [],
@@ -353,12 +421,11 @@ const err = (status, error) => ({ status, body: { error } });
     storedGoogleContext: {
       ctaLocation: "navigation",
       gateMethod: "google",
-      utm: { source: "x", medium: "cpc", campaign: "fall" },
-      clickIds: { gclid: true, fbclid: false, msclkid: true, ttclid: false },
     },
+    storedAttribution: ATTRIBUTION,
     storedPkceVerifier: "pkce-verifier",
     handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1" },
-    responses: { [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
     supabaseAuth: { requireCodeVerifier: true },
   });
   await page.settle();
@@ -369,9 +436,16 @@ const err = (status, error) => ({ status, body: { error } });
     ctaLocation: "navigation",
     anonymousId: "anon-1",
     sessionId: "sess-1",
+    ...CLAIM_ATTRIBUTION,
   });
   assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
   assert.deepEqual(page.replaced, ["/get-started"]);
+  assert.deepEqual(page.identifies, [USER_ID], "PostHog identify runs before later explicit gate events on Google success");
+  assert.deepEqual(page.posthogCalls.slice(0, 3), [
+    ["identify", USER_ID],
+    ["capture", "gate_google_completed", { cta_location: "navigation" }],
+    ["capture", "gate_download_started", { cta_location: "navigation", trigger: "auto" }],
+  ]);
   assert.equal(page.storage.has(PKCE_VERIFIER_KEY), false, "the PKCE verifier is cleared after the code exchange");
   assert.equal(page.storage.has(GOOGLE_CONTEXT_KEY), false, "the post-redirect attribution context is single-use");
   assert.equal(page.el("gate-step-download").hidden, false);
@@ -430,8 +504,6 @@ for (const [status, error, reason] of [
     storedGoogleContext: {
       ctaLocation: "hero",
       gateMethod: "google",
-      utm: { source: "", medium: "", campaign: "" },
-      clickIds: { gclid: false, fbclid: false, msclkid: false, ttclid: false },
     },
     storedPkceVerifier: "pkce-verifier",
   });
@@ -466,7 +538,8 @@ for (const [status, error, reason] of [
 {
   const page = createPage({
     search: "?cta=hero",
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "challenge-1" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    storedAttribution: ATTRIBUTION,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "challenge-1" })], [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
     handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1", url: "https://infinite.fast/get-started/" },
   });
   page.el("gate-email").value = "  Founder@Example.com ";
@@ -489,7 +562,14 @@ for (const [status, error, reason] of [
     ctaLocation: "hero",
     anonymousId: "anon-1",
     sessionId: "sess-1",
+    ...CLAIM_ATTRIBUTION,
   }, "a consent-qualified infinite-tag 0.6.0 handoff accessor contributes both browser ids and the originating homepage CTA");
+  assert.deepEqual(page.identifies, [USER_ID], "OTP claim success identifies the site PostHog person by Supabase UUID, never email");
+  assert.deepEqual(page.posthogCalls.slice(0, 3), [
+    ["capture", "gate_email_submitted", { cta_location: "hero" }],
+    ["identify", USER_ID],
+    ["capture", "gate_code_verified", { cta_location: "hero" }],
+  ]);
   assert.equal(page.el("gate-step-code").hidden, true);
   assert.equal(page.el("gate-step-download").hidden, false);
   assert.equal(page.el("gate-download-email").textContent, "founder@example.com");
@@ -498,6 +578,8 @@ for (const [status, error, reason] of [
   assert.deepEqual(page.assigned, ["/download"], "the download auto-starts exactly once via location.assign");
   assert.deepEqual(JSON.parse(page.storage.get(CLAIM_KEY)), { ...CLAIM, email: "founder@example.com" });
   assert.equal(page.el("gate-fallback").hidden, true);
+  assert.doesNotMatch(JSON.stringify(page.fetchCalls), /EAIa|RAW_/, "claim payload carries click-id booleans only, never raw click-id values");
+  assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls, page.identifies]), /EAIa|RAW_|founder@example\.com|s3cr3t|claim_id/, "analytics never receive raw click ids, email as PostHog id, or handoff secrets");
   await page.click("gate-open-infinite");
   assert.deepEqual(page.assigned, [
     "/download",
@@ -538,6 +620,62 @@ for (const handoffContext of [null, undefined]) {
     ["challenge", "ctaLocation", "email", "token"],
     `no browser ids when the accessor is ${handoffContext === null ? "null" : "absent"}`,
   );
+}
+
+{
+  const page = createPage({
+    storedAttribution: DIRECT_ATTRIBUTION,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    handoffContext: null,
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "000000";
+  await page.submit("gate-form-code");
+  assert.deepEqual(
+    page.fetchCalls[1].body,
+    {
+      email: "a@b.co",
+      token: "000000",
+      challenge: "c",
+      ctaLocation: "get-started",
+      hasGclid: false,
+      hasFbclid: false,
+      hasMsclkid: false,
+      hasTtclid: false,
+      landingPath: "/terms/",
+    },
+    "a visitor with no landing campaign still completes with only false click-id flags and landingPath",
+  );
+  assert.deepEqual(page.identifies, [USER_ID], "missing campaign attribution never blocks PostHog identity on claim success");
+  assert.equal(page.el("gate-step-download").hidden, false);
+  assert.deepEqual(page.assigned, ["/download"]);
+}
+
+{
+  const page = createPage({
+    storedAttribution: MALFORMED_ATTRIBUTION,
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    handoffContext: null,
+  });
+  page.el("gate-email").value = "a@b.co";
+  await page.submit("gate-form-email");
+  page.el("gate-code").value = "000000";
+  await page.submit("gate-form-code");
+  assert.deepEqual(page.fetchCalls[1].body, {
+    email: "a@b.co",
+    token: "000000",
+    challenge: "c",
+    ctaLocation: "get-started",
+    utmSource: "PaidSearch",
+    utmMedium: "CPC",
+    utmCampaign: "B".repeat(128),
+    utmTerm: "termwithcontrols",
+    hasFbclid: true,
+    hasMsclkid: false,
+    hasTtclid: true,
+  }, "claim send re-validates client-writable attribution storage");
+  assert.doesNotMatch(JSON.stringify(page.fetchCalls[1].body), /RAW_GCLID|\?|#/, "malformed stored query/click-id material is not transmitted");
 }
 
 {

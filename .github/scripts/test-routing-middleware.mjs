@@ -236,32 +236,38 @@ try {
   // 3b) Click-ID PRESENCE flags (audit aggregate-attribution ruling + P39): booleans only —
   //     the raw click-ID value must never enter the marker. Empty params read as absent.
   assert.deepEqual(
-    [utmAttempt.hasGclid, utmAttempt.hasFbclid, utmAttempt.hasMsclkid],
-    [false, false, false],
-    "requests without click IDs must carry three false presence flags",
+    [utmAttempt.hasGclid, utmAttempt.hasFbclid, utmAttempt.hasMsclkid, utmAttempt.hasTtclid],
+    [false, false, false, false],
+    "requests without click IDs must carry four false presence flags",
   );
   const gclid = await runAsync(
     request("https://infinite.fast/download?gclid=EAIaIQobChMI_secret_value_123"),
   );
   const gclidAttempt = parseAttempt(gclid.logs[0]);
   assert.deepEqual(
-    [gclidAttempt.hasGclid, gclidAttempt.hasFbclid, gclidAttempt.hasMsclkid],
-    [true, false, false],
+    [gclidAttempt.hasGclid, gclidAttempt.hasFbclid, gclidAttempt.hasMsclkid, gclidAttempt.hasTtclid],
+    [true, false, false, false],
     "a gclid-bearing request must flag ONLY hasGclid",
   );
   assert.ok(!gclid.logs[0].includes("EAIaIQobChMI_secret_value_123"), "the raw gclid value must never enter the marker");
   const bothIds = await runAsync(
-    request("https://infinite.fast/download?fbclid=IwAR_raw_fb_value&msclkid=abc123raw"),
+    request("https://infinite.fast/download?fbclid=IwAR_raw_fb_value&msclkid=abc123raw&ttclid=tt_raw_value"),
   );
   const bothAttempt = parseAttempt(bothIds.logs[0]);
   assert.deepEqual(
-    [bothAttempt.hasGclid, bothAttempt.hasFbclid, bothAttempt.hasMsclkid],
-    [false, true, true],
-    "fbclid + msclkid must flag their own presence bits",
+    [bothAttempt.hasGclid, bothAttempt.hasFbclid, bothAttempt.hasMsclkid, bothAttempt.hasTtclid],
+    [false, true, true, true],
+    "fbclid + msclkid + ttclid must flag their own presence bits",
   );
-  assert.ok(!bothIds.logs[0].includes("IwAR_raw_fb_value") && !bothIds.logs[0].includes("abc123raw"), "raw fbclid/msclkid values must never enter the marker");
-  const emptyId = await runAsync(request("https://infinite.fast/download?gclid="));
+  assert.ok(
+    !bothIds.logs[0].includes("IwAR_raw_fb_value")
+      && !bothIds.logs[0].includes("abc123raw")
+      && !bothIds.logs[0].includes("tt_raw_value"),
+    "raw fbclid/msclkid/ttclid values must never enter the marker",
+  );
+  const emptyId = await runAsync(request("https://infinite.fast/download?gclid=&ttclid="));
   assert.equal(parseAttempt(emptyId.logs[0]).hasGclid, false, "an empty gclid param is not a click-ID presence");
+  assert.equal(parseAttempt(emptyId.logs[0]).hasTtclid, false, "an empty ttclid param is not a click-ID presence");
 
   // 3c) The DOCUMENT marker's visit fingerprint (the honest server-rate denominator): with the
   //     key configured, a document navigation carries a hex-64 visitKey computed with the SAME

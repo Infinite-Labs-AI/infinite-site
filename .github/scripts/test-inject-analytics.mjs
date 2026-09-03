@@ -16,6 +16,7 @@ const contractHashes = {
 };
 const downloadLocations = ["navigation", "hero", "pricing", "final-cta"];
 const retiredSiteHandoffFlag = ["INFINITE", "HANDOFF", "ENABLED"].join("_");
+const ATTRIBUTION_KEY = "infinite_landing_attribution_v1";
 
 const sourceArtifact = (siteSourceKey, productionHosts) => JSON.stringify({
   siteSourceKey,
@@ -96,6 +97,53 @@ try {
   // No stored decision: not_required collects by default.
   const granted = executeAnalytics(syntheticHtml, {});
   assert.equal(granted.infiniteEvents("site_page_view").length, 1, "Infinite emits with no stored decision");
+
+  const campaignStorage = new Map();
+  const campaign = executeAnalytics(syntheticHtml, {
+    pathname: "/",
+    search: "?utm_source=NEWSLETTER&utm_medium=Email&utm_campaign=" + "A".repeat(140) + "&utm_term=Launch%20Term&utm_content=Hero%7CBuy&gclid=RAW_GCLID&fbclid=RAW_FB&msclkid=RAW_MS&ttclid=RAW_TT",
+    existingSessionStorage: campaignStorage,
+  });
+  const storedAttribution = campaign.attribution();
+  assert.deepEqual(storedAttribution, {
+    utm_source: "NEWSLETTER",
+    utm_medium: "Email",
+    utm_campaign: "A".repeat(128),
+    utm_term: "Launch Term",
+    utm_content: "Hero|Buy",
+    has_gclid: true,
+    has_fbclid: true,
+    has_msclkid: true,
+    has_ttclid: true,
+    landing_path: "/",
+  });
+  assert.doesNotMatch(campaignStorage.get(ATTRIBUTION_KEY), /RAW_GCLID|RAW_FB|RAW_MS|RAW_TT/, "raw click-id values must never be stored");
+  assert.doesNotMatch(campaignStorage.get(ATTRIBUTION_KEY), /\?utm_source|gclid=|fbclid=|msclkid=|ttclid=/, "the whole query string must never be stored");
+
+  executeAnalytics(syntheticHtml, {
+    pathname: "/pricing",
+    search: "?utm_source=OVERRIDE&gclid=SECOND_RAW_VALUE",
+    existingSessionStorage: campaignStorage,
+  });
+  assert.deepEqual(JSON.parse(campaignStorage.get(ATTRIBUTION_KEY)), storedAttribution, "landing attribution is first-touch and is not overwritten by internal navigation");
+
+  const noCampaign = executeAnalytics(syntheticHtml, {
+    pathname: "/terms/",
+    search: "",
+    existingSessionStorage: new Map(),
+  });
+  assert.deepEqual(noCampaign.attribution(), {
+    utm_source: "",
+    utm_medium: "",
+    utm_campaign: "",
+    utm_term: "",
+    utm_content: "",
+    has_gclid: false,
+    has_fbclid: false,
+    has_msclkid: false,
+    has_ttclid: false,
+    landing_path: "/terms/",
+  }, "direct visitors still get a first-touch landing_path blob so later navigation cannot overwrite entry attribution");
 
   // infinite-tag >= 0.3.5: an explicit decision governs in BOTH directions — a recorded
   // denial sticks even without any privacy signal.
@@ -378,6 +426,8 @@ function executeAnalytics(html, {
   globalPrivacyControl = false,
   hostname = "infinite.fast",
   pathname = "/tools/",
+  search = "?campaign=secret",
+  existingSessionStorage,
   // `undefined` = the accessor is absent entirely (older infinite-tag, unverified host, no source
   // key). `null` = the accessor exists and reports no consent-qualified context. An object = a
   // consent-qualified context, exactly the documented infinite-tag >= 0.6.0 shape.
@@ -395,7 +445,7 @@ function executeAnalytics(html, {
   const infiniteBodies = [];
   const listeners = new Map();
   const storage = new Map(storedConsent ? [["infinite_analytics_consent", storedConsent]] : []);
-  const sessionStorage = new Map();
+  const sessionStorage = existingSessionStorage ?? new Map();
   const insertedScripts = [];
   const timers = [];
   const origin = `https://${hostname}`;
@@ -439,10 +489,11 @@ function executeAnalytics(html, {
   };
   const window = {
     location: {
-      href: `${origin}/tools/?campaign=secret#fragment`,
+      href: `${origin}${pathname}${search}#fragment`,
       origin,
       hostname,
       pathname,
+      search,
     },
     addEventListener: (name, listener) => listeners.set(name, [...(listeners.get(name) ?? []), listener]),
     dispatchEvent: (event) => {
@@ -454,6 +505,7 @@ function executeAnalytics(html, {
   if (handoffContext !== undefined) window.__infiniteHandoffContext = () => handoffContext;
   const context = {
     URL,
+    URLSearchParams,
     Date,
     JSON,
     Array,
@@ -522,6 +574,8 @@ function executeAnalytics(html, {
     gaConfigs,
     xEvents,
     metaEvents,
+    attribution: () => JSON.parse(sessionStorage.get(ATTRIBUTION_KEY)),
+    storageHas: (key) => sessionStorage.has(key),
     insertedScripts,
     handoffBeacons,
     handoffFetches,
