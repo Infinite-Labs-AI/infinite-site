@@ -48,6 +48,7 @@ void (async () => {
     mirrors: [],
   });
   const snippets = [
+    landingAttributionSnippet(),
     consentGateSnippet(),
     posthog,
     ga4,
@@ -155,6 +156,40 @@ function findHtmlFiles(dir) {
     else if (entry.isFile() && entry.name.endsWith(".html")) files.push(fullPath);
   }
   return files;
+}
+
+function landingAttributionSnippet() {
+  return `  <script>
+    (function () {
+      var KEY = "infinite_landing_attribution_v1";
+      function cleanValue(value) {
+        if (typeof value !== "string") return "";
+        var printable = value.replace(/[^\\x20-\\x7E]/g, "").trim();
+        return printable.slice(0, 128);
+      }
+      function hasValue(params, name) {
+        var value = params.get(name);
+        return typeof value === "string" && value.length > 0;
+      }
+      try {
+        if (sessionStorage.getItem(KEY)) return;
+        var params = new URLSearchParams(location.search || "");
+        var payload = {
+          utm_source: cleanValue(params.get("utm_source") || ""),
+          utm_medium: cleanValue(params.get("utm_medium") || ""),
+          utm_campaign: cleanValue(params.get("utm_campaign") || ""),
+          utm_term: cleanValue(params.get("utm_term") || ""),
+          utm_content: cleanValue(params.get("utm_content") || ""),
+          has_gclid: hasValue(params, "gclid"),
+          has_fbclid: hasValue(params, "fbclid"),
+          has_msclkid: hasValue(params, "msclkid"),
+          has_ttclid: hasValue(params, "ttclid"),
+          landing_path: location.pathname || "/"
+        };
+        sessionStorage.setItem(KEY, JSON.stringify(payload));
+      } catch (_error) {}
+    })();
+  </script>`;
 }
 
 // One shared consent gate for the third-party lanes (GA4, PostHog, X, Meta). It applies the

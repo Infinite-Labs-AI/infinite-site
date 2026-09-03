@@ -243,6 +243,7 @@
     (function () {
       var STORAGE_KEY = "infinite_get_started_claim";
       var GOOGLE_CONTEXT_KEY = "infinite_get_started_google_context";
+      var ATTRIBUTION_KEY = "infinite_landing_attribution_v1";
       var OTP_PATH = "/infinite/auth/otp";
       var CLAIM_PATH = "/infinite/auth/handoff/claim";
       var SUPABASE_URL = "https://wdxjduorvpayxixpmskf.supabase.co";
@@ -319,6 +320,13 @@
           if (typeof window.gtag === "function") window.gtag("event", name, props);
         } catch (_error) {}
       }
+      function identifyUser(userId) {
+        if (!analyticsAllowed) return;
+        if (typeof userId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId)) return;
+        try {
+          if (window.posthog && typeof window.posthog.identify === "function") window.posthog.identify(userId);
+        } catch (_error) {}
+      }
 
       function show(name) {
         for (var key in steps) steps[key].hidden = key !== name;
@@ -348,22 +356,10 @@
         try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(claim)); } catch (_error) {}
       }
       function writeGoogleContext() {
-        var params = new URLSearchParams(location.search || "");
         var value = ctaLocation();
         var context = {
           ctaLocation: value,
-          gateMethod: "google",
-          utm: {
-            source: params.get("utm_source") || "",
-            medium: params.get("utm_medium") || "",
-            campaign: params.get("utm_campaign") || ""
-          },
-          clickIds: {
-            gclid: params.has("gclid"),
-            fbclid: params.has("fbclid"),
-            msclkid: params.has("msclkid"),
-            ttclid: params.has("ttclid")
-          }
+          gateMethod: "google"
         };
         try { sessionStorage.setItem(GOOGLE_CONTEXT_KEY, JSON.stringify(context)); } catch (_error) {}
         return context;
@@ -412,6 +408,56 @@
           body.sessionId = context.sessionId;
         }
         return body;
+      }
+      function cleanAttributionValue(value) {
+        if (typeof value !== "string") return "";
+        var clean = value.replace(/[^\x20-\x7E]/g, "").trim();
+        if (/(^|[?&#])(gclid|fbclid|msclkid|ttclid)=/i.test(clean)) return "";
+        return clean.slice(0, 128);
+      }
+      function cleanLandingPath(value) {
+        var path = cleanAttributionValue(value);
+        if (!/^\/[^\?#]*$/.test(path)) return "";
+        return path;
+      }
+      function campaignAttribution() {
+        try {
+          var raw = sessionStorage.getItem(ATTRIBUTION_KEY);
+          if (!raw) return {};
+          var source = JSON.parse(raw);
+          if (!source || typeof source !== "object") return {};
+          var body = {};
+          var strings = [
+            ["utm_source", "utmSource"],
+            ["utm_medium", "utmMedium"],
+            ["utm_campaign", "utmCampaign"],
+            ["utm_term", "utmTerm"],
+            ["utm_content", "utmContent"],
+            ["landing_path", "landingPath"]
+          ];
+          for (var index = 0; index < strings.length; index += 1) {
+            var value = source[strings[index][0]];
+            var clean = strings[index][0] === "landing_path" ? cleanLandingPath(value) : cleanAttributionValue(value);
+            if (clean) body[strings[index][1]] = clean;
+          }
+          var booleans = [
+            ["has_gclid", "hasGclid"],
+            ["has_fbclid", "hasFbclid"],
+            ["has_msclkid", "hasMsclkid"],
+            ["has_ttclid", "hasTtclid"]
+          ];
+          for (var boolIndex = 0; boolIndex < booleans.length; boolIndex += 1) {
+            if (typeof source[booleans[boolIndex][0]] === "boolean") body[booleans[boolIndex][1]] = source[booleans[boolIndex][0]];
+          }
+          return body;
+        } catch (_error) {
+          return {};
+        }
+      }
+      function claimBody(body) {
+        var attribution = campaignAttribution();
+        for (var key in attribution) body[key] = attribution[key];
+        return handoffIds(body);
       }
       function authStorage() {
         return {
@@ -618,7 +664,7 @@
         var token = codeInput.value.replace(/\s+/g, "");
         setError(codeError, "");
         if (!/^[0-9]{6}$/.test(token)) return setError(codeError, COPY.codeMalformed);
-        var body = handoffIds({ email: state.email, token: token, challenge: state.challenge, ctaLocation: CTA_LOCATION });
+        var body = claimBody({ email: state.email, token: token, challenge: state.challenge, ctaLocation: CTA_LOCATION });
         submitCode.disabled = true;
         postJson(CLAIM_PATH, body).then(function (result) {
           submitCode.disabled = false;
@@ -631,6 +677,7 @@
           }
           var claim = { claimId: data.claimId, secret: data.secret, expiresAt: data.expiresAt, email: state.email };
           writeClaim(claim);
+          identifyUser(data.userId);
           track("gate_code_verified", { cta_location: CTA_LOCATION });
           showDownload(claim);
           track("gate_download_started", { cta_location: CTA_LOCATION, trigger: "auto" });
@@ -677,7 +724,7 @@
           if (!result || !result.data || !result.data.session || typeof result.data.session.access_token !== "string") {
             throw new Error("invalid_token");
           }
-          return postJson(CLAIM_PATH, handoffIds({ accessToken: result.data.session.access_token, ctaLocation: claimCtaLocation }));
+          return postJson(CLAIM_PATH, claimBody({ accessToken: result.data.session.access_token, ctaLocation: claimCtaLocation }));
         }).then(function (result) {
           if (!result.ok || typeof result.data.claimId !== "string" || typeof result.data.secret !== "string") {
             var reason = googleFailureReason(result, result.status === 0 ? "csp_or_network" : "invalid_token");
@@ -691,6 +738,7 @@
           return finishGoogleAuth().then(function () {
             writeClaim(pendingClaim);
             clearGoogleContext();
+            identifyUser(data.userId);
             track("gate_google_completed", { cta_location: claimCtaLocation });
             showDownload(pendingClaim);
             track("gate_download_started", { cta_location: claimCtaLocation, trigger: "auto" });
