@@ -219,5 +219,208 @@
     <span class="sep">·</span>
     <a href="../terms/">Terms</a>
   </footer>
+  <script>
+    (function () {
+      var STORAGE_KEY = "infinite_get_started_claim";
+      var OTP_PATH = "/infinite/auth/otp";
+      var CLAIM_PATH = "/infinite/auth/handoff/claim";
+      var CTA_LOCATION = "get-started";
+      var COPY = {
+        emailInvalid: "Enter the email you’ll sign in with.",
+        emailRateLimited: "Too many codes requested. Wait a few minutes, then try again.",
+        emailFailed: "We couldn’t send a code right now. Try again, or use the direct download above.",
+        codeMalformed: "Enter the 6-digit code from the email.",
+        codeInvalid: "That code is invalid or has expired. Check it, or resend a new one.",
+        codeRateLimited: "Too many attempts. Wait a few minutes, then try again.",
+        codeFailed: "Something went wrong on our side. Try again, or use the direct download above and sign in inside the app.",
+        resendFailed: "We couldn’t send a new code. Try again in a moment.",
+        offline: "We couldn’t reach Infinite. Check your connection, or use the direct download above."
+      };
+
+      function el(id) {
+        var node = document.getElementById(id);
+        if (!node) throw new Error("get-started: missing #" + id);
+        return node;
+      }
+      var fallback = el("gate-fallback");
+      var steps = { email: el("gate-step-email"), code: el("gate-step-code"), download: el("gate-step-download") };
+      var emailForm = el("gate-form-email");
+      var emailInput = el("gate-email");
+      var emailError = el("gate-email-error");
+      var submitEmail = el("gate-submit-email");
+      var codeForm = el("gate-form-code");
+      var codeInput = el("gate-code");
+      var codeError = el("gate-code-error");
+      var codeNote = el("gate-code-note");
+      var codeTarget = el("gate-code-target");
+      var resend = el("gate-resend");
+      var changeEmail = el("gate-change-email");
+      var submitCode = el("gate-submit-code");
+      var downloadEmail = el("gate-download-email");
+      var downloadAgain = el("gate-download-again");
+      var openInfinite = el("gate-open-infinite");
+
+      var state = { email: "", challenge: "" };
+
+      // Filled in by the analytics step (PostHog + GA4 behind the consent gate). No-op until then.
+      function track(_name, _properties) {}
+
+      function show(name) {
+        for (var key in steps) steps[key].hidden = key !== name;
+      }
+      function setError(node, message) {
+        node.textContent = message || "";
+        node.hidden = !message;
+      }
+      function revealFallback() { fallback.hidden = false; }
+
+      function readClaim() {
+        try {
+          var raw = sessionStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          var claim = JSON.parse(raw);
+          if (!claim || typeof claim.claimId !== "string" || typeof claim.secret !== "string" || typeof claim.email !== "string") return null;
+          return claim;
+        } catch (_error) {
+          return null;
+        }
+      }
+      function writeClaim(claim) {
+        try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(claim)); } catch (_error) {}
+      }
+      function handoffUrl(claim) {
+        return "infinite://handoff/v1?claim_id=" + encodeURIComponent(claim.claimId) + "&secret=" + encodeURIComponent(claim.secret);
+      }
+      // The tag's consent-gated accessor is the ONLY source of browser ids: null under DNT/GPC or a
+      // saved denial, absent on infinite-tag 0.6.0 - in both cases we send neither id. Never read
+      // the tag's persisted visitor/session keys directly.
+      function handoffContext() {
+        try {
+          return typeof window.__infiniteHandoffContext === "function" ? window.__infiniteHandoffContext() : null;
+        } catch (_error) {
+          return null;
+        }
+      }
+
+      function postJson(path, body) {
+        return fetch(path, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+          credentials: "same-origin"
+        }).then(function (response) {
+          return response.json().catch(function () { return {}; }).then(function (data) {
+            return { ok: response.ok, status: response.status, data: data || {} };
+          });
+        });
+      }
+
+      function showDownload(claim) {
+        downloadEmail.textContent = claim.email;
+        openInfinite.href = handoffUrl(claim);
+        show("download");
+      }
+
+      emailForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        var email = emailInput.value.trim().toLowerCase();
+        setError(emailError, "");
+        if (!email || email.indexOf("@") < 1 || email.indexOf(".") < 0) return setError(emailError, COPY.emailInvalid);
+        submitEmail.disabled = true;
+        postJson(OTP_PATH, { email: email }).then(function (result) {
+          submitEmail.disabled = false;
+          if (!result.ok || typeof result.data.challenge !== "string") {
+            if (result.status === 429) return setError(emailError, COPY.emailRateLimited);
+            if (result.status === 404 || result.status >= 500 || result.status === 0) revealFallback();
+            return setError(emailError, COPY.emailFailed);
+          }
+          state.email = email;
+          state.challenge = result.data.challenge;
+          codeTarget.textContent = email;
+          codeInput.value = "";
+          codeNote.textContent = "";
+          setError(codeError, "");
+          track("gate_email_submitted", { cta_location: CTA_LOCATION });
+          show("code");
+          codeInput.focus();
+        }).catch(function () {
+          submitEmail.disabled = false;
+          revealFallback();
+          setError(emailError, COPY.offline);
+        });
+      });
+
+      resend.addEventListener("click", function () {
+        if (!state.email) return show("email");
+        setError(codeError, "");
+        codeNote.textContent = "";
+        postJson(OTP_PATH, { email: state.email }).then(function (result) {
+          if (!result.ok || typeof result.data.challenge !== "string") {
+            return setError(codeError, result.status === 429 ? COPY.emailRateLimited : COPY.resendFailed);
+          }
+          state.challenge = result.data.challenge;
+          codeNote.textContent = "We sent a new code to " + state.email + ".";
+        }).catch(function () {
+          setError(codeError, COPY.offline);
+        });
+      });
+
+      changeEmail.addEventListener("click", function () {
+        state.challenge = "";
+        setError(emailError, "");
+        show("email");
+        emailInput.focus();
+      });
+
+      codeForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        var token = codeInput.value.replace(/\s+/g, "");
+        setError(codeError, "");
+        if (!/^[0-9]{6}$/.test(token)) return setError(codeError, COPY.codeMalformed);
+        var body = { email: state.email, token: token, challenge: state.challenge, ctaLocation: CTA_LOCATION };
+        var context = handoffContext();
+        if (context && typeof context.anonymousId === "string" && typeof context.sessionId === "string") {
+          body.anonymousId = context.anonymousId;
+          body.sessionId = context.sessionId;
+        }
+        submitCode.disabled = true;
+        postJson(CLAIM_PATH, body).then(function (result) {
+          submitCode.disabled = false;
+          var data = result.data;
+          if (!result.ok || typeof data.claimId !== "string" || typeof data.secret !== "string") {
+            if (result.status === 429) return setError(codeError, COPY.codeRateLimited);
+            if (result.status === 400) return setError(codeError, COPY.codeInvalid);
+            revealFallback();
+            return setError(codeError, COPY.codeFailed);
+          }
+          var claim = { claimId: data.claimId, secret: data.secret, expiresAt: data.expiresAt, email: state.email };
+          writeClaim(claim);
+          track("gate_code_verified", { cta_location: CTA_LOCATION });
+          showDownload(claim);
+          track("gate_download_started", { cta_location: CTA_LOCATION, trigger: "auto" });
+          // The 307 lands on a file download, so this tab survives and keeps the Open Infinite button.
+          location.assign("/download");
+        }).catch(function () {
+          submitCode.disabled = false;
+          revealFallback();
+          setError(codeError, COPY.offline);
+        });
+      });
+
+      // "Download again" is an ordinary same-origin /download anchor: the tag runtime emits
+      // app_download_click and the injected GA4 bridge handles the same-tab navigation. We only observe.
+      downloadAgain.addEventListener("click", function () {
+        track("gate_download_started", { cta_location: CTA_LOCATION, trigger: "again" });
+      });
+      openInfinite.addEventListener("click", function () {
+        track("handoff_link_clicked", { cta_location: CTA_LOCATION });
+      });
+
+      var restored = readClaim();
+      if (restored) showDownload(restored); else show("email");
+      // Last line on purpose: any throw above leaves the fail-open download link visible.
+      fallback.hidden = true;
+    })();
+  </script>
 </body>
 </html>
