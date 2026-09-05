@@ -265,7 +265,7 @@
   <div class="page">
     <header class="topbar">
       <a class="brand" href="../" aria-label="Infinite home">
-        <img src="../logo.png" alt="" width="34" height="34" />
+        <img src="/logos/infinite-ring-clean.png" alt="" width="34" height="34" />
         <span>Infinite</span>
       </a>
       <nav aria-label="Legal navigation">
@@ -300,7 +300,9 @@
           <li>We do not sell connected-source or website analytics data.</li>
         </ul>
 
-        <h2>3. Google user data (Google Analytics)</h2>
+        <h2>3. Google user data</h2>
+
+        <h3>Google Analytics 4</h3>
 
         <p>If you connect Google Analytics, Infinite uses the Google authorization mode shown in the product. A device-only connection reads authorized data to your device. A hosted connector processes the authorized metrics and credentials in Infinite's cloud so it can synchronize the workspace and provide the hosted feature you requested.</p>
 
@@ -320,11 +322,22 @@
 
         <ul>
           <li><strong>Where it is stored:</strong> in the local store for device-only connections and in the protected hosted workspace store for hosted connections, according to the mode you enable.</li>
-          <li><strong>Sharing:</strong> we do not transfer your Google user data to third parties. We never sell it.</li>
+          <li><strong>Sharing:</strong> hosted connections use service providers to store and process authorized data on our behalf. When you request AI assistance using connected data, relevant context may be sent to your selected model provider, as described in section 6. We do not sell Google user data or use Google Analytics data for advertising.</li>
           <li><strong>Limited Use:</strong> Infinite's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the <strong>Limited Use</strong> requirements.</li>
         </ul>
 
         <p><strong>Revoking access:</strong> you can disconnect Google Analytics at any time inside Infinite, and you can revoke access directly at <a href="https://myaccount.google.com/permissions">https://myaccount.google.com/permissions</a>.</p>
+
+        <h3>Other Google connections</h3>
+        <p>Google sign-in and each optional integration serve different purposes. Connecting one service does not automatically connect the others.</p>
+        <ul>
+          <li><strong>Google sign-in:</strong> account identity information is used to authenticate you and associate your Infinite account and workspace.</li>
+          <li><strong>Google Search Console:</strong> read-only access (<code>webmasters.readonly</code>) reads your authorized sites and search performance for SEO reporting and recommendations.</li>
+          <li><strong>YouTube:</strong> <code>youtube.readonly</code> identifies your connected channel; <code>youtube.upload</code> uploads videos you approve; <code>youtube.force-ssl</code> supports adding captions and comments as part of publishing. These permissions are requested when you connect YouTube.</li>
+          <li><strong>Google Ads:</strong> <code>adwords</code> supports reading advertising performance and managing campaigns through the connected account. It is requested when you connect Google Ads.</li>
+        </ul>
+        <p><strong>Storage and protection:</strong> hosted integrations store connection identifiers, encrypted OAuth credentials, and the data and results needed to provide your connected workspace features. Access is restricted to authorized workspace and service operations. Local workflows use the local storage boundary described above.</p>
+        <p><strong>Retention and deletion:</strong> connected data is retained while needed to provide your workspace, subject to the retention and backup limits in section 7. Revoke future Google access at <a href="https://myaccount.google.com/permissions">Google Account permissions</a>. Revoking access does not by itself erase previously stored records; contact <a href="mailto:support@ultima.inc">support@ultima.inc</a> to request deletion of Google connection data and credentials held by Infinite.</p>
 
         <h2>4. Other connected sources</h2>
 

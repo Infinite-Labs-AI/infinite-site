@@ -175,7 +175,7 @@ function assertClaimTruth() {
   assert.match(homepage, /landing-page CRO planning/i, "homepage must name the shipped landing-page CRO planning boundary");
   assert.match(
     homepage,
-    /Infinite OS stores synced growth data in your local Postgres[\s\S]*connector credentials are encrypted at rest[\s\S]*prompts and relevant tool context go to the Codex or Anthropic provider you choose/i,
+    /hosted Google Analytics connection synchronizes authorized metrics and encrypted credentials in Infinite's cloud[\s\S]*Local engine workflows can store data on your device[\s\S]*Prompts and relevant tool context go to the model provider you choose/i,
     "homepage must distinguish local data/credentials from chosen-provider inference",
   );
   assertNativeScopedToolBoundary(homepage, "homepage");
