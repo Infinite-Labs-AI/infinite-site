@@ -96,3 +96,34 @@ package metadata layout it expects. This is a packaging defect, not missing anal
 The npm-distributed 0.9.0 harness has its normal package layout and runs. This site PR does not
 rebuild or modify either installed desktop app. A CLI packaging fix and packaged analytics smoke
 test are still needed before declaring the one-command customer path working.
+
+## Repeatable runtime adoption audit (2026-09-05)
+
+Run `npm ci && node scripts/audit-live-tag-runtime.mjs`. It reads every route from
+`KNOWN_DOCUMENT_PATHS`, requires exactly one Infinite runtime and one PostHog/GA4 bootstrap,
+and compares each delivered runtime byte-for-byte with `renderInfiniteBrowserTag` from the exact
+site package pin using the delivered configuration. It does not execute scripts, submit forms,
+or emit browser analytics. `SITE_BASE_URL` optionally selects a deployment to inspect.
+It checks the pinned version, not npm latest; compare `npm view infinite-tag version` separately.
+Runtime configuration correctness and provider delivery remain separate guardrail/receipt checks.
+
+The read-only production audit on 2026-09-05 passed all 22 routes against 0.9.0, which npm reported
+as latest at audit time. GA4 and PostHog each had one bootstrap per page. Meta and X were dark.
+The custom Meta injector had missed the newer tag's `autoConfig` protection: it now queues
+`fbq("set", "autoConfig", "false", pixelId)` before `init`, with a behavior test for the exact order.
+The site's consent gate and auth replay/autocapture exclusions remain intentional provider settings.
+
+A scratch snapshot of all 22 live documents was also run through the published 0.9.0 harness:
+
+- `--check` exited 0 and adopted GA4/PostHog, but skipped the modern Infinite inline runtime.
+  The detector recognizes legacy Infinite loader signatures. It also treated a guarded Meta event
+  call as adoption despite no deployed Meta bootstrap. These states are not deployment truth.
+- `--plan` exited 0, proposed 200 conversion marks and skipped 338; it neither marked nor verified.
+- `--verify-only` exited 0 but explicitly skipped receipts because no `.infinite/install.json` exists.
+
+These successful process exits do not establish completed whole-site coverage or receipt verification.
+Do not create a fabricated install manifest or apply to generated output to make the harness green.
+Whole-site harness support needs explicit custom-build ownership and source/output mapping, modern
+runtime detection, and a receipt path for existing provider installations. Existing manifest-driven
+CI tests and daily live guardrails remain the ongoing coverage checks; the parity audit can be rerun
+after every package upgrade or deployment. No raw production snapshots are committed here.
