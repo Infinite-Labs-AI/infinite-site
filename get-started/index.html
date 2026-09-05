@@ -136,19 +136,19 @@
         </div>
 
         <p id="gate-fallback" class="fallback">
-          <a href="/download" data-download-location="get-started-fallback">Download Infinite for Mac</a>
+          <a id="gate-fallback-download" href="/download" data-download-location="get-started-fallback">Download Infinite for Mac</a>
           (Apple silicon). You’ll sign in inside the app.
         </p>
 
         <section id="gate-step-email" aria-labelledby="gate-email-label" hidden>
-          <button id="gate-google" class="button button--google" type="button">Continue with Google</button>
+          <button id="gate-google" data-analytics-cta-id="get-started-google" data-analytics-cta-location="get-started" data-conversion="signup" class="button button--google" type="button">Continue with Google</button>
           <p id="gate-google-notice" class="note" role="status" hidden></p>
           <div class="divider">or use email</div>
           <form id="gate-form-email" novalidate>
             <label id="gate-email-label" for="gate-email">Use the email you’ll sign in to Infinite with.</label>
             <input id="gate-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required placeholder="you@company.com" />
             <p id="gate-email-error" class="error" role="alert" hidden></p>
-            <button id="gate-submit-email" class="button" type="submit">Continue</button>
+            <button id="gate-submit-email" data-analytics-cta-id="get-started-email" data-analytics-cta-location="get-started" class="button" type="submit">Continue</button>
           </form>
           <p class="fine">We’ll email you a 6-digit code. Verify once and open the app already signed in. <a href="../privacy/">Privacy</a></p>
         </section>
@@ -159,11 +159,11 @@
             <input id="gate-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="------" />
             <p id="gate-code-error" class="error" role="alert" hidden></p>
             <p id="gate-code-note" class="note" aria-live="polite"></p>
-            <button id="gate-submit-code" class="button" type="submit">Continue</button>
+            <button id="gate-submit-code" data-analytics-cta-id="get-started-code" data-analytics-cta-location="get-started" class="button" type="submit">Continue</button>
           </form>
           <div class="linkish">
-            <button id="gate-resend" type="button">Resend code</button>
-            <button id="gate-change-email" type="button">Use a different email</button>
+            <button id="gate-resend" data-analytics-cta-id="get-started-resend" data-analytics-cta-location="get-started" type="button">Resend code</button>
+            <button id="gate-change-email" data-analytics-cta-id="get-started-change-email" data-analytics-cta-location="get-started" type="button">Use a different email</button>
           </div>
         </section>
 
@@ -197,7 +197,7 @@
               <li>Click Open Infinite</li>
             </ol>
           </div>
-          <button id="gate-open-infinite" class="button" type="button">Open Infinite</button>
+          <button id="gate-open-infinite" data-analytics-cta-id="get-started-open" data-analytics-cta-location="get-started" class="button" type="button">Open Infinite</button>
           <a id="gate-download-again" class="button button--secondary" href="/download" data-download-location="get-started">Download again</a>
           <span id="gate-download-email" hidden></span>
         </section>
@@ -282,11 +282,16 @@
       // us: immediately for a normal visitor, on "Accept All" for a DNT/GPC visitor, never on a
       // saved denial. Properties are bounded tokens; the email never leaves this page's forms.
       var analyticsAllowed = false;
+      var observedCtaLocation = (readGoogleContext() || {}).ctaLocation || CTA_LOCATION;
+      var currentStep = null;
+      var reportedStep = null;
       if (typeof window.__infiniteConsentGate === "function") {
-        window.__infiniteConsentGate(function () { analyticsAllowed = true; });
+        window.__infiniteConsentGate(function () { analyticsAllowed = true; reportStep(); });
       }
       function track(name, properties) {
         if (!analyticsAllowed) return;
+        // Honour a later revocation as well as the initial consent decision.
+        try { if (localStorage.getItem("infinite_analytics_consent") === "denied") return; } catch (_error) {}
         var props = properties || {};
         try {
           if (window.posthog && typeof window.posthog.capture === "function") window.posthog.capture(name, props);
@@ -311,10 +316,31 @@
         try { window.fbq("track", "CompleteRegistration", {}, { eventID: claimId }); } catch (_error) {}
       }
 
+      function reportStep() {
+        // Providers enrich events with the current URL. Wait until the OAuth return has been
+        // scrubbed rather than exposing its authorization code through a new stage event.
+        if (oauthCode() || oauthError()) return;
+        if (!analyticsAllowed || !currentStep || reportedStep === currentStep) return;
+        reportedStep = currentStep;
+        track("gate_step_viewed", { cta_location: observedCtaLocation, step: currentStep });
+      }
+      function action(name) {
+        track("gate_action", { cta_location: observedCtaLocation, action: name });
+      }
       function show(name) {
         for (var key in steps) steps[key].hidden = key !== name;
+        currentStep = name;
+        reportStep();
       }
       function setError(node, message) {
+        if (message) {
+          var reason = message === COPY.emailInvalid ? "invalid_email"
+            : message === COPY.codeMalformed ? "invalid_code"
+            : message === COPY.codeInvalid ? "invalid_or_expired_code"
+            : message === COPY.emailRateLimited || message === COPY.codeRateLimited ? "rate_limited"
+            : message === COPY.offline ? "network" : "request_failed";
+          track("gate_error", { cta_location: observedCtaLocation, step: node === emailError ? "email" : "code", reason: reason });
+        }
         node.textContent = message || "";
         node.hidden = !message;
       }
@@ -620,6 +646,7 @@
 
       emailForm.addEventListener("submit", function (event) {
         event.preventDefault();
+        action("email_submit");
         var email = emailInput.value.trim().toLowerCase();
         setError(emailError, "");
         if (!email || email.indexOf("@") < 1 || email.indexOf(".") < 0) return setError(emailError, COPY.emailInvalid);
@@ -648,6 +675,7 @@
       });
 
       resend.addEventListener("click", function () {
+        action("code_resend");
         if (!state.email) return show("email");
         setError(codeError, "");
         codeNote.textContent = "";
@@ -658,6 +686,7 @@
           }
           state.challenge = result.data.challenge;
           codeNote.textContent = "We sent a new code to " + state.email + ".";
+          track("gate_code_resent", { cta_location: CTA_LOCATION });
         }).catch(function () {
           revealFallback();
           setError(codeError, COPY.offline);
@@ -665,6 +694,7 @@
       });
 
       changeEmail.addEventListener("click", function () {
+        action("change_email");
         state.challenge = "";
         state.claim = null;
         setError(emailError, "");
@@ -674,6 +704,7 @@
 
       codeForm.addEventListener("submit", function (event) {
         event.preventDefault();
+        action("code_submit");
         var token = codeInput.value.replace(/\s+/g, "");
         setError(codeError, "");
         if (!/^[0-9]{6}$/.test(token)) return setError(codeError, COPY.codeMalformed);
@@ -711,8 +742,12 @@
       });
       openInfinite.addEventListener("click", function () {
         var claim = state.claim || readClaim();
-        if (claim) location.assign(handoffUrl(claim));
         track("handoff_link_clicked", { cta_location: CTA_LOCATION });
+        if (claim) location.assign(handoffUrl(claim));
+      });
+
+      el("gate-fallback-download").addEventListener("click", function () {
+        action("fallback_download");
       });
 
       function handleGoogleReturn(code) {

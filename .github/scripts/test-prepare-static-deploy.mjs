@@ -90,9 +90,9 @@ try {
   // Consent gating: GA4 and PostHog defer through the shared gate, the gate is defined
   // before the first gated snippet, the download bridge guards on gtag availability, and
   // the banner is host-gated to the verified production hosts with the manual
-  // revocation hook exposed. (Production builds carry no X/Meta pixels → 2 gated lanes.)
+  // revocation hook exposed. (Production builds carry no X/Meta pixels → 3 gated consumers.)
   assert.match(homepage, /window\.__infiniteConsentGate = function/);
-  assert.equal((homepage.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 2, "PostHog and GA4 must both defer through the shared consent gate");
+  assert.equal((homepage.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 3, "CTA intent, PostHog and GA4 must all defer through the shared consent gate");
   assert.ok(
     homepage.indexOf("window.__infiniteConsentGate = function") < homepage.indexOf("posthog.init("),
     "the consent gate must be defined before the first gated snippet",
@@ -167,7 +167,7 @@ try {
 
   // ── Meta pixel: lit ONLY by INFINITE_META_PIXEL_ID ───────────────────────────────────────────
   // A second production build with the real-shaped id: every page bootstraps the pixel with that
-  // exact id inside the shared consent gate (third gated lane), and /get-started carries it too so
+  // exact id inside the shared consent gate (fourth gated consumer), and /get-started carries it too so
   // window.fbq exists for the CompleteRegistration dedup mirror after a claim mints.
   const META_PIXEL_ID = "123456789012345";
   buildProductionDist({ INFINITE_META_PIXEL_ID: META_PIXEL_ID });
@@ -175,7 +175,7 @@ try {
   assert.match(litHomepage, new RegExp(`fbq\\("init", "${META_PIXEL_ID}"\\)`), "the configured id reaches the pixel bootstrap");
   assert.equal((litHomepage.match(/fbq\("init"/g) ?? []).length, 1, "exactly one pixel bootstrap per page");
   assert.match(litHomepage, /https:\/\/connect\.facebook\.net\/en_US\/fbevents\.js/);
-  assert.equal((litHomepage.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 3, "PostHog, GA4 and the Meta pixel must all defer through the shared consent gate");
+  assert.equal((litHomepage.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 4, "CTA intent, PostHog, GA4 and the Meta pixel must all defer through the shared consent gate");
   assert.ok(
     litHomepage.indexOf("window.__infiniteConsentGate = function") < litHomepage.indexOf('fbq("init"'),
     "the consent gate must be defined before the pixel bootstrap",

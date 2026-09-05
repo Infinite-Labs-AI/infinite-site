@@ -52,6 +52,7 @@ void (async () => {
     consentGateSnippet(),
     posthog,
     ga4,
+    getStartedCtaSnippet(),
     ga4DownloadSnippet(process.env.GOOGLE_ANALYTICS_TAG_ID),
     xPixelSnippet(process.env.X_PIXEL_ID),
     metaPixelSnippet(resolveMetaPixelId(process.env.INFINITE_META_PIXEL_ID)),
@@ -508,6 +509,27 @@ function metaPixelSnippet(pixelId) {
     "https://connect.facebook.net/en_US/fbevents.js");
     window.fbq("init", ${JSON.stringify(pixelId)});
     window.fbq("track", "PageView");
+    });
+  </script>`;
+}
+
+// Explicit named intent event; the independent Infinite runtime owns its site_click evidence.
+function getStartedCtaSnippet() {
+  return `  <script>
+    window.__infiniteConsentGate(function () {
+      document.addEventListener("click", function (event) {
+        var anchor = event.target && typeof event.target.closest === "function" ? event.target.closest("a[href]") : null;
+        if (!anchor) return;
+        try {
+          if (localStorage.getItem("infinite_analytics_consent") === "denied") return;
+          var destination = new URL(anchor.href, location.href);
+          if (destination.origin !== location.origin || ["/get-started", "/get-started/"].indexOf(destination.pathname) === -1) return;
+          var placement = anchor.getAttribute("data-analytics-cta-location");
+          var props = { cta_location: placement && /^[A-Za-z0-9_-]{1,64}$/.test(placement) ? placement : "unknown" };
+          try { if (window.posthog && typeof window.posthog.capture === "function") window.posthog.capture("get_started_clicked", props); } catch (_error) {}
+          try { if (typeof window.gtag === "function") window.gtag("event", "get_started_clicked", props); } catch (_error) {}
+        } catch (_error) {}
+      });
     });
   </script>`;
 }
