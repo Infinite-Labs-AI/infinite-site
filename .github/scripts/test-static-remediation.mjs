@@ -167,7 +167,7 @@ assert.deepEqual(directHomepageDownloadAnchors, [], "no non-footer homepage anch
 assert.match(homepage, /"downloadUrl": "https:\/\/infinite\.fast\/download"/, "the SoftwareApplication schema still names the installer route");
 
 const privacy = read("privacy/index.html");
-assert.match(privacy, /Last updated: 3 September 2026/);
+assert.match(privacy, /Last updated: 5 September 2026/);
 assert.match(privacy, /Website visitor analytics/i);
 assert.match(privacy, /90 days/i);
 assert.match(privacy, /25 months/i);
