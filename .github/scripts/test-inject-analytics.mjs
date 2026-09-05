@@ -31,7 +31,7 @@ const page = (title) => `<!doctype html><html><head><title>${title}</title></hea
 </body></html>`;
 
 try {
-  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.9.0");
+  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.9.1");
   for (const [name, expectedHash] of Object.entries(contractHashes)) {
     const bytes = readFileSync(join(repoRoot, "node_modules/infinite-tag/contracts", name));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), expectedHash, `${name} must match the reviewed public contract`);

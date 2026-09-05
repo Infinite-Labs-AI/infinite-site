@@ -127,3 +127,23 @@ Whole-site harness support needs explicit custom-build ownership and source/outp
 runtime detection, and a receipt path for existing provider installations. Existing manifest-driven
 CI tests and daily live guardrails remain the ongoing coverage checks; the parity audit can be rerun
 after every package upgrade or deployment. No raw production snapshots are committed here.
+
+## Shared harness fixes and package adoption (0.9.1)
+
+The findings above describe the 0.9.0 audit. Engine PR #29 fixed CLI packaging; the signed
+production desktop 0.3.33 was updated and its actual bundled CLI passed a read-only analytics
+check. The terminal wrapper still targets the older Dev 7 app; its target was not changed.
+
+Engine PR #30 (`7d1ebd723b6a6c8dc91f29ae7c08b1c4f9b4b893`) publishes infinite-tag 0.9.1,
+which this site now pins exactly. It recognizes the modern Infinite runtime, requires genuine
+provider initialization, reports stale exact pins and source/output ownership, and refuses unsafe
+automatic installation into this custom build or its generated output. `--brief` provides manual
+integration and testing instructions for the existing builder. Explicit `--verify-only` now fails
+with `INF_VERIFY_INCOMPLETE` when receipt verification cannot run, including a missing manifest.
+It does not turn this custom site into an automatically managed installation.
+
+Reports and agent briefs now require an action matrix covering attempts, outcomes, failures and
+retries; keyboard/pointer and navigation tests; consent, identity and URL privacy checks; built/live
+route deduplication; browser execution and provider receipts; and the shipped executable. The
+browser runtime and receipt contracts are unchanged in 0.9.1. Rebuild through the existing injector
+and rerun the live parity audit; that audit still proves delivered code parity, not provider receipts.
