@@ -11,7 +11,7 @@ const repoRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const tempDir = mkdtempSync(join(tmpdir(), "infinite-analytics-"));
 const injectorPath = join(repoRoot, ".github/scripts/inject-analytics.cjs");
 const contractHashes = {
-  "browser-collect-v1.schema.json": "3040f263378f6bbcac4a03019e3f0deedb53ac9416d1312ba59dcad6c74b220f", // 0.6.0: + site_page_view.nav, maxProperties 4 (byte-identical with 1bu-1)
+  "browser-collect-v1.schema.json": "91ad5d30c777637deb927781a2c336559077c003c2b71c358e5bb21ff0c27759", // 0.9.0: campaign fields and optional automation marker; admitted by current cloud ingest
   "browser-collect-v1.fixture.json": "08d5ae19194044bf0f2d144c2bd50902baacb09f5170f66067d0e9fd9b9148a9",
 };
 const downloadLocations = ["navigation", "hero", "pricing", "final-cta"];
@@ -31,7 +31,7 @@ const page = (title) => `<!doctype html><html><head><title>${title}</title></hea
 </body></html>`;
 
 try {
-  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.6.0");
+  assert.equal(JSON.parse(readFileSync(join(repoRoot, "node_modules/infinite-tag/package.json"), "utf8")).version, "0.9.0");
   for (const [name, expectedHash] of Object.entries(contractHashes)) {
     const bytes = readFileSync(join(repoRoot, "node_modules/infinite-tag/contracts", name));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), expectedHash, `${name} must match the reviewed public contract`);
@@ -63,6 +63,8 @@ try {
     VERCEL_ENV: "production",
   });
 
+  testGetStartedCtaBridge(readFileSync(indexPath, "utf8"));
+
   for (const outputPath of [indexPath, nestedPath]) {
     const html = readFileSync(outputPath, "utf8");
     assert.equal((html.match(/data-infinite-runtime="managed"/g) ?? []).length, 1, "one package-owned runtime per page");
@@ -89,7 +91,7 @@ try {
     // Consent gating structure: one shared gate defined before the first gated snippet,
     // and all four third-party lanes (PostHog, GA4, X, Meta) defer through it.
     assert.equal((html.match(/window\.__infiniteConsentGate = function/g) ?? []).length, 1, "exactly one shared consent gate per page");
-    assert.equal((html.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 4, "PostHog, GA4, X, and Meta must all defer through the shared consent gate");
+    assert.equal((html.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 5, "CTA intent, PostHog, GA4, X, and Meta must all defer through the shared consent gate");
     assert.ok(
       html.indexOf("window.__infiniteConsentGate = function") < html.indexOf("posthog.init("),
       "the consent gate must be defined before the first gated snippet",
@@ -172,7 +174,7 @@ try {
     cta_location: "navigation",
     destination_path: "/pricing/",
   });
-  assert.equal(granted.documentListenerCount("click"), 2, "Infinite and the explicit GA4 download bridge each bind once");
+  assert.equal(granted.documentListenerCount("click"), 3, "Infinite, the CTA bridge and GA4 download bridge each bind once");
   for (const [index, location] of downloadLocations.entries()) {
     const click = granted.click(granted.downloads[location]);
     const infiniteDownloads = granted.infiniteEvents("app_download_click");
@@ -180,6 +182,7 @@ try {
     assert.equal(infiniteDownloads.length, index + 1, `${location} must emit one Infinite download event`);
     assert.equal(gaDownloads.length, index + 1, `${location} must emit one explicit GA4 download event`);
     assert.deepEqual(infiniteDownloads[index].properties, {
+      cta_id: "auto_download",
       cta_location: location,
       destination_path: "/download",
     });
@@ -191,7 +194,21 @@ try {
   assert.equal(granted.posthogInitOptions()[0].autocapture, undefined, "ordinary pages keep PostHog autocapture at its existing default");
   assert.equal(granted.posthogInitOptions()[0].disable_session_recording, false, "ordinary pages keep PostHog replay enabled");
 
+  granted.click(element({href:"https://infinite.fast/get-started?cta=hero",attributes:{"data-analytics-cta-id":"get-started","data-analytics-cta-location":"hero"}}));
+  assert.equal(granted.infiniteEvents("sign_up_click").length,1,"the current tag recognizes get-started as signup intent");
+  assert.equal(granted.gaEvents("get_started_clicked").length,1);
+  assert.equal(granted.posthogEvents("get_started_clicked").length,1);
+
   const sensitiveGate = executeAnalytics(syntheticHtml, { pathname: "/get-started/" });
+  // Exercise the actual pinned runtime: 0.6.0 silently dropped this unmarked button.
+  const unmarkedButton = {
+    getAttribute: () => null,
+    closest: selector => selector.startsWith("button,") ? unmarkedButton : null,
+    get textContent() { throw new Error("autocapture must not read button text"); },
+  };
+  sensitiveGate.click(unmarkedButton);
+  assert.equal(sensitiveGate.infiniteEvents("site_click").length, 1, "0.9.0 autocaptures an unmarked sign-in-page button");
+  assert.equal(sensitiveGate.infiniteEvents("site_click")[0].properties.cta_id,"button");
   assert.equal(sensitiveGate.posthogInitOptions()[0].autocapture, false, "/get-started disables PostHog autocapture because it renders email and a one-time handoff claim");
   assert.equal(sensitiveGate.posthogInitOptions()[0].disable_session_recording, true, "/get-started disables PostHog replay because it renders email and a one-time handoff claim");
 
@@ -298,7 +315,7 @@ try {
       /fbq|connect\.facebook\.net|fbevents\.js|Meta Pixel Code/,
       "without INFINITE_META_PIXEL_ID the page carries zero Meta bytes — the retired META_PIXEL_ID name is not read",
     );
-    assert.equal((dormantHtml.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 2, "only PostHog and GA4 are gated lanes when no pixel is configured");
+    assert.equal((dormantHtml.match(/window\.__infiniteConsentGate\(function/g) ?? []).length, 3, "CTA intent, PostHog and GA4 are gated when no pixel is configured");
     const dormant = executeAnalytics(dormantHtml, { storedConsent: "granted" });
     assert.equal(dormant.infiniteBodies.length, 0, "missing source key keeps Infinite dormant");
     assert.equal(dormant.gaConfigs().length, 1, "missing Infinite source does not disable GA4");
@@ -792,4 +809,39 @@ function element({ href, attributes }) {
     return null;
   };
   return node;
+}
+
+function testGetStartedCtaBridge(html) {
+  const code = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(([,code]) => code).find(code => code.includes('"get_started_clicked"'));
+  assert.ok(code, "homepage CTA emits a named event to both providers");
+  for (const consent of [true, false]) {
+    const handlers = new Map(), captures = [], ga4 = [];
+    let denied = false;
+    const context = {
+      window: { __infiniteConsentGate: fn => { if(consent) fn(); }, posthog: {capture: (...args) => captures.push(args)}, gtag: (...args) => ga4.push(args) },
+      document: {addEventListener: (name,fn) => handlers.set(name,fn)},
+      location: {href:"https://infinite.fast/",origin:"https://infinite.fast"}, URL,
+      localStorage: {getItem: () => denied ? "denied" : null},
+    };
+    runInNewContext(code,context);
+    function click(href, token="hero") {
+      const anchor={href,getAttribute: key => key === "data-analytics-cta-location" ? token : null};
+      handlers.get("click")?.({target:{closest: () => anchor}});
+    }
+    click("https://infinite.fast/get-started?cta=hero&email=private@example.com");
+    assert.equal(captures.length,consent ? 1 : 0);
+    if(consent) {
+      assert.equal(captures[0][0],"get_started_clicked");
+      assert.equal(captures[0][1].cta_location,"hero");
+      assert.equal(ga4[0][0],"event");
+      assert.equal(JSON.stringify(ga4[0].slice(1)),JSON.stringify(captures[0]));
+      click("https://elsewhere.example/get-started");
+      click("https://infinite.fast/download");
+      assert.equal(captures.length,1,"only the same-origin get-started destination counts");
+      denied=true;
+      click("https://infinite.fast/get-started");
+      assert.equal(captures.length,1,"later revocation stops CTA capture");
+    }
+    assert.doesNotMatch(JSON.stringify([captures,ga4]),/private@example/);
+  }
 }

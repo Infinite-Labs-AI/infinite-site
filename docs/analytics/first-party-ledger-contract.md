@@ -71,7 +71,7 @@ deleted after 90 days. The page keeps
 button (`infinite://handoff/v1?claim_id=...&secret=...`) working; the raw secret exists in that
 browser, that URL and the confirmation email, and nowhere else.
 
-`infinite-tag@0.6.0` defines `window.__infiniteHandoffContext()`. `anonymousId`/`sessionId`
+`infinite-tag@0.9.0` retains `window.__infiniteHandoffContext()`. `anonymousId`/`sessionId`
 ride the claim when that accessor returns a consent-qualified context; it returns null under
 DNT/GPC without a site grant, a saved denial, blocked storage, an unverified host, or a dormant
 site source. The page never reads `infinite_analytics_visitor` / `infinite_analytics_session`
@@ -82,15 +82,17 @@ hits the server `/download` redirect lane, and renders **Download again** as
 `<a href="/download" data-download-location="get-started">`, whose browser click fires
 `app_download_click` and the GA4 `app_download_clicked` bridge as before. The homepage CTAs now point
 at `/get-started?cta=<origin>` and carry `data-analytics-cta-id="get-started"` plus
-`data-analytics-cta-location="<origin>"`, which is what makes them `site_click` events (the runtime
-emits `site_click` only from that pair). `/get-started` sends the bounded origin token as
+`data-analytics-cta-location="<origin>"`, which gives the runtime stable names for these `sign_up_click` intent events. The pinned 0.9.0 runtime also
+autocaptures unmarked links and buttons with structural identifiers; the markers improve naming,
+rather than being a prerequisite for all click capture. `/get-started` sends the bounded origin token as
 `ctaLocation` on both email and Google claim POSTs; direct or invalid entries fall back to
 `get-started`. Before the Google OAuth redirect, the page stores only the origin CTA, UTM source /
 medium / campaign values, click-id presence booleans, `gate_method=google`, and Supabase's same-tab
 PKCE state in `sessionStorage`; it never stores raw click-id values or OAuth tokens in local storage. The
 page's own funnel events - `gate_email_submitted`,
 `gate_code_verified`, `gate_google_started`, `gate_google_completed`, `gate_google_failed { reason }`,
-`gate_download_started { trigger }`, `handoff_link_clicked` - go to PostHog and GA4 behind
+`gate_download_started { trigger }`, `handoff_link_clicked`, `gate_step_viewed { step }`,
+`gate_action { action }`, `gate_error { step, reason }`, and `gate_code_resent` - go to PostHog and GA4 behind
 `window.__infiniteConsentGate` and never to the ledger, whose event enum is unchanged.
 
 Fail-open: the page's source renders a plain `<a href="/download">` link; a successfully initialised

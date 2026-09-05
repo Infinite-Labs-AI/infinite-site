@@ -91,15 +91,15 @@ assert.equal(packageJson.private, true);
 assert.equal(packageJson.type, "module");
 assert.deepEqual(packageJson.devDependencies, {
   "@vercel/functions": "3.7.6",
-  "infinite-tag": "0.6.0",
+  "infinite-tag": "0.9.0",
 });
 assert.deepEqual(packageJson.dependencies, {
   "@supabase/supabase-js": "2.89.0",
 });
 const packageLock = JSON.parse(read("package-lock.json"));
 assert.equal(packageLock.packages[""].dependencies["@supabase/supabase-js"], "2.89.0");
-assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.6.0");
-assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.6.0");
+assert.equal(packageLock.packages[""].devDependencies["infinite-tag"], "0.9.0");
+assert.equal(packageLock.packages["node_modules/infinite-tag"].version, "0.9.0");
 assert.equal(packageLock.packages["node_modules/@supabase/supabase-js"].version, "2.89.0");
 assert.equal(
   read("assets/supabase-js-2.89.0.js"),
@@ -108,11 +108,11 @@ assert.equal(
 );
 assert.equal(
   packageLock.packages["node_modules/infinite-tag"].resolved,
-  "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.6.0.tgz",
+  "https://registry.npmjs.org/infinite-tag/-/infinite-tag-0.9.0.tgz",
 );
 assert.equal(
   packageLock.packages["node_modules/infinite-tag"].integrity,
-  "sha512-j6OqYG2QZUOjq+icaR5YORfPGHyclGqm5HTyvxHOXNqAEvaTiXzYdesIyZxSfPr0BCArtxqC8vQfTqK2DGjkhA==",
+  "sha512-7GOmsEB6qFa2/yFfEAP9CSnOmNeRvDSvMGJVJgJJL7zl/5h9w2kqNxanAQySFR0qh3JaIhNQHrvMfwZqIT4jvQ==",
 );
 assert.match(read(".gitignore"), /^node_modules\/$/m);
 

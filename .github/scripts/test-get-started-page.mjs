@@ -266,8 +266,9 @@ function createPage({
       },
     },
   };
+  let consentCallback;
   if (consent === "granted") window.__infiniteConsentGate = (start) => start();
-  if (consent === "withheld") window.__infiniteConsentGate = () => {};
+  if (consent === "withheld") window.__infiniteConsentGate = (start) => { consentCallback = start; };
   if (handoffContext !== undefined) window.__infiniteHandoffContext = () => handoffContext;
   if (pixel) {
     window.fbq = (...args) => {
@@ -346,6 +347,8 @@ function createPage({
     await settle();
   };
   return {
+    grantConsent: () => consentCallback?.(),
+    denyConsent: () => { context.localStorage.getItem = () => "denied"; },
     el: (id) => elements.get(id),
     fetchCalls,
     assigned,
@@ -402,8 +405,8 @@ function assertNoClickIdsAtRest(page) {
 function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
   assert.equal(GOOGLE_FAILURE_REASONS.has(reason), true, `${reason} is a bounded Google failure reason`);
   const expected = [["gate_google_failed", { cta_location: ctaLocation, reason }]];
-  assert.deepEqual(page.captures, expected);
-  assert.deepEqual(page.gtagCalls, expected.map(([name, properties]) => ["event", name, properties]));
+  assert.deepEqual(page.captures.filter(([name]) => name !== "gate_step_viewed"), expected);
+  assert.deepEqual(page.gtagCalls.filter(([, name]) => name !== "gate_step_viewed"), expected.map(([name, properties]) => ["event", name, properties]));
   assert.doesNotMatch(
     JSON.stringify([page.captures, page.gtagCalls]),
     /a@b\.co|s3cr3t|claim_id|supabase-state|pkce-code|google-access-token|raw-secret-description/,
@@ -444,7 +447,7 @@ function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
     gateMethod: "google",
   });
   assert.doesNotMatch(page.storage.get(GOOGLE_CONTEXT_KEY), /SECRET|FBSECRET/, "click id values are not stored across the OAuth redirect");
-  assert.deepEqual(page.captures, [["gate_google_started", { cta_location: "pricing" }]]);
+  assert.deepEqual(page.captures, [["gate_step_viewed", { cta_location: "pricing", step: "email" }], ["gate_google_started", { cta_location: "pricing" }]]);
   assert.deepEqual(page.gtagCalls, page.captures.map(([name, properties]) => ["event", name, properties]));
 }
 
@@ -517,7 +520,7 @@ function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
   assert.deepEqual(page.supabaseCalls.signOut, [{ scope: "local" }]);
   assert.deepEqual(page.replaced, ["/get-started"]);
   assert.deepEqual(page.identifies, [USER_ID], "PostHog identify runs before later explicit gate events on Google success");
-  assert.deepEqual(page.posthogCalls.slice(0, 3), [
+  assert.deepEqual(page.posthogCalls.filter(([, name]) => !["gate_step_viewed", "gate_action"].includes(name)).slice(0, 3), [
     ["identify", USER_ID],
     ["capture", "gate_google_completed", { cta_location: "navigation" }],
     ["capture", "gate_download_started", { cta_location: "navigation", trigger: "auto" }],
@@ -529,6 +532,7 @@ function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
   assert.deepEqual(page.localStorageWrites, [], "the Google return path never writes Supabase state to localStorage");
   assert.deepEqual(page.captures, [
     ["gate_google_completed", { cta_location: "navigation" }],
+    ["gate_step_viewed", { cta_location: "navigation", step: "download" }],
     ["gate_download_started", { cta_location: "navigation", trigger: "auto" }],
   ]);
   assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls]), /supabase-state|pkce-code|google-access-token/, "OAuth code/token are not sent to analytics");
@@ -709,7 +713,7 @@ for (const [status, error, reason] of [
     ...CLAIM_ATTRIBUTION,
   }, "a consent-qualified infinite-tag 0.6.0 handoff accessor contributes both browser ids and the originating homepage CTA");
   assert.deepEqual(page.identifies, [USER_ID], "OTP claim success identifies the site PostHog person by Supabase UUID, never email");
-  assert.deepEqual(page.posthogCalls.slice(0, 3), [
+  assert.deepEqual(page.posthogCalls.filter(([, name]) => !["gate_step_viewed", "gate_action"].includes(name)).slice(0, 3), [
     ["capture", "gate_email_submitted", { cta_location: "hero" }],
     ["identify", USER_ID],
     ["capture", "gate_code_verified", { cta_location: "hero" }],
@@ -1128,8 +1132,13 @@ for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
     `infinite://handoff/v1?claim_id=${encodeURIComponent(CLAIM.claimId)}&secret=${encodeURIComponent(CLAIM.secret)}`,
   ]);
   assert.deepEqual(page.captures, [
+    ["gate_step_viewed", { cta_location: "final-cta", step: "email" }],
+    ["gate_action", { cta_location: "final-cta", action: "email_submit" }],
     ["gate_email_submitted", { cta_location: "final-cta" }],
+    ["gate_step_viewed", { cta_location: "final-cta", step: "code" }],
+    ["gate_action", { cta_location: "final-cta", action: "code_submit" }],
     ["gate_code_verified", { cta_location: "final-cta" }],
+    ["gate_step_viewed", { cta_location: "final-cta", step: "download" }],
     ["gate_download_started", { cta_location: "final-cta", trigger: "auto" }],
     ["gate_download_started", { cta_location: "final-cta", trigger: "again" }],
     ["handoff_link_clicked", { cta_location: "final-cta" }],
@@ -1137,7 +1146,7 @@ for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
   assert.deepEqual(
     page.gtagCalls,
     page.captures.map(([name, properties]) => ["event", name, properties]),
-    "GA4 mirrors the same four events with the same bounded properties",
+    "GA4 mirrors the same funnel events with the same bounded properties",
   );
   assert.doesNotMatch(JSON.stringify([page.captures, page.gtagCalls]), /a@b\.co|s3cr3t|claim_id/, "no email, secret, or claim id ever reaches a provider");
 }
@@ -1164,4 +1173,57 @@ for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
 assert.match(html, /window\.__infiniteConsentGate\(function/, "page events defer through the shared consent gate");
 assert.doesNotMatch(html, /\/infinite\/ledger|sendBeacon/, "page events never go to the first-party ledger");
 
+
+
+// Explicit funnel visibility, failed attempts and recovery stay field-free in both providers.
+{
+  const page = createPage({ search: "?cta=hero" });
+  assert.deepEqual(page.captures, [["gate_step_viewed", { cta_location: "hero", step: "email" }]]);
+  await page.submit("gate-form-email");
+  assert.deepEqual(page.captures.slice(-2), [
+    ["gate_action", { cta_location: "hero", action: "email_submit" }],
+    ["gate_error", { cta_location: "hero", step: "email", reason: "invalid_email" }],
+  ]);
+  assert.deepEqual(page.gtagCalls, page.captures.map(([name, props]) => ["event", name, props]));
+}
+{
+  const page = createPage({ responses: { [OTP_PATH]: [ok({challenge:"c1"}), ok({challenge:"c2"})], [CLAIM_PATH]: [err(400,"invalid_code")] } });
+  page.el("gate-email").value = "private@example.com";
+  await page.submit("gate-form-email");
+  await page.click("gate-resend");
+  page.el("gate-code").value = "987654";
+  await page.submit("gate-form-code");
+  await page.click("gate-change-email");
+  for (const [name, property, value] of [
+    ["gate_step_viewed", "step", "code"], ["gate_action", "action", "code_resend"],
+    ["gate_code_resent", "cta_location", "get-started"], ["gate_action", "action", "code_submit"],
+    ["gate_error", "reason", "invalid_or_expired_code"], ["gate_action", "action", "change_email"],
+  ]) assert.ok(page.captures.some(([event, props]) => event === name && props[property] === value), name + ":" + value);
+  assert.doesNotMatch(JSON.stringify([page.captures,page.gtagCalls]), /private@example|987654|c1|c2/);
+  assert.deepEqual(page.gtagCalls, page.captures.map(([name, props]) => ["event", name, props]));
+}
+
+
+
+{
+  const page = createPage({consent:"withheld", responses:{[OTP_PATH]:[ok({challenge:"c"})]}});
+  page.el("gate-email").value="private@example.com";
+  await page.submit("gate-form-email");
+  assert.deepEqual(page.captures,[]);
+  page.grantConsent();
+  assert.deepEqual(page.captures,[["gate_step_viewed",{cta_location:"get-started",step:"code"}]],"late consent records only the current visible stage, not earlier actions");
+  page.denyConsent();
+  await page.submit("gate-form-code");
+  assert.equal(page.captures.length,1,"revocation suppresses subsequent actions and validation errors");
+}
+{
+  const page=createPage();
+  for(const id of ["gate-google","gate-submit-email","gate-submit-code","gate-resend","gate-change-email","gate-open-infinite"]){
+    assert.match(page.el(id).attributes["data-analytics-cta-id"],/^get-started-[a-z-]+$/);
+    assert.equal(page.el(id).attributes["data-analytics-cta-location"],"get-started");
+  }
+  assert.equal(page.el("gate-form-email").attributes["data-conversion"],undefined,"no double click+submit signup observation");
+  await page.click("gate-fallback-download");
+  assert.equal(page.captures.at(-1)[1].action,"fallback_download");
+}
 console.log("test-get-started-page: behaviour OK");
