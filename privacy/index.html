@@ -281,7 +281,7 @@
       </div>
       <article>
         <h1>Privacy Policy</h1>
-        <p><strong>Last updated: 3 September 2026.</strong></p>
+        <p><strong>Last updated: 5 September 2026.</strong></p>
 
         <p>This Privacy Policy explains how <strong>Ultima AI, Inc.</strong>, a Delaware corporation (United States) ("Ultima," "we," "us"), handles information in connection with <strong>Infinite Growth OS</strong>, the Infinite desktop application, <code>infinite.fast</code>, and related hosted services (together, "Infinite" or the "Service"). Infinite is local-first, but some features use Infinite-hosted cloud infrastructure. This policy identifies those boundaries instead of treating every workflow as device-only.</p>
 
@@ -305,13 +305,13 @@
         <p>If you connect Google Analytics, Infinite uses the Google authorization mode shown in the product. A device-only connection reads authorized data to your device. A hosted connector processes the authorized metrics and credentials in Infinite's cloud so it can synchronize the workspace and provide the hosted feature you requested.</p>
 
         <ul>
-          <li><strong>Scopes requested:</strong> read access to your Google Analytics data (<code>analytics.readonly</code>) and, where you enable provisioning features, limited account configuration (<code>analytics.edit</code>).</li>
+          <li><strong>Scopes requested:</strong> the hosted Google Analytics connection requests read access (<code>analytics.readonly</code>) and edit access (<code>analytics.edit</code>) during connection. Infinite uses read access for reports and edit access to provision the workspace's declared conversion events as GA4 key events.</li>
           <li><strong>How it is used:</strong> to read authorized Google Analytics metrics, compute the summaries and insights you request, synchronize a hosted workspace when enabled, and perform setup changes you explicitly initiate. We do <strong>not</strong> use Google user data for advertising, and we do <strong>not</strong> sell it.</li>
         </ul>
 
         <h3>Connection modes</h3>
 
-        <p>You may use your own Google app or Infinite's verified Google app where those choices are offered. The product must identify whether token exchange and subsequent API calls are device-only or hosted. Hosted credentials are encrypted and access-controlled; local credentials remain under your device controls.</p>
+        <p>You may use your own Google app or Infinite's Google app where those choices are offered. The product must identify whether token exchange and subsequent API calls are device-only or hosted. Hosted credentials are encrypted and access-controlled; local credentials remain under your device controls.</p>
 
         <ol>
           <li><strong>Use your own Google app.</strong> API usage is associated with your Google Cloud project. Storage and execution follow the local or hosted mode shown when you connect it.</li>
