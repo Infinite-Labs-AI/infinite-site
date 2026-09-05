@@ -507,6 +507,8 @@ function metaPixelSnippet(pixelId) {
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,"script",
     "https://connect.facebook.net/en_US/fbevents.js");
+    // Meta honors autoConfig only when set before init; keep DOM collection off.
+    window.fbq("set", "autoConfig", "false", ${JSON.stringify(pixelId)});
     window.fbq("init", ${JSON.stringify(pixelId)});
     window.fbq("track", "PageView");
     });

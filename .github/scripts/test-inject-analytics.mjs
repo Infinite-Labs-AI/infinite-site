@@ -164,6 +164,12 @@ try {
   assert.equal(granted.gaConfigs().length, 1, "GA4 keeps its direct config and automatic page view");
   assert.equal(granted.xEvents("config").length, 1, "X keeps its existing direct initialization");
   assert.equal(granted.metaEvents("init").length, 1, "Meta keeps its existing direct initialization");
+  const metaId = granted.metaEvents("init")[0][1];
+  assert.deepEqual(granted.metaQueue(), [
+    ["set", "autoConfig", "false", metaId],
+    ["init", metaId],
+    ["track", "PageView"],
+  ], "Meta automatic DOM collection must be disabled before initialization");
   assert.ok(granted.loaderSrcs().some((src) => src.includes("/static/array.js")), "PostHog loads immediately for a no-signal visitor");
   assert.ok(granted.loaderSrcs().some((src) => src.includes("www.googletagmanager.com/gtag/js")), "gtag.js loads immediately for a no-signal visitor");
 
@@ -629,6 +635,7 @@ function executeAnalytics(html, {
     gaConfigs,
     xEvents,
     metaEvents,
+    metaQueue: () => JSON.parse(JSON.stringify(Array.from(window.fbq?.queue ?? [], (entry) => Array.from(entry)))),
     attribution: () => JSON.parse(sessionStorage.get(ATTRIBUTION_KEY)),
     storageHas: (key) => sessionStorage.has(key),
     insertedScripts,
