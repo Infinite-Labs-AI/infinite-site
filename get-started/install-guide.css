@@ -1,0 +1,65 @@
+/* A twelve-second install walkthrough; no dependency on the sign-in runtime. */
+.gate:has(#gate-step-download:not([hidden])) { width: min(100%, 640px); }
+.gate:has(#gate-step-download:not([hidden])) .gate__mark { width: 40px; height: 40px; margin-bottom: 14px; }
+#gate-download-title { text-align: center; margin-top: 20px !important; font-size: 15px; }
+.install-guide { display: flex; flex-direction: column; margin-top: 20px; }
+.install-stage { order: 0; position: relative; aspect-ratio: 1.9; padding: 22px; border: 1px solid #e4e8ef; border-radius: 18px; background: radial-gradient(ellipse at 0 0,#f1ddf8,transparent 65%),linear-gradient(135deg,#f6f7fe,#dff7ff); overflow: hidden; }
+.install-window { container-type: inline-size; height: 100%; position: relative; overflow: hidden; border: 1px solid #dce2ea; border-radius: 12px; background: #fff; box-shadow: 0 14px 32px #24355818; }
+.install-toolbar { height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid #edf0f3; background: #fafbfc; color: #707985; font-size: 10px; }
+.install-lights { display: flex; gap: 4px; }
+.install-lights i { width: 6px; height: 6px; border-radius: 50%; background: #ffb4af; }
+.install-lights i:nth-child(2) { background: #ffdc91; }
+.install-lights i:nth-child(3) { background: #9bdfb2; }
+.install-download-icon { display: grid; place-items: center; width: 21px; height: 21px; border: 1px solid #dce2ea; border-radius: 6px; font-size: 17px; }
+.install-scene { position: absolute; inset: 34px 0 0; opacity: 0; animation: install-scene 12s linear infinite; }
+.install-scene--download { animation-delay: 0s; }
+.install-scene--drag { animation-delay: -8s; }
+.install-scene--open { animation-delay: -4s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.install-file { display: flex; align-items: center; gap: 12px; position: absolute; top: 18%; left: 12%; right: 12%; padding: 14px; border: 1px solid #e1e6eb; border-radius: 12px; background: #fff; box-shadow: 0 8px 20px #2435580d; }
+.install-file strong { display: block; font-size: 14px; }
+.install-file div span { display: block; margin-top: 3px; font-size: 11px; color: #707985; }
+.install-disk { display: grid; place-items: center; width: 36px; height: 38px; border-radius: 7px; background: linear-gradient(#f2f4f7,#dce2e9); color: #647589; font-size: 27px; }
+.install-file-check { margin-left: auto; color: #278657; font-size: 18px; }
+.install-browser-line { position: absolute; bottom: 20%; left: 12%; width: 48%; height: 9px; border-radius: 6px; background: #f1f3f6; }
+.install-browser-line--short { bottom: 10%; width: 32%; }
+.install-cursor { position: absolute; width: 27px; height: 34px; fill: #ad9bf2; stroke: #352956; stroke-width: 2; stroke-linejoin: round; filter: drop-shadow(0 3px 2px #0002); }
+.install-cursor--download { left: 59%; top: 33%; animation: install-click 12s ease-in-out infinite; }
+.install-app-source, .install-folder { position: absolute; top: 24%; width: 84px; display: flex; align-items: center; flex-direction: column; gap: 10px; font-size: 11px; color: #626b73; }
+.install-app-source { left: calc(25% - 42px); }
+.install-app-source img { width: 56px; height: 56px; border-radius: 14px; opacity: .22; }
+.install-folder { left: calc(75% - 42px); }
+.install-folder svg { height: 56px; width: 69px; }
+.install-arrow { position: absolute; top: 34%; left: calc(50% - 10px); font-size: 25px; color: #b1bac6; }
+.install-moving-app { position: absolute; top: 24%; left: calc(25% - 28px); width: 56px; height: 56px; border-radius: 14px; animation: install-drag 12s cubic-bezier(.4,0,.2,1) infinite; }
+.install-cursor--drag { top: calc(24% + 34px); left: calc(25% + 8px); animation: install-drag 12s cubic-bezier(.4,0,.2,1) infinite; }
+.install-ready-icon { position: relative; }
+.install-ready-icon img { display: block; width: 60px; height: 60px; border-radius: 15px; box-shadow: 0 8px 24px #6a54ba20; }
+.install-ready-icon span { position: absolute; right: -7px; bottom: -4px; width: 24px; height: 24px; display: grid; place-items: center; border: 3px solid white; border-radius: 50%; background: #dcf7e6; color: #278657; font-size: 12px; }
+.install-scene--open > strong { margin-top: 4px; font-size: 18px; letter-spacing: -.02em; }
+.install-scene--open > span { color: #626b73; font-size: 12px; }
+.install-guide .steps { order: 1; display: flex; gap: 12px; margin: 18px 0 0; }
+.install-guide .steps li { flex: 1; flex-direction: column; align-items: flex-start; gap: 8px; margin: 0; color: #626b73; font-size: 12px; animation: install-caption 12s linear infinite; }
+.install-guide .steps li:nth-child(2) { animation-delay: -8s; }
+.install-guide .steps li:nth-child(3) { animation-delay: -4s; }
+.install-guide .steps li::before { flex: 0 0 24px; width: 24px; height: 24px; color: inherit; }
+.install-pause { order: 2; align-self: flex-end; display: flex; align-items: center; gap: 6px; min-height: 32px; margin: 10px 0 0; color: #626b73; font-size: 11px; font-weight: 400; cursor: pointer; }
+.install-pause input { width: 13px; height: 13px; margin: 0; padding: 0; accent-color: #5046b8; }
+.install-guide:has(#install-pause:checked) * { animation-play-state: paused; }
+@keyframes install-scene { 0%, 30% { opacity: 1; } 33.333%, 97% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes install-click { 0%, 5% { transform: translate(18px,20px); } 14%, 18%, 24%, 100% { transform: translate(0,0); } 16%, 21% { transform: translate(0,0) scale(.85); } }
+@keyframes install-drag { 0%, 39% { transform: translateX(0); } 53%, 64% { transform: translateX(50cqw); opacity: 1; } 66%, 100% { transform: translateX(50cqw); opacity: 0; } }
+@keyframes install-caption { 0%,30%,100% { color: #5046b8; } 33.333%,97% { color: #626b73; } }
+@media (max-width: 540px) {
+  .install-stage { padding: 12px; aspect-ratio: 1.5; }
+  .install-file { left: 7%; right: 7%; padding: 10px; gap: 8px; }
+  .install-guide .steps { gap: 8px; }
+  .install-guide .steps li { font-size: 11px; }
+  .install-scene--open > strong { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .install-guide * { animation: none !important; }
+  .install-scene--drag { opacity: 1; }
+  .install-moving-app { opacity: 1; }
+  .install-app-source img { opacity: 1; }
+  .install-cursor, .install-pause { display: none; }
+}

@@ -27,6 +27,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
 
+  <link rel="stylesheet" href="/get-started/install-guide.css" />
   <style>
     @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-display: swap; font-weight: 400; src: url("/fonts/ibm-plex/ibm-plex-sans-400.woff2") format("woff2"); }
     @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-display: swap; font-weight: 600; src: url("/fonts/ibm-plex/ibm-plex-sans-600.woff2") format("woff2"); }
@@ -132,7 +133,6 @@
         <div class="gate__intro">
           <img class="gate__mark" src="/logos/infinite-ring-clean-96.webp" alt="" width="56" height="56" />
           <h1>Get started with Infinite</h1>
-          <p class="lede">Sign in, download, and meet your AI CMO.</p>
         </div>
 
         <p id="gate-fallback" class="fallback">
@@ -169,14 +169,38 @@
 
         <section id="gate-step-download" aria-labelledby="gate-download-title" hidden>
           <h2 id="gate-download-title" class="lede" style="color:var(--text);font-weight:600;margin-top:4px;">Your download is starting.</h2>
-          <ol class="steps">
-            <li>Open the DMG</li>
-            <li>Drag Infinite to Applications</li>
-            <li>Click Open Infinite</li>
-          </ol>
+          <div class="install-guide">
+            <label class="install-pause"><input id="install-pause" type="checkbox" /> Pause animation</label>
+            <div class="install-stage" aria-hidden="true">
+              <div class="install-window">
+                <div class="install-toolbar"><span class="install-lights"><i></i><i></i><i></i></span><span>Infinite for Mac</span><span class="install-download-icon">↓</span></div>
+                <div class="install-scene install-scene--download">
+                  <div class="install-file"><span class="install-disk">↓</span><div><strong>Infinite.dmg</strong><span>Ready to open</span></div><span class="install-file-check">✓</span></div>
+                  <div class="install-browser-line"></div><div class="install-browser-line install-browser-line--short"></div>
+                  <svg class="install-cursor install-cursor--download" viewBox="0 0 32 40"><path d="M3 2v30l8-8 7 13 6-3-7-12h12Z"/></svg>
+                </div>
+                <div class="install-scene install-scene--drag">
+                  <div class="install-app-source"><img src="/logos/infinite-ring-clean-96.webp" width="64" height="64" alt=""/><span>Infinite</span></div>
+                  <span class="install-arrow">→</span>
+                  <div class="install-folder"><svg viewBox="0 0 84 68"><path fill="#91d9ff" d="M2 12a7 7 0 0 1 7-7h23l9 10h34a7 7 0 0 1 7 7v36a7 7 0 0 1-7 7H9a7 7 0 0 1-7-7Z"/><rect x="2" y="21" width="80" height="44" rx="7" fill="#59b8f1"/><path d="m34 33 16 24m0-24L34 57m-6-9h29" fill="none" stroke="#e2f5ff" stroke-width="5" stroke-linecap="round"/></svg><span>Applications</span></div>
+                  <img class="install-moving-app" src="/logos/infinite-ring-clean-96.webp" width="64" height="64" alt=""/>
+                  <svg class="install-cursor install-cursor--drag" viewBox="0 0 32 40"><path d="M3 2v30l8-8 7 13 6-3-7-12h12Z"/></svg>
+                </div>
+                <div class="install-scene install-scene--open">
+                  <div class="install-ready-icon"><img src="/logos/infinite-ring-clean-96.webp" width="72" height="72" alt=""/><span>✓</span></div>
+                  <strong>Meet your AI CMO.</strong><span>Open Infinite from Applications.</span>
+                </div>
+              </div>
+            </div>
+            <ol class="steps">
+              <li>Open the DMG</li>
+              <li>Drag Infinite to Applications</li>
+              <li>Click Open Infinite</li>
+            </ol>
+          </div>
           <button id="gate-open-infinite" class="button" type="button">Open Infinite</button>
           <a id="gate-download-again" class="button button--secondary" href="/download" data-download-location="get-started">Download again</a>
-          <p class="fine">Signed in as <span id="gate-download-email"></span>. The Open Infinite link works once, for 48 hours - we also emailed it to you. Open the app once before clicking it so macOS knows where to send it.</p>
+          <span id="gate-download-email" hidden></span>
         </section>
       </div>
     </main>
