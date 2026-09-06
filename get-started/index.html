@@ -197,6 +197,7 @@
               <li>Open Infinite from Applications and sign in with the same account</li>
             </ol>
           </div>
+          <button id="gate-open-infinite" class="button" type="button" hidden>Open Infinite</button>
           <a id="gate-download-again" class="button button--secondary" href="/download" data-download-location="get-started">Download again</a>
         </section>
       </div>
@@ -271,6 +272,8 @@
       var downloadAgain = el("gate-download-again");
 
       var state = { email: "", challenge: "", verified: false };
+      var launch = null;
+      var openInfinite = el("gate-open-infinite");
       var supabaseClient = null;
       var supabaseMemory = {};
 
@@ -612,10 +615,21 @@
         });
       }
 
-      function showDownload() {
+      function showDownload(data) {
         state.verified = true;
+        launch = data && typeof data.launchUrl === "string" && data.launchUrl.indexOf("infinite://handoff/v1?") === 0 && Date.parse(data.expiresAt) > Date.now()
+          ? { url: data.launchUrl, expiresAt: data.expiresAt } : null;
+        openInfinite.hidden = !launch;
         show("download");
       }
+
+      openInfinite.addEventListener("click", function () {
+        if (!launch || Date.parse(launch.expiresAt) <= Date.now()) {
+          openInfinite.hidden = true;
+          return;
+        }
+        location.assign(launch.url);
+      });
 
       googleButton.addEventListener("click", function () {
         setNotice(googleNotice, "");
@@ -715,7 +729,7 @@
           identifyUser(data.userId);
           mirrorRegistration(data.verificationId);
           track("gate_code_verified", { cta_location: CTA_LOCATION });
-          showDownload();
+          showDownload(data);
           track("gate_download_started", { cta_location: CTA_LOCATION, trigger: "auto" });
           // The 307 lands on a file download, so this tab survives and keeps the download instructions.
           location.assign("/download");
@@ -774,7 +788,7 @@
             identifyUser(data.userId);
             mirrorRegistration(data.verificationId);
             track("gate_google_completed", { cta_location: claimCtaLocation });
-            showDownload();
+            showDownload(data);
             track("gate_download_started", { cta_location: claimCtaLocation, trigger: "auto" });
             location.assign("/download");
             return true;
