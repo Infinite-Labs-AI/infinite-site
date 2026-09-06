@@ -5,8 +5,9 @@ then starts the existing download. It no longer stores a login ticket or offers 
 deep-link button. The instructions use Applications and normal desktop sign-in with the same account.
 
 Deploy the cloud /api/auth/site/verify endpoint before publishing this site change. That endpoint
-retains attribution receipts and conversion deduplication without issuing a redeemable credential
-or sending a launch-link email. The old rewrite remains for cached gate pages during transition.
+retains attribution records and conversion deduplication. A backup launch/sign-in link is still
+emailed, as clarified by the founder; the website never receives or stores its one-use secret.
+Redemption is optional and does not gate funnel progress. The old rewrite remains for cached gate pages.
 
 Checks: node --test tests/no-login-handoff.test.mjs; node scripts/prepare-static-deploy.cjs;
 node scripts/verify-site-audit.mjs. Email-code and Google-return browser fixtures reached download;
