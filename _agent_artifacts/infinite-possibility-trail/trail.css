@@ -24,3 +24,5 @@
 @media(prefers-reduced-motion:reduce){.ad-flipper,.peek-collab .people i,.collab-thread path,.collab-check,.peek-collab>p,.site-scroll,.site-scrollbar,.page-progress{transition:none!important}.rewrite-caret{animation:none!important}}
 
 @media(max-width:760px){.hero{padding-top:330px!important}.possibility-layer{height:310px}}
+
+@media(min-width:761px) and (max-width:1100px){.hero{padding-top:374px!important}.possibility-layer{height:350px}}

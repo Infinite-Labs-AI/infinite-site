@@ -33,11 +33,11 @@ node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDe
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)nodes.forEach(node=>activate(node,false))});
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function layout(){const r=layer.getBoundingClientRect(),safe=copy.getBoundingClientRect(),mobile=matchMedia('(max-width:760px)').matches;
+function layout(){nodes.forEach(n=>n.style.transition='none');layer.style.width=document.documentElement.clientWidth+'px';const r=layer.getBoundingClientRect(),safe=copy.getBoundingClientRect(),mobile=matchMedia('(max-width:1100px)').matches;
 nodes.forEach((node,i)=>{const right=i>1,lower=i===1||i===2,width=node.offsetWidth,height=node.offsetHeight;let x,y;
-if(mobile){x=r.width*(right?.75:.25)-width/2;y=lower?170:12;x=clamp(x,9,r.width-width-9)}
+if(mobile){x=r.width*(right?.75:.25)-width/2;y=lower?(matchMedia('(max-width:760px)').matches?170:192):12;x=clamp(x,9,r.width-width-9)}
 else{const center=right?safe.right+(r.right-safe.right)/2:r.left+(safe.left-r.left)/2;x=center-r.left-width/2;if(right)x=clamp(x,safe.right-r.left+22,r.width-width-12);else x=clamp(x,12,safe.left-r.left-width-22);y=clamp(r.height*(lower?.71:.27)-height/2,8,r.height-height-12)}
-node.style.setProperty('--x',x+'px');node.style.setProperty('--y',y+'px');node.style.setProperty('--r',(right?4:-4)+'deg');});}
+node.style.setProperty('--x',x+'px');node.style.setProperty('--y',y+'px');node.style.setProperty('--r',(right?4:-4)+'deg');});void layer.offsetHeight;nodes.forEach(n=>n.style.removeProperty('transition'));}
 let frame=0;
 function reveal(){nodes.forEach(node=>activate(node,false));cancelAnimationFrame(frame);nodes.forEach(n=>n.classList.remove('is-visible'));layout();if(reduced.matches){nodes.forEach(n=>n.classList.add('is-visible'));layer.dataset.visible='4';return;}layer.dataset.visible='0';frame=requestAnimationFrame(()=>{frame=requestAnimationFrame(()=>{nodes.forEach(n=>n.classList.add('is-visible'));layer.dataset.visible='4'})});}
 controls.querySelector('button').onclick=reveal;
