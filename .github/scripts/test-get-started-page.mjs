@@ -14,7 +14,7 @@ assert.doesNotMatch(html, /fonts\.(?:googleapis|gstatic)\.com/, "fonts are self-
 // Exact spec copy.
 assert.match(html, /Use the email you’ll sign in to Infinite with\./);
 assert.match(html, /We sent a 6-digit code to <span id="gate-code-target"><\/span>\./);
-assert.match(html, /<li>Open the DMG<\/li>\s*<li>Drag Infinite to Applications<\/li>\s*<li>Click Open Infinite<\/li>/);
+assert.match(html, /<li>Open the DMG<\/li>\s*<li>Drag Infinite to Applications<\/li>\s*<li>Open Infinite from Applications and sign in with the same account<\/li>/);
 assert.match(html, /id="gate-download-again"[^>]*>Download again</);
 assert.match(html, /id="gate-open-infinite"[^>]*>Open Infinite</);
 assert.match(html, /id="gate-resend"[^>]*>Resend code</);
@@ -58,17 +58,24 @@ assert.doesNotMatch(html, /fbq\("init"|connect\.facebook\.net|fbevents\.js/, "th
 // the source. The script's DOM surface is deliberately tiny (getElementById, hidden, disabled,
 // value, textContent, href, addEventListener, focus) so this harness stays small and honest.
 const CLAIM_KEY = "infinite_get_started_claim";
+const VERIFIED_KEY = "infinite_get_started_verified";
 const GOOGLE_CONTEXT_KEY = "infinite_get_started_google_context";
 const ATTRIBUTION_KEY = "infinite_landing_attribution_v1";
 const SUPABASE_STORAGE_KEY = "sb-wdxjduorvpayxixpmskf-auth-token";
 const PKCE_VERIFIER_KEY = "sb-wdxjduorvpayxixpmskf-auth-token-code-verifier";
 const OTP_PATH = "/infinite/auth/otp";
-const CLAIM_PATH = "/infinite/auth/handoff/claim";
+const CLAIM_PATH = "/infinite/auth/site/verify";
 const USER_ID = "123e4567-e89b-42d3-a456-426614174000";
 const CLAIM = {
   claimId: "0b1f5c3e-6d6a-4f5f-9d3b-1f2c3d4e5f60",
   secret: "s3cr3t_base64url-value",
-  expiresAt: "2026-09-05T10:00:00.000Z",
+  expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+};
+const VERIFICATION = {
+  verified: true,
+  verificationId: CLAIM.claimId,
+  launchUrl: `infinite://handoff/v1?claim_id=${encodeURIComponent(CLAIM.claimId)}&secret=${encodeURIComponent(CLAIM.secret)}`,
+  expiresAt: CLAIM.expiresAt,
 };
 const ATTRIBUTION = {
   utm_source: "Newsletter",
@@ -468,7 +475,7 @@ function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
     search: "?code=pkce-code&state=supabase-state",
     existingSessionStorage: survivingSessionStorage,
     handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1" },
-    responses: { [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    responses: { [CLAIM_PATH]: [ok({ ...VERIFICATION, userId: USER_ID })] },
     supabaseAuth: { requireCodeVerifier: true },
   });
   await returnPage.settle();
@@ -504,7 +511,7 @@ function assertGoogleFailureEvent(page, reason, ctaLocation = "get-started") {
     storedAttribution: ATTRIBUTION,
     storedPkceVerifier: "pkce-verifier",
     handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1" },
-    responses: { [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    responses: { [CLAIM_PATH]: [ok({ ...VERIFICATION, userId: USER_ID })] },
     supabaseAuth: { requireCodeVerifier: true },
   });
   await page.settle();
@@ -687,7 +694,7 @@ for (const [status, error, reason] of [
   const page = createPage({
     search: "?cta=hero",
     storedAttribution: ATTRIBUTION,
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "challenge-1" })], [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "challenge-1" })], [CLAIM_PATH]: [ok({ ...VERIFICATION, userId: USER_ID })] },
     handoffContext: { siteSourceKey: "site_x", anonymousId: "anon-1", sessionId: "sess-1", url: "https://infinite.fast/get-started/" },
   });
   page.el("gate-email").value = "  Founder@Example.com ";
@@ -720,11 +727,11 @@ for (const [status, error, reason] of [
   ]);
   assert.equal(page.el("gate-step-code").hidden, true);
   assert.equal(page.el("gate-step-download").hidden, false);
-  assert.equal(page.el("gate-download-email").textContent, "founder@example.com");
   assert.equal(page.el("gate-open-infinite").href, "", "the secret-bearing handoff URL is not stored in the DOM");
   assert.equal(page.el("gate-download-again").href, "/download", "Download again stays a plain /download anchor");
   assert.deepEqual(page.assigned, ["/download"], "the download auto-starts exactly once via location.assign");
-  assert.deepEqual(JSON.parse(page.storage.get(CLAIM_KEY)), { ...CLAIM, email: "founder@example.com" });
+  assert.deepEqual(JSON.parse(page.storage.get(VERIFIED_KEY)), { verified: true });
+  assert.equal(page.storage.has(CLAIM_KEY), false);
   assert.equal(page.el("gate-fallback").hidden, true);
   assert.doesNotMatch(JSON.stringify(page.fetchCalls), /EAIa|RAW_/, "without Meta cookies or a URL gclid the claim carries the presence booleans only");
   assert.deepEqual(page.fbqCalls, [], "no pixel configured → no Meta mirror");
@@ -746,7 +753,7 @@ for (const [search, expected] of [
 ]) {
   const page = createPage({
     search,
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");
@@ -757,7 +764,7 @@ for (const [search, expected] of [
 
 for (const handoffContext of [null, undefined]) {
   const page = createPage({
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
     handoffContext,
   });
   page.el("gate-email").value = "a@b.co";
@@ -774,7 +781,7 @@ for (const handoffContext of [null, undefined]) {
 {
   const page = createPage({
     storedAttribution: DIRECT_ATTRIBUTION,
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...VERIFICATION, userId: USER_ID })] },
     handoffContext: null,
   });
   page.el("gate-email").value = "a@b.co";
@@ -804,7 +811,7 @@ for (const handoffContext of [null, undefined]) {
 {
   const page = createPage({
     storedAttribution: MALFORMED_ATTRIBUTION,
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...VERIFICATION, userId: USER_ID })] },
     handoffContext: null,
   });
   page.el("gate-email").value = "a@b.co";
@@ -892,14 +899,14 @@ for (const handoffContext of [null, undefined]) {
 }
 
 {
-  const page = createPage({ storedClaim: { ...CLAIM, email: "a@b.co" }, cookies: AD_COOKIES, pixel: true });
+  const page = createPage({ existingSessionStorage: new Map([[VERIFIED_KEY, JSON.stringify({ verified: true })]]), cookies: AD_COOKIES, pixel: true });
   assert.equal(page.el("gate-step-download").hidden, false);
   assert.equal(page.el("gate-step-email").hidden, true);
-  assert.equal(page.el("gate-download-email").textContent, "a@b.co");
   assert.equal(page.el("gate-open-infinite").href, "", "restored claims also keep the secret out of the DOM");
   assert.deepEqual(page.assigned, [], "a refresh must not download again by itself");
   await page.click("gate-open-infinite");
-  assert.match(page.assigned[0], /^infinite:\/\/handoff\/v1\?claim_id=/);
+  assert.equal(page.el("gate-open-infinite").hidden, true, "refresh does not retain a login capability");
+  assert.deepEqual(page.assigned, [], "normal login and the backup email remain available after refresh");
   assert.equal(page.fetchCalls.length, 0);
   assert.deepEqual(page.fbqCalls, [], "a refresh restores the claim without re-mirroring a registration to Meta");
 }
@@ -917,7 +924,7 @@ for (const handoffContext of [null, undefined]) {
     pixel: true,
     storedAttribution: ATTRIBUTION,
     handoffContext: null,
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok({ ...VERIFICATION, userId: USER_ID })] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");
@@ -950,7 +957,7 @@ for (const handoffContext of [null, undefined]) {
     pixel: true,
     storedGoogleContext: { ctaLocation: "pricing", gateMethod: "google" },
     storedPkceVerifier: "pkce-verifier",
-    responses: { [CLAIM_PATH]: [ok({ ...CLAIM, userId: USER_ID })] },
+    responses: { [CLAIM_PATH]: [ok({ ...VERIFICATION, userId: USER_ID })] },
     supabaseAuth: { requireCodeVerifier: true },
   });
   await page.settle();
@@ -974,7 +981,7 @@ for (const handoffContext of [null, undefined]) {
 {
   const page = createPage({
     search: `?cta=hero&gclid=${GCLID}&fbclid=IwAR0urlonly`,
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");
@@ -996,7 +1003,7 @@ for (const handoffContext of [null, undefined]) {
     search: `?cta=hero&gclid=${encodeURIComponent("has spaces;and=semicolons")}`,
     cookies: `_fbc=fb.1.notms.IwAR0bad; _fbp=fb.1.1725350400000.${"A".repeat(513)}`,
     pixel: true,
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");
@@ -1013,7 +1020,7 @@ for (const handoffContext of [null, undefined]) {
 {
   const page = createPage({
     cookies: new Error("SecurityError: cookies are blocked"),
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");
@@ -1034,7 +1041,7 @@ for (const handoffContext of [null, undefined]) {
     search: `?gclid=${GCLID}`,
     cookies: AD_COOKIES,
     pixel: true,
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");
@@ -1070,7 +1077,7 @@ for (const handoffContext of [null, undefined]) {
 
 {
   const page = createPage({
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c1" }), ok({ ok: true, challenge: "c2" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c1" }), ok({ ok: true, challenge: "c2" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");
@@ -1119,7 +1126,7 @@ for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
 {
   const page = createPage({
     search: "?cta=final-cta",
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");
@@ -1141,7 +1148,6 @@ for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
     ["gate_step_viewed", { cta_location: "final-cta", step: "download" }],
     ["gate_download_started", { cta_location: "final-cta", trigger: "auto" }],
     ["gate_download_started", { cta_location: "final-cta", trigger: "again" }],
-    ["handoff_link_clicked", { cta_location: "final-cta" }],
   ]);
   assert.deepEqual(
     page.gtagCalls,
@@ -1153,7 +1159,7 @@ for (const [status, message] of [[500, "5xx"], [404, "local static 404"]]) {
 {
   const page = createPage({
     consent: "withheld",
-    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(CLAIM)] },
+    responses: { [OTP_PATH]: [ok({ ok: true, challenge: "c" })], [CLAIM_PATH]: [ok(VERIFICATION)] },
   });
   page.el("gate-email").value = "a@b.co";
   await page.submit("gate-form-email");

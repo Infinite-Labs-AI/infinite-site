@@ -122,6 +122,10 @@
       "destination": "https://api.ultima.inc/api/auth/otp"
     },
     {
+      "source": "/infinite/auth/site/verify",
+      "destination": "https://api.ultima.inc/api/auth/site/verify"
+    },
+    {
       "source": "/infinite/auth/handoff/claim",
       "destination": "https://api.ultima.inc/api/auth/handoff/claim"
     },

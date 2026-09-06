@@ -194,12 +194,11 @@
             <ol class="steps">
               <li>Open the DMG</li>
               <li>Drag Infinite to Applications</li>
-              <li>Click Open Infinite</li>
+              <li>Open Infinite from Applications and sign in with the same account</li>
             </ol>
           </div>
-          <button id="gate-open-infinite" data-analytics-cta-id="get-started-open" data-analytics-cta-location="get-started" class="button" type="button">Open Infinite</button>
+          <button id="gate-open-infinite" data-analytics-cta-id="get-started-open" data-analytics-cta-location="get-started" class="button" type="button" hidden>Open Infinite</button>
           <a id="gate-download-again" class="button button--secondary" href="/download" data-download-location="get-started">Download again</a>
-          <span id="gate-download-email" hidden></span>
         </section>
       </div>
     </main>
@@ -216,11 +215,12 @@
   <script src="/assets/supabase-js-2.89.0.js"></script>
   <script>
     (function () {
-      var STORAGE_KEY = "infinite_get_started_claim";
+      var STORAGE_KEY = "infinite_get_started_verified";
+      try { sessionStorage.removeItem("infinite_get_started_claim"); } catch (_error) {}
       var GOOGLE_CONTEXT_KEY = "infinite_get_started_google_context";
       var ATTRIBUTION_KEY = "infinite_landing_attribution_v1";
       var OTP_PATH = "/infinite/auth/otp";
-      var CLAIM_PATH = "/infinite/auth/handoff/claim";
+      var VERIFY_PATH = "/infinite/auth/site/verify";
       var SUPABASE_URL = "https://wdxjduorvpayxixpmskf.supabase.co";
       var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkeGpkdW9ydnBheXhpeHBtc2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0Njc0NzMsImV4cCI6MjA4MzA0MzQ3M30.wTsxXgy784NHWjFxox1jkfiNZ4vXydEzlumC5v8NMtA";
       var SUPABASE_REDIRECT_TO = "https://infinite.fast/get-started";
@@ -269,11 +269,11 @@
       var resend = el("gate-resend");
       var changeEmail = el("gate-change-email");
       var submitCode = el("gate-submit-code");
-      var downloadEmail = el("gate-download-email");
       var downloadAgain = el("gate-download-again");
-      var openInfinite = el("gate-open-infinite");
 
-      var state = { email: "", challenge: "", claim: null };
+      var state = { email: "", challenge: "", verified: false };
+      var launch = null;
+      var openInfinite = el("gate-open-infinite");
       var supabaseClient = null;
       var supabaseMemory = {};
 
@@ -350,19 +350,18 @@
       }
       function revealFallback() { fallback.hidden = false; }
 
-      function readClaim() {
+      function readVerification() {
         try {
           var raw = sessionStorage.getItem(STORAGE_KEY);
           if (!raw) return null;
-          var claim = JSON.parse(raw);
-          if (!claim || typeof claim.claimId !== "string" || typeof claim.secret !== "string" || typeof claim.email !== "string") return null;
-          return claim;
+          var receipt = JSON.parse(raw);
+          return receipt && receipt.verified === true ? receipt : null;
         } catch (_error) {
           return null;
         }
       }
-      function writeClaim(claim) {
-        try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(claim)); } catch (_error) {}
+      function writeVerification() {
+        try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ verified: true })); } catch (_error) {}
       }
       function writeGoogleContext() {
         var value = ctaLocation();
@@ -396,9 +395,6 @@
         } catch (_error) {
           return "get-started";
         }
-      }
-      function handoffUrl(claim) {
-        return "infinite://handoff/v1?claim_id=" + encodeURIComponent(claim.claimId) + "&secret=" + encodeURIComponent(claim.secret);
       }
       // The tag's consent-gated accessor is the ONLY source of browser ids: null under DNT/GPC or a
       // saved denial, absent only on older/runtime-suppressed contexts. Never read the tag's persisted
@@ -619,11 +615,21 @@
         });
       }
 
-      function showDownload(claim) {
-        state.claim = claim;
-        downloadEmail.textContent = claim.email;
+      function showDownload(data) {
+        state.verified = true;
+        launch = data && typeof data.launchUrl === "string" && data.launchUrl.indexOf("infinite://handoff/v1?") === 0 && Date.parse(data.expiresAt) > Date.now()
+          ? { url: data.launchUrl, expiresAt: data.expiresAt } : null;
+        openInfinite.hidden = !launch;
         show("download");
       }
+
+      openInfinite.addEventListener("click", function () {
+        if (!launch || Date.parse(launch.expiresAt) <= Date.now()) {
+          openInfinite.hidden = true;
+          return;
+        }
+        location.assign(launch.url);
+      });
 
       googleButton.addEventListener("click", function () {
         setNotice(googleNotice, "");
@@ -696,7 +702,7 @@
       changeEmail.addEventListener("click", function () {
         action("change_email");
         state.challenge = "";
-        state.claim = null;
+        state.verified = false;
         setError(emailError, "");
         show("email");
         emailInput.focus();
@@ -710,23 +716,22 @@
         if (!/^[0-9]{6}$/.test(token)) return setError(codeError, COPY.codeMalformed);
         var body = claimBody({ email: state.email, token: token, challenge: state.challenge, ctaLocation: CTA_LOCATION });
         submitCode.disabled = true;
-        postJson(CLAIM_PATH, body).then(function (result) {
+        postJson(VERIFY_PATH, body).then(function (result) {
           submitCode.disabled = false;
           var data = result.data;
-          if (!result.ok || typeof data.claimId !== "string" || typeof data.secret !== "string") {
+          if (!result.ok || data.verified !== true || typeof data.verificationId !== "string") {
             if (result.status === 429) return setError(codeError, COPY.codeRateLimited);
             if (result.status === 400) return setError(codeError, COPY.codeInvalid);
             revealFallback();
             return setError(codeError, COPY.codeFailed);
           }
-          var claim = { claimId: data.claimId, secret: data.secret, expiresAt: data.expiresAt, email: state.email };
-          writeClaim(claim);
+          writeVerification();
           identifyUser(data.userId);
-          mirrorRegistration(data.claimId);
+          mirrorRegistration(data.verificationId);
           track("gate_code_verified", { cta_location: CTA_LOCATION });
-          showDownload(claim);
+          showDownload(data);
           track("gate_download_started", { cta_location: CTA_LOCATION, trigger: "auto" });
-          // The 307 lands on a file download, so this tab survives and keeps the Open Infinite button.
+          // The 307 lands on a file download, so this tab survives and keeps the download instructions.
           location.assign("/download");
         }).catch(function () {
           submitCode.disabled = false;
@@ -740,11 +745,6 @@
       downloadAgain.addEventListener("click", function () {
         track("gate_download_started", { cta_location: CTA_LOCATION, trigger: "again" });
       });
-      openInfinite.addEventListener("click", function () {
-        var claim = state.claim || readClaim();
-        track("handoff_link_clicked", { cta_location: CTA_LOCATION });
-        if (claim) location.assign(handoffUrl(claim));
-      });
 
       el("gate-fallback-download").addEventListener("click", function () {
         action("fallback_download");
@@ -754,7 +754,6 @@
         var context = readGoogleContext();
         var claimCtaLocation = context ? context.ctaLocation : CTA_LOCATION;
         googleButton.disabled = true;
-        var pendingClaim = null;
         function finishGoogleAuth() {
           return Promise.resolve().then(function () {
             try { return getSupabaseClient().auth.signOut({ scope: "local" }); } catch (_error) { return null; }
@@ -773,9 +772,9 @@
           if (!result || !result.data || !result.data.session || typeof result.data.session.access_token !== "string") {
             throw new Error("invalid_token");
           }
-          return postJson(CLAIM_PATH, claimBody({ accessToken: result.data.session.access_token, ctaLocation: claimCtaLocation }));
+          return postJson(VERIFY_PATH, claimBody({ accessToken: result.data.session.access_token, ctaLocation: claimCtaLocation }));
         }).then(function (result) {
-          if (!result.ok || typeof result.data.claimId !== "string" || typeof result.data.secret !== "string") {
+          if (!result.ok || result.data.verified !== true || typeof result.data.verificationId !== "string") {
             var reason = googleFailureReason(result, result.status === 0 ? "csp_or_network" : "invalid_token");
             return finishGoogleAuth().then(function () {
               showGoogleFallback(reason, result.status === 404 || result.status >= 500 || result.status === 0);
@@ -783,17 +782,16 @@
             });
           }
           var data = result.data;
-          pendingClaim = { claimId: data.claimId, secret: data.secret, expiresAt: data.expiresAt, email: "your Google account" };
           return finishGoogleAuth().then(function () {
-            writeClaim(pendingClaim);
+            writeVerification();
             clearGoogleContext();
             identifyUser(data.userId);
-            mirrorRegistration(data.claimId);
+            mirrorRegistration(data.verificationId);
             track("gate_google_completed", { cta_location: claimCtaLocation });
-            showDownload(pendingClaim);
+            showDownload(data);
             track("gate_download_started", { cta_location: claimCtaLocation, trigger: "auto" });
             location.assign("/download");
-            return pendingClaim;
+            return true;
           });
         }).catch(function (error) {
           var reason = supabaseExchangeFailureReason(error);
@@ -803,8 +801,8 @@
         });
       }
 
-      var restored = readClaim();
-      if (restored) showDownload(restored); else {
+      var restored = readVerification();
+      if (restored) showDownload(); else {
         show("email");
         var code = oauthCode();
         var error = oauthError();
