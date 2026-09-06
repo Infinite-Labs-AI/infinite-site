@@ -4,4 +4,22 @@
 <section class="feature-section"><div class="feature-shell"><h2>Evidence</h2><p>The public evidence is the working <a href="/tools/landing-page-ab-test-ideas-generator/">A/B test ideas generator</a>. It accepts an existing-page brief and returns hypotheses; it is not an experiment result.</p></div></section>
 <section class="feature-section"><div class="feature-shell"><h2>What it does not do</h2><p class="feature-note">The current tool does not create variants, split traffic, calculate significance, or roll out a winner. Retained publishing and custom-domain infrastructure is not a current builder promise.</p></div></section>
 <section class="feature-section"><div class="feature-shell"><h2>Related</h2><div class="feature-links"><a href="/features/ai-marketing-agents/">AI Marketing Agents</a><a href="/features/ads/">AI Ads</a><a href="/features/email/">Email availability</a><a href="/features/seo-aeo/">SEO + AEO</a><a href="/compare/infinite-vs-ploy/">Infinite vs Ploy</a><a href="https://hub.infinite.fast/landing-pages-for-saas-build-the">Landing pages for SaaS</a><a href="https://hub.infinite.fast/best-landing-page-builder-6-tools">Landing-page builder category guide</a><a href="https://hub.infinite.fast/conversion-rate-optimization-for-saas-a">CRO for SaaS</a></div></div></section>
+
+<section class="feature-section" id="connect-vercel"><div class="feature-shell">
+<span class="feature-status feature-status--availability">Early-access connection guide</span>
+<h2>Connect your landing-page project</h2>
+<p>The Infinite Websites integration connects the Vercel project that hosts your marketing website. This setup is available in the early-access desktop build; it does not enable a live experiment by itself.</p>
+<ol>
+<li><strong>Connect GitHub.</strong> In Infinite desktop, open Settings → Connections → GitHub · Website. Install Infinite Websites for the repository behind your landing pages and select that repository. You do not need to grant access to your SaaS application repository.</li>
+<li><strong>Connect Vercel.</strong> From the connected website row, choose Connect Vercel. Select the Vercel team and grant access only to the matching landing-page project. Return to Infinite and select that project.</li>
+<li><strong>Verify the match.</strong> The GitHub repository, production branch, project folder and verified production hostname must agree. Initial support is static HTML on Vercel, using the Other framework preset.</li>
+<li><strong>Check analytics and setup.</strong> Infinite reuses the existing analytics setup for your website. If none is configured, it provides the <code>infinite analytics</code> command to run from your website repository. Hosting connected means access is verified; preview, tracking and experiment setup are separate checks.</li>
+</ol>
+<h3>What access does this grant?</h3>
+<p>The Vercel integration requests read access to its installation and selected project, plus read/write access to deployments for website previews. Deployment protection stays in place. The connection flow does not change environment variables or start a test.</p>
+<h3>If the connection does not verify</h3>
+<p>Check that both connections refer to the same repository and production domain, and that your Vercel account can authorize the project. A redirect domain, preview-only domain, unsupported framework or missing project permission cannot be used. GitHub access alone may not be sufficient for Vercel to build a contributor’s commit.</p>
+<h3>Disconnect or get help</h3>
+<p id="integration-support">Manage the website connection from Infinite’s Connections page. You can also revoke the integration in your Vercel team’s Integrations settings and remove repository access in GitHub. For help, contact <a href="mailto:support@ultima.inc">support@ultima.inc</a>. See our <a href="/privacy/">Privacy Policy</a> and <a href="/terms/">Terms</a>.</p>
+</div></section>
 </main><footer class="public-site-footer" data-site-footer="public-route-graph-v1"><div>© 2026 Ultima AI, Inc.</div></footer></body></html>
