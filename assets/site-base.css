@@ -1,0 +1,29 @@
+/* Shared design foundation — solar's system, consumed by every reskinned page.
+   Tokens + faces + a few component primitives. Family stylesheets reference the
+   tokens; they no longer define their own colour/type from scratch. */
+@font-face{font-family:Instrument;src:url('/fonts/instrument/InstrumentSerif-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:InterVar;src:url('/fonts/inter/inter-latin-wght-normal.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:PlexMono;src:url('/fonts/jetbrains-mono-400.woff2') format('woff2');font-weight:400;font-display:swap}
+
+:root{
+  --ink:#242532; --muted:#606477; --faint:#8a8fa6;
+  --blue:#3d3df5; --blue-dark:#2929cb; --blue-soft:#7478fb;
+  --wash:#edf0ff; --line:#e3e5ef; --line-soft:#eef0f7; --mint:#eaf4d7;
+  --surface:#ffffff; --sunk:#f4f5fb;
+  --display:Instrument,Georgia,serif;
+  --sans:InterVar,Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:PlexMono,ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+/* Type primitives — reskinned pages opt in via these class hooks or the tokens. */
+.inf-display{font-family:var(--display);font-weight:400;letter-spacing:-.045em;color:var(--ink);line-height:1.06}
+.inf-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);display:inline-flex;align-items:center;gap:9px;line-height:1.5}
+.inf-eyebrow .dot{height:6px;width:6px;background:var(--blue-soft);border-radius:50%}
+
+/* Button primitives — solar's exact look. */
+.inf-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:13px 22px;min-height:46px;border:1px solid transparent;border-radius:9px;background:var(--blue);color:#fff;font:500 13px/1 var(--sans);text-decoration:none;box-shadow:0 3px 0 #2727c319,inset 0 1px 0 #ffffff35;transition:background .15s,transform .1s;cursor:pointer}
+.inf-btn:hover{background:var(--blue-dark)}
+.inf-btn:active{transform:translateY(1px)}
+.inf-btn.is-white{background:#fff;color:var(--ink);border-color:#e3e5f2;box-shadow:0 2px 4px #19214708}
+.inf-btn.is-white:hover{background:var(--sunk)}
+.inf-btn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}

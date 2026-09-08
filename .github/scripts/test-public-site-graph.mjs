@@ -36,15 +36,20 @@ const expectedRoutes = [
   "/compare/infinite-vs-okara/",
   "/compare/infinite-vs-ploy/",
   "/get-started/",
+  "/audit/",
   "/startup-launch-videos/",
   "/privacy/",
   "/terms/",
 ];
-const expectedSitemapRoutes = expectedRoutes.filter((path) => path !== "/get-started/");
+// The noindex routes (the download gate + the post-submit audit page) never enter the sitemap.
+const expectedSitemapRoutes = expectedRoutes.filter(
+  (path) => path !== "/get-started/" && path !== "/audit/",
+);
 const siteFooterLegacyClass = /\b(?:wrangle-footer|seo-footer)\b/;
 const expectedRouteFields = [
   "documentLog",
   "footer",
+  "header",
   "id",
   "indexable",
   "llmsSummary",
@@ -218,7 +223,7 @@ function assertManifest() {
   assert.deepEqual(
     PUBLIC_ROUTES.map((route) => route.path),
     expectedRoutes,
-    "manifest must contain exactly the final 22 public document routes in canonical order",
+    "manifest must contain exactly the final 23 public document routes in canonical order",
   );
   assert.deepEqual(
     SITEMAP_ROUTES.map((route) => route.path),
@@ -246,10 +251,11 @@ function assertManifest() {
     assert.ok(route.title.length > 0, `${route.path}: route must have a title`);
     assert.equal(typeof route.llmsSummary, "string");
     assert.ok(route.llmsSummary.length > 0, `${route.path}: route must have an llmsSummary`);
-    if (route.path === "/get-started/") {
-      assert.equal(route.indexable, false, `${route.path}: download gate must stay noindex`);
-      assert.equal(route.footer, false, `${route.path}: download gate keeps its focused footer instead of the site graph footer`);
-      assert.equal(route.sitemap, null, `${route.path}: noindex download gate must not appear in sitemap.xml`);
+    if (!route.indexable) {
+      // The noindex routes — the download gate and the post-submit audit page — keep their own
+      // focused chrome instead of the shared site-graph footer, and never enter the sitemap.
+      assert.equal(route.footer, false, `${route.path}: noindex route keeps its focused footer instead of the site graph footer`);
+      assert.equal(route.sitemap, null, `${route.path}: noindex route must not appear in sitemap.xml`);
     } else {
       assert.equal(route.indexable, true, `${route.path}: public marketing routes must be indexable`);
       assert.equal(route.footer, true, `${route.path}: public marketing routes must receive the site footer`);
@@ -303,7 +309,7 @@ function assertRootSnapshots() {
 function assertSourceFooterShapes() {
   for (const route of PUBLIC_ROUTES.filter((candidate) => candidate.source.endsWith(".html"))) {
     const body = readFileSync(join(repoRoot, route.source), "utf8");
-    assertFooterShape(route.path, body, route.source);
+    assertFooterShape(route, body, route.source);
   }
 }
 
@@ -330,35 +336,36 @@ function assertBuiltGraph(targetDir) {
   for (const route of PUBLIC_ROUTES) {
     const file = join(targetDir, route.path, "index.html");
     const body = readFileSync(file, "utf8");
-    assertFooterShape(route.path, body, relative(targetDir, file));
+    assertFooterShape(route, body, relative(targetDir, file));
   }
 }
 
-function assertFooterShape(routePath, body, label) {
+function assertFooterShape(route, body, label) {
+  const routePath = route.path;
   const totalFooterCount = (body.match(/<footer\b/g) ?? []).length;
   const canonicalFooterCount = (body.match(/<footer\b[^>]*data-site-footer="public-route-graph-v1"/g) ?? []).length;
-  if (routePath === "/get-started/") {
-    assert.equal(canonicalFooterCount, 0, `${label}: download gate must not receive the canonical site footer`);
-    assert.equal(totalFooterCount, 1, `${label}: download gate must keep one focused footer`);
+  if (route.footer === false) {
+    // No-footer routes never receive the shared site-graph footer.
+    assert.equal(canonicalFooterCount, 0, `${label}: no-footer route must not receive the canonical site footer`);
     assert.doesNotMatch(body, siteFooterLegacyClass, `${label}: legacy site footer classes must be removed`);
-    assert.match(body, /Privacy/, `${label}: focused footer must keep legal links`);
-    assert.match(body, /Terms/, `${label}: focused footer must keep legal links`);
+    if (routePath === "/get-started/") {
+      // The download gate keeps its own focused footer with the legal links.
+      assert.equal(totalFooterCount, 1, `${label}: download gate must keep one focused footer`);
+      assert.match(body, /Privacy/, `${label}: focused footer must keep legal links`);
+      assert.match(body, /Terms/, `${label}: focused footer must keep legal links`);
+    } else {
+      // e.g. /audit/ — a bare post-submit page with no footer chrome at all.
+      assert.equal(totalFooterCount, 0, `${label}: bare no-footer route must carry no footer element`);
+    }
     return;
   }
   assert.equal(canonicalFooterCount, 1, `${label}: must have exactly one canonical site footer`);
   assert.doesNotMatch(body, siteFooterLegacyClass, `${label}: legacy site footer classes must be removed`);
   assert.match(body, /© 2026 Ultima AI, Inc\./, `${label}: legal footer text must use the verified legal entity`);
   assert.doesNotMatch(body, /The public graph links/i, `${label}: rejected public-graph footer copy must be absent`);
-  if (routePath === "/") {
-    assert.equal(totalFooterCount, 2, `${label}: homepage must preserve its testimonial/content footer plus one canonical site footer`);
-    assert.match(
-      body,
-      /<footer><span>RK<\/span><b>River, SaaS founder<\/b><\/footer>/,
-      `${label}: homepage testimonial/content footer must survive site footer replacement`,
-    );
-  } else {
-    assert.equal(totalFooterCount, 1, `${label}: must have exactly one semantic footer`);
-  }
+  // The solar homepage carries a single semantic footer — the canonical site footer — like every
+  // other page; it has no separate testimonial/content footer.
+  assert.equal(totalFooterCount, 1, `${label}: must have exactly one semantic footer`);
 }
 
 function footerColumn(label, links) {

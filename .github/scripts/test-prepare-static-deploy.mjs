@@ -67,19 +67,29 @@ try {
   assert.doesNotMatch(homepage, /homepage-20260728-brand-logos\.css/);
   assert.doesNotMatch(homepage, /homepage-20260729-spade-logos\.css/);
   assert.doesNotMatch(homepage, /<link rel="preload" href="homepage-20260729-founder-x-posts\.css" as="style">/);
-  assert.match(homepage, /<link rel="stylesheet" href="homepage-20260729-founder-x-posts\.css" media="print" onload="this\.media='all';this\.onload=null">/);
+  assert.match(homepage, /<link rel="stylesheet" href="homepage-20260908-solar\.css" media="print" onload="this\.media='all';this\.onload=null">/);
   assert.match(homepage, /<link rel="stylesheet" href="\/assets\/site-footer\.css" media="print" onload="this\.media='all';this\.onload=null">/);
-  assert.doesNotMatch(homepage, /\.ttf["')]/);
+  // The solar system ships Instrument Serif as a .ttf sitewide (site-base + the homepage critical
+  // CSS). Ban any OTHER .ttf so a heavy webfont can't slip in, but allow that one committed face.
+  for (const ttf of homepage.match(/[\w./-]+\.ttf/g) ?? []) {
+    assert.match(ttf, /InstrumentSerif-Regular\.ttf$/, `unexpected .ttf webfont on the homepage: ${ttf}`);
+  }
 
   const criticalCss = homepage.match(/<style data-homepage-critical>([\s\S]*?)<\/style>/)?.[1] ?? "";
-  assert.match(criticalCss, /data-scheme=(?:["']wrangle["']|wrangle)/);
-  assert.match(criticalCss, /download-compatibility/);
-  assert.ok(criticalCss.length > 20_000 && criticalCss.length < 50_000, "critical CSS must cover both target viewports without embedding the full bundle");
+  // The inlined critical CSS is the above-the-fold set: solar's nav + hero (the signal cards and
+  // the trail layer). It must NOT drag the below-fold bundle into first paint.
+  assert.match(criticalCss, /\.hero\b/);
+  assert.match(criticalCss, /\.signal\b/);
+  assert.doesNotMatch(criticalCss, /\.customer-stories\b/, "below-fold section CSS must stay in the deferred bundle, not the critical inline");
+  assert.ok(criticalCss.length > 12_000 && criticalCss.length < 40_000, "critical CSS must cover the hero without embedding the full bundle");
 
-  const homepageCss = readFileSync(join(distDir, "homepage-20260729-founder-x-posts.css"), "utf8");
-  assert.match(homepageCss, /data-scheme=(?:["']wrangle["']|wrangle)/);
-  assert.match(homepageCss, /fonts\/ibm-plex\/ibm-plex-sans-400\.woff2/);
-  assert.ok(homepageCss.length > 180_000, "deferred homepage bundle must contain inline and external source styles");
+  const homepageCss = readFileSync(join(distDir, "homepage-20260908-solar.css"), "utf8");
+  // The deferred bundle is the below-the-fold set: the workspace / proof / stories / growth sections.
+  assert.match(homepageCss, /\.workspace-capabilities\b/);
+  assert.match(homepageCss, /\.customer-stories\b/);
+  assert.match(homepageCss, /\.audit\b/);
+  assert.doesNotMatch(homepageCss, /\.signal\b/, "above-fold hero CSS must stay inline, not in the deferred bundle");
+  assert.ok(homepageCss.length > 40_000, "deferred homepage bundle must contain the below-fold section styles");
   const siteFooterCss = readFileSync(join(distDir, "assets/site-footer.css"), "utf8");
   assert.match(siteFooterCss, /\.public-site-footer\b/, "dist must carry the shared site footer CSS asset");
 

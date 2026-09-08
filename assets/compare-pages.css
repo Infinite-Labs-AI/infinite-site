@@ -1,50 +1,62 @@
+/* Compare pages (/compare/infinite-vs-*) — solar reskin.
+   These pages load site-base.css tokens + seo-pages.css first, so this sheet
+   only carries the compare-SPECIFIC surfaces (meta chips, verdict panels,
+   the sourced table wrap, FAQ, the closing CTA). Everything else — layout,
+   hero, headings, buttons, cards — is inherited from seo-pages + site-base.
+   No :root / @font-face here; tokens are consumed via var(--…). */
+
+/* Review-detail chips under the hero — solar mono eyebrow, hairline pill. */
 .compare-meta {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   margin-top: 24px;
-  color: var(--muted);
+  color: var(--faint);
   font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .compare-meta span {
-  padding: 8px 12px;
+  padding: 7px 13px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--surface);
 }
 
+/* Two-up verdict / use-case / tradeoff panels. */
 .compare-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 16px;
 }
 
 .compare-panel {
-  padding: 24px;
+  padding: 26px;
   border: 1px solid var(--line);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 20px 55px rgba(38, 64, 91, 0.1);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(36, 37, 50, 0.04);
 }
 
 .compare-panel h3 {
   margin: 0 0 12px;
-  font-size: 24px;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  font-family: var(--sans);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 
 .compare-panel p,
 .compare-panel li {
   color: var(--muted);
-  font-size: 16px;
-  line-height: 1.58;
+  font-size: 15px;
+  line-height: 1.62;
 }
 
 .compare-panel ul,
@@ -57,20 +69,25 @@
   margin-top: 10px;
 }
 
+/* "Bottom line" verdict — soft sunk panel with a single blue accent rule. */
 .compare-callout {
   margin-top: 18px;
-  padding: 18px;
-  border: 1px solid rgba(40, 199, 111, 0.28);
-  border-radius: 18px;
-  background: rgba(40, 199, 111, 0.08);
-  color: #33513f;
-  line-height: 1.55;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--blue);
+  border-radius: 14px;
+  background: var(--sunk);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
+/* Sourced feature table lives in seo-pages (.seo-table); we only frame it. */
 .compare-table-wrap {
   overflow-x: auto;
-  border-radius: 18px;
-  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(36, 37, 50, 0.04);
 }
 
 .compare-table-wrap .seo-table {
@@ -78,15 +95,20 @@
   box-shadow: none;
 }
 
+/* Inline "official source" citation links — the one blue accent. */
 .compare-citation {
   display: inline-flex;
   align-items: center;
   margin-left: 6px;
-  color: var(--green-dark);
+  color: var(--blue);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.compare-citation:hover {
+  color: var(--blue-dark);
 }
 
 .compare-faq-list {
@@ -96,16 +118,17 @@
 
 .compare-faq {
   border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 16px 40px rgba(38, 64, 91, 0.08);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(36, 37, 50, 0.04);
 }
 
 .compare-faq summary {
   cursor: pointer;
   padding: 18px 20px;
-  color: #101418;
-  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 500;
   line-height: 1.35;
 }
 
@@ -113,44 +136,48 @@
   margin: 0;
   padding: 0 20px 20px;
   color: var(--muted);
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.62;
 }
 
+/* Closing CTA — calm sunk panel, not the old pink/blue gradient. */
 .compare-cta {
   margin-top: 36px;
-  padding: 36px;
+  padding: 44px 36px;
   border: 1px solid var(--line);
-  border-radius: 24px;
-  background:
-    linear-gradient(90deg, rgba(246, 195, 226, 0.52), rgba(255, 255, 255, 0.8) 48%, rgba(110, 203, 255, 0.48)),
-    #ffffff;
-  box-shadow: var(--shadow);
+  border-radius: 20px;
+  background: var(--sunk);
   text-align: center;
 }
 
 .compare-cta h2 {
   margin: 0 auto;
-  font-size: clamp(32px, 4vw, 52px);
+  font-family: var(--display);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+  color: var(--ink);
+  font-size: clamp(32px, 4vw, 50px);
 }
 
 .compare-cta p {
   margin: 14px auto 0;
-  max-width: 660px;
+  max-width: 640px;
   color: var(--muted);
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.55;
 }
 
 .compare-related-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 16px;
 }
 
 .compare-disclosure {
   margin-top: 22px;
-  color: var(--muted);
-  font-size: 14px;
+  color: var(--faint);
+  font-size: 13px;
   line-height: 1.55;
   text-align: center;
 }
@@ -162,6 +189,6 @@
   }
 
   .compare-cta {
-    padding: 26px;
+    padding: 30px 24px;
   }
 }

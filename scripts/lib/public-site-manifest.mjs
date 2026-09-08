@@ -7,7 +7,7 @@ export const PUBLIC_ROUTES = deepFreeze([
   route({
     id: "home",
     path: "/",
-    source: "_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html",
+    source: "_agent_artifacts/infinite-capability-workspace/index-scheme-wrangle.html",
     owner: "site",
     title: "Infinite — AI CMO for founders",
     llmsSummary: "AI marketing operators, launch systems, and growth tools for solo founders and small teams.",
@@ -216,6 +216,21 @@ export const PUBLIC_ROUTES = deepFreeze([
     footer: false,
   }),
   route({
+    id: "audit",
+    path: "/audit/",
+    source: "_agent_artifacts/infinite-capability-workspace/audit.html",
+    owner: "site",
+    header: false,
+    title: "Your growth audit",
+    llmsSummary:
+      "Post-submission page for the free growth audit: shows the four agents working through the submitted site, and offers a slot to go through the result.",
+    lastmod: "2026-09-08",
+    changefreq: "yearly",
+    priority: "0.1",
+    indexable: false,
+    footer: false,
+  }),
+  route({
     id: "launch-videos",
     path: "/startup-launch-videos/",
     source: "scripts/build-launch-videos.mjs",
@@ -414,6 +429,7 @@ function route({
   indexable = true,
   documentLog = true,
   footer = true,
+  header = true,
 }) {
   return {
     id,
@@ -423,6 +439,7 @@ function route({
     indexable,
     documentLog,
     footer,
+    header,
     title,
     llmsSummary,
     sitemap: indexable
