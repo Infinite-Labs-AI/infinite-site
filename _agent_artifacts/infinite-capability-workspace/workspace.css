@@ -37,3 +37,55 @@
 .cli-agents-link{margin-top:14px}
 .cli-agents-link a{color:var(--blue);font-size:13px;font-weight:500;text-decoration:none}
 .cli-agents-link a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* 05 Ads + 06 Email — two new stations, each a UNIQUE demo in the workspace style. */
+.ws-ads{padding-top:20px}
+.ws-email{padding-top:20px;margin-top:62px}
+@media(max-width:800px){.ws-email{margin-top:0}}
+/* Ads: five real competitor ad creatives Infinite tracks, layered — one plays like a video. */
+.ads-artifact{height:348px}
+.ad-creative{position:absolute;margin:0;padding:7px;background:#fff;border:1px solid #e7e7f3;border-radius:13px;box-shadow:0 16px 34px #3a46631f;overflow:hidden}
+.ad-media{position:relative;border-radius:7px;overflow:hidden}
+.ad-media img{display:block;width:100%;height:auto}
+.ad-creative figcaption{display:flex;align-items:center;gap:6px;padding:8px 3px 2px;font:600 11.5px/1.2 var(--sans);color:#484d64}
+.ad-creative figcaption span{margin-left:auto;font:600 8px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:#7d84a8;background:#eef0ff;border:1px solid #e0e3f6;border-radius:20px;padding:3px 6px}
+.ad-b1{width:132px;left:26px;top:4px;transform:rotate(-15deg);z-index:1;opacity:.9}
+.ad-b2{width:130px;right:22px;top:0;transform:rotate(15deg);z-index:1;opacity:.9}
+.ad-c1{width:148px;left:0;top:58px;transform:rotate(-8deg);z-index:2}
+.ad-c3{width:150px;right:0;top:52px;transform:rotate(8deg);z-index:3}
+.ad-c2{width:166px;left:50%;margin-left:-83px;top:16px;transform:rotate(-1deg);z-index:4}
+.ad-video .ad-media img{animation:ad-kenburns 9s ease-in-out infinite alternate}
+@keyframes ad-kenburns{from{transform:scale(1.05)}to{transform:scale(1.15) translateY(-5px)}}
+.ad-scrim{position:absolute;inset:0;background:linear-gradient(180deg,#0b0b1a00 55%,#0b0b1a5e);pointer-events:none}
+.ad-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fffffff2;box-shadow:0 3px 11px #0b0b2238;display:grid;place-items:center}
+.ad-play::after{content:"";margin-left:3px;border-style:solid;border-width:6px 0 6px 11px;border-color:transparent transparent transparent #3d3df5}
+.ad-dur{position:absolute;top:8px;right:8px;font:8px/1 var(--mono);color:#fff;background:#0b0b1aad;border-radius:3px;padding:3px 5px}
+.ad-timeline{position:absolute;left:8px;right:8px;bottom:8px;height:3px;border-radius:3px;background:#ffffff5c;overflow:hidden}
+.ad-timeline i{display:block;height:100%;background:#fff;transform-origin:left;transform:scaleX(0);animation:ad-progress 9s linear infinite}
+@keyframes ad-progress{0%{transform:scaleX(0)}96%,100%{transform:scaleX(1)}}
+/* Email: a letter on paper that writes itself, in your voice. */
+.email-artifact{height:348px;padding-top:2px}
+.letter{position:absolute;left:0;right:8px;top:8px;bottom:10px;background:#fff;border:1px solid #e6e3f1;border-radius:12px;box-shadow:0 15px 30px #4a466316;padding:19px 22px;overflow:hidden}
+.letter-head{display:flex;align-items:center;gap:9px;font-size:12px;color:#8b96ad;margin-bottom:15px}
+.letter-head small{margin-left:auto;font-size:10px;color:#aab2c2}
+.letter-greeting{font:400 19px/1.55 Instrument,Georgia,serif;color:#585073;margin:0 0 3px}
+.letter-line{font:400 19px/1.55 Instrument,Georgia,serif;color:#6a6291;margin:0;white-space:nowrap;width:fit-content;clip-path:inset(0 100% 0 0)}
+.letter-line-1{animation:letter-type1 8s steps(24) infinite}
+.letter-line-2{animation:letter-type2 8s steps(30) infinite}
+.letter-line-2::after{content:"";display:inline-block;width:2px;height:18px;background:#8d7fce;margin-left:3px;vertical-align:-3px;animation:letter-caret 1.05s step-end infinite}
+.letter-sign{font:400 11px/1.5 var(--sans);color:#a49fc0;margin:16px 0 0;opacity:0;animation:letter-sign 8s ease infinite}
+@keyframes letter-type1{0%{clip-path:inset(0 100% 0 0)}15%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
+@keyframes letter-type2{0%,17%{clip-path:inset(0 100% 0 0)}42%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
+@keyframes letter-sign{0%,52%{opacity:0}66%,100%{opacity:1}}
+@keyframes letter-caret{50%{opacity:0}}
+@media(max-width:1100px){.ad-b1{width:116px}.ad-b2{width:114px}.ad-c1{width:130px}.ad-c3{width:132px}.ad-c2{width:150px;margin-left:-75px}.letter-greeting,.letter-line{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.ad-video img,.ad-timeline i,.letter-line,.letter-sign{animation:none!important}.letter-line{clip-path:none}.letter-sign{opacity:1}}
+/* Social proof + CTA under the capability cards (replaces the old reassurance line). */
+.ws-proof{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:11px 18px;padding:6px 0 24px;text-align:center}
+.ws-proof-faces{display:inline-flex;flex:none}
+.ws-proof-faces img{width:30px;height:30px;border-radius:50%;border:2px solid #fff;margin-right:-9px;box-shadow:0 2px 7px #38427714;background:#eef0f7}
+.ws-proof-text{margin:0;font:400 15px/1.5 var(--sans);color:#5c6479;max-width:46ch;text-align:left}
+.ws-proof-text b{color:#30384b;font-weight:600}
+.ws-proof-text a{color:var(--blue);text-decoration:none;font-weight:500}
+.ws-proof-text a:hover{text-decoration:underline;text-underline-offset:2px}
+@media(max-width:560px){.ws-proof{gap:10px}.ws-proof-text{font-size:14px;text-align:center}}
