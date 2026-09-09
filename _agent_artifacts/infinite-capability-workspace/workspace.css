@@ -42,18 +42,30 @@
 .ws-ads{padding-top:20px}
 .ws-email{padding-top:20px;margin-top:62px}
 @media(max-width:800px){.ws-email{margin-top:0}}
-/* Ads: five real competitor ad creatives Infinite tracks, layered — one plays like a video. */
-.ads-artifact{height:348px}
+/* Ads: six real competitor ad creatives Infinite tracks, layered as a fan — one plays like a
+   video, and every card wears a compact Facebook/Instagram feed-ad frame (brand header + creative). */
+.ads-artifact{height:366px}
 .ad-creative{position:absolute;margin:0;padding:7px;background:#fff;border:1px solid #e7e7f3;border-radius:13px;box-shadow:0 16px 34px #3a46631f;overflow:hidden}
 .ad-media{position:relative;border-radius:7px;overflow:hidden}
 .ad-media img,.ad-media video{display:block;width:100%;height:auto}
-.ad-creative figcaption{display:flex;align-items:center;gap:6px;padding:8px 3px 2px;font:600 11.5px/1.2 var(--sans);color:#484d64}
-.ad-creative figcaption span{margin-left:auto;font:600 8px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:#7d84a8;background:#eef0ff;border:1px solid #e0e3f6;border-radius:20px;padding:3px 6px}
-.ad-b1{width:132px;left:26px;top:4px;transform:rotate(-15deg);z-index:1;opacity:.9}
-.ad-b2{width:130px;right:22px;top:0;transform:rotate(15deg);z-index:1;opacity:.9}
-.ad-c1{width:148px;left:0;top:58px;transform:rotate(-8deg);z-index:2}
-.ad-c3{width:150px;right:0;top:52px;transform:rotate(8deg);z-index:3}
-.ad-c2{width:166px;left:50%;margin-left:-83px;top:16px;transform:rotate(-1deg);z-index:4}
+/* Social-ad chrome: circular brand logo + name + muted @handle, a "Sponsored" line with a tiny
+   platform glyph, and the Active/Video format badge folded into the top-right. */
+.ad-head{display:flex;align-items:center;gap:5px;padding:4px 4px 6px}
+.ad-logo{width:19px;height:19px;flex:none;border-radius:50%;overflow:hidden;background:#f1f2fb;border:1px solid #e4e5f2;box-shadow:0 1px 2px #3a46630f}
+.ad-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.ad-id{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px}
+.ad-name{display:flex;align-items:baseline;gap:4px;min-width:0}
+.ad-name b{flex:none;font:700 9px/1.15 var(--sans);letter-spacing:-.01em;color:#2b3040}
+.ad-handle{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:normal;font:400 7.5px/1 var(--sans);color:#a2a8bd}
+.ad-spon{display:flex;align-items:center;gap:3px;font:400 7.5px/1 var(--sans);color:#9aa1b6}
+.ad-glyph{flex:none;color:#bcc0ce}
+.ad-badge{flex:none;align-self:center;font:600 7px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:#7d84a8;background:#eef0ff;border:1px solid #e0e3f6;border-radius:20px;padding:3px 5px}
+.ad-b1{width:134px;left:22px;top:6px;transform:rotate(-15deg);z-index:1;opacity:.92}
+.ad-b2{width:132px;right:18px;top:2px;transform:rotate(15deg);z-index:1;opacity:.92}
+.ad-b3{width:150px;left:50%;margin-left:-40px;top:-4px;transform:rotate(11deg);z-index:0;opacity:.92}
+.ad-c1{width:150px;left:0;top:70px;transform:rotate(-8deg);z-index:2}
+.ad-c3{width:152px;right:0;top:64px;transform:rotate(8deg);z-index:3}
+.ad-c2{width:168px;left:50%;margin-left:-84px;top:26px;transform:rotate(-1deg);z-index:4}
 .ad-video .ad-media img{animation:ad-kenburns 9s ease-in-out infinite alternate}
 @keyframes ad-kenburns{from{transform:scale(1.05)}to{transform:scale(1.15) translateY(-5px)}}
 .ad-scrim{position:absolute;inset:0;background:linear-gradient(180deg,#0b0b1a00 55%,#0b0b1a5e);pointer-events:none}
@@ -78,7 +90,7 @@
 @keyframes letter-type2{0%,17%{clip-path:inset(0 100% 0 0)}42%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
 @keyframes letter-sign{0%,52%{opacity:0}66%,100%{opacity:1}}
 @keyframes letter-caret{50%{opacity:0}}
-@media(max-width:1100px){.ad-b1{width:116px}.ad-b2{width:114px}.ad-c1{width:130px}.ad-c3{width:132px}.ad-c2{width:150px;margin-left:-75px}.letter-greeting,.letter-line{font-size:18px}}
+@media(max-width:1100px){.ad-b1{width:118px}.ad-b2{width:116px}.ad-b3{width:132px;margin-left:-35px}.ad-c1{width:132px}.ad-c3{width:134px}.ad-c2{width:152px;margin-left:-76px}.letter-greeting,.letter-line{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.ad-video img,.ad-timeline i,.letter-line,.letter-sign{animation:none!important}.letter-line{clip-path:none}.letter-sign{opacity:1}}
 /* Social proof + CTA under the capability cards (replaces the old reassurance line). */
 .ws-proof{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:11px 18px;padding:6px 0 24px;text-align:center}
