@@ -150,6 +150,8 @@
 .result-primary strong small{font-size:.52em;letter-spacing:-.02em;margin-left:.02em}
 .result-primary>span{font:500 13px/1.45 var(--sans);color:#6b6480;max-width:150px}
 .result-panel h3{font:400 21px/1.5 var(--display);letter-spacing:-.02em;color:#4a4460;margin:22px 0 0;max-width:430px}
+/* the story is now told in the founder's own words, not a restated stat */
+.result-quote{font:400 20px/1.52 var(--display);letter-spacing:-.018em;color:#403a58;margin:22px 0 0;max-width:440px}
 .result-source{display:block;margin:16px 0 22px;font:400 10px/1.4 var(--mono);letter-spacing:.04em;color:#b6bccb}
 .results-tabs{flex-wrap:wrap}
 /* .result-support used to hold the button down with margin-top:auto; it is gone now */
@@ -201,7 +203,7 @@
 .result-panel[data-layout=wide] .result-count{margin-left:14px}
 .result-panel[data-layout=wide] .result-primary{justify-content:center;border-bottom:0;padding-bottom:6px}
 .result-panel[data-layout=wide] .result-primary>span{max-width:none}
-.result-panel[data-layout=wide] .result-panel h3,.result-panel[data-layout=wide] h3{max-width:none}
+.result-panel[data-layout=wide] .result-panel h3,.result-panel[data-layout=wide] h3,.result-panel[data-layout=wide] .result-quote{max-width:none}
 .result-panel[data-layout=wide] .result-read{margin-top:6px;justify-content:center;gap:14px}
 .acct-row{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:22px 0 4px}
 .acct-row span{font:400 9px/1 var(--mono);letter-spacing:.05em;color:#b2b8c8;border:1px dashed #dfe3f0;border-radius:20px;padding:8px 12px}
