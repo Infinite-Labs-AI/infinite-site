@@ -63,7 +63,9 @@ document.querySelector('.trail-controls')?.remove();
   /* The email also rides in sessionStorage, not the URL, so it can prefill the Cal
      booking without landing in a server log, a referrer header, or a pasted link. */
   try { sessionStorage.setItem('infinite-audit-lead', JSON.stringify({ site, email })); } catch {}
-  window.location.href = 'audit.html' + (site ? '?site=' + encodeURIComponent(site) : '');
+  /* Root-relative: the page ships as the /audit/ directory index, so a bare
+     'audit.html' would 404 against /audit.html at the real host. */
+  window.location.href = '/audit/' + (site ? '?site=' + encodeURIComponent(site) : '');
  });
 })();
 

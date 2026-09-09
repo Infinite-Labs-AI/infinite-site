@@ -26,3 +26,7 @@
 @media(max-width:760px){.hero{padding-top:330px!important}.possibility-layer{height:310px}}
 
 @media(min-width:761px) and (max-width:1100px){.hero{padding-top:374px!important}.possibility-layer{height:350px}}
+
+/* Phone hero: no floating cards at all — hide the whole layer and drop the stacked-card
+   top band so the hero is just clean text. (Cards remain on tablet/desktop.) */
+@media(max-width:760px){.hero{padding-top:72px!important}.possibility-layer{display:none!important}}

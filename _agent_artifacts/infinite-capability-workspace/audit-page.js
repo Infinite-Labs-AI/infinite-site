@@ -9,7 +9,7 @@
    this is the single line to update — e.g. 'founders-ultima/infinite-demo'. If the username
    changes too, note that 1bu-1's production welcome page hardcodes
    'founders-ultima/ultima-onboarding' and would break with it. */
-const CAL_LINK = 'founders-ultima/ultima-demo';
+const CAL_LINK = 'founders-ultima/infinite-demo';
 const CAL_ORIGIN = 'https://cal.com/';
 const CAL_TIMEOUT_MS = 6000;
 
@@ -194,10 +194,15 @@ const lead = (() => {
   /* If the iframe never arrives, hand over a prefilled cal.com link rather than an
      empty panel. Same watchdog doublespeed runs, same 6s. */
   if (directLink) {
-   /* The href stays bare. Putting the email in a URL attribute would hand it to
-      session replay (rrweb does not mask attribute values) and to autocapture,
-      which reads the href on click — the same PII-into-analytics leak the
-      get-started gate was patched for. Build the prefilled URL at click time. */
+   /* The href stays bare (a cal.com link with no query). Two reasons:
+      1. PII — putting the email in a URL attribute would hand it to session replay
+         (rrweb does not mask attribute values) and to autocapture, which reads the
+         href on click — the same leak the get-started gate was patched for.
+      2. Attribution — a bare cal.com anchor is exactly what the infinite-tag
+         outbound classifier keys off (host-based: cal.com/calendly.com → external_booking).
+         Keeping this a real anchor means the existing classifier tags the click; we
+         deliberately do NOT write a second capture here, which would only drift.
+      The prefilled URL is built at click time and opened via window.open. */
    directLink.href = CAL_ORIGIN + CAL_LINK;
    directLink.addEventListener('click', event => {
     const params = new URLSearchParams();
