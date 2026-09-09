@@ -3,3 +3,6 @@
 !.env.example
 dist/
 node_modules/
+
+# unused golf case-study images
+assets/growth/case-consumer-golf-store.*
