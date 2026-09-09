@@ -1,6 +1,6 @@
 /* SEO pages (agents / compare / tools) — reskinned onto the solar system.
    site-base.css owns tokens + faces. Class names + layout unchanged; the look moves
-   to the new language: Instrument Serif display headings, Inter body, one blue accent,
+   to the new language: Space Grotesk display headings, Inter body, one blue accent,
    hairline borders, calm surfaces — no multi-colour gradients. */
 
 /* seo-specific tokens only; the shared ones (--ink/--muted/--line/--blue/--display/
