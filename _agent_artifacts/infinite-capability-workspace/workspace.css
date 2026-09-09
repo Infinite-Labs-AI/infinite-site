@@ -84,7 +84,7 @@
 .ws-proof{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:11px 18px;padding:6px 0 24px;text-align:center}
 .ws-proof-faces{display:inline-flex;flex:none}
 .ws-proof-faces img{width:30px;height:30px;border-radius:50%;border:2px solid #fff;margin-right:-9px;box-shadow:0 2px 7px #38427714;background:#eef0f7}
-.ws-proof-text{margin:0;font:400 15px/1.5 var(--sans);color:#5c6479;max-width:46ch;text-align:left}
+.ws-proof-text{margin:0;font:400 15px/1.5 var(--sans);color:#5c6479}
 .ws-proof-text b{color:#30384b;font-weight:600}
 .ws-proof-text a{color:var(--blue);text-decoration:none;font-weight:500}
 .ws-proof-text a:hover{text-decoration:underline;text-underline-offset:2px}
