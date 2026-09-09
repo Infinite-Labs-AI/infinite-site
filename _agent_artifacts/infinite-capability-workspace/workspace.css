@@ -46,7 +46,7 @@
 .ads-artifact{height:348px}
 .ad-creative{position:absolute;margin:0;padding:7px;background:#fff;border:1px solid #e7e7f3;border-radius:13px;box-shadow:0 16px 34px #3a46631f;overflow:hidden}
 .ad-media{position:relative;border-radius:7px;overflow:hidden}
-.ad-media img{display:block;width:100%;height:auto}
+.ad-media img,.ad-media video{display:block;width:100%;height:auto}
 .ad-creative figcaption{display:flex;align-items:center;gap:6px;padding:8px 3px 2px;font:600 11.5px/1.2 var(--sans);color:#484d64}
 .ad-creative figcaption span{margin-left:auto;font:600 8px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:#7d84a8;background:#eef0ff;border:1px solid #e0e3f6;border-radius:20px;padding:3px 6px}
 .ad-b1{width:132px;left:26px;top:4px;transform:rotate(-15deg);z-index:1;opacity:.9}
