@@ -2,3 +2,24 @@
 @media(max-width:850px){.result-content{padding:26px}.result-primary{gap:14px}.result-primary>strong{font-size:74px}.result-primary>span{font-size:14px}.result-content h3{font-size:26px}.result-image-caption p{font-size:30px}}
 @media(max-width:600px){.customer-stories{padding-top:30px}.results-heading h2{font-size:42px}.results-tabs{gap:6px;margin-bottom:20px}.results-tabs button{padding:9px 8px;font-size:11px;gap:0}.result-tab-mark{display:none}.results-panels{padding:6px;border-radius:18px}.result-panel{grid-template-columns:1fr;border-radius:13px}.result-content{padding:23px;min-height:475px}.result-image{min-height:280px;grid-row:1}.result-image-caption{left:23px;bottom:24px}.result-image-caption p{font-size:29px;margin:9px 0}.result-image-caption>span:last-child{display:none}.result-primary>strong{font-size:79px}.result-primary>span{font-size:15px}.result-content h3{font-size:28px}.result-dialog{padding:32px 24px}.result-dialog h2{font-size:31px}.result-dialog-grid{grid-template-columns:1fr;gap:10px}}
 @media(prefers-reduced-motion:reduce){.results-tabs button{transition:none}}
+
+/* Wide panel (fintech): the photo fills the whole panel and the copy sits ON it
+   (people behind the text), with a dark gradient + light type for readability. */
+.result-panel[data-layout="wide"]{position:relative;grid-template-columns:1fr;min-height:600px}
+.result-panel[data-layout="wide"] .result-image{position:absolute;inset:0;min-height:0}
+.result-panel[data-layout="wide"] .result-image img{object-position:center;filter:saturate(.72)}
+.result-panel[data-layout="wide"] .result-image:after{background:linear-gradient(180deg,#1513285e 0%,#15132894 52%,#151328c4 100%)}
+.result-panel[data-layout="wide"] .result-content{position:relative;z-index:2;align-items:center;justify-content:center;text-align:center;max-width:660px;margin:0 auto;padding:60px 40px}
+.result-panel[data-layout="wide"] .result-customer{justify-content:center}
+.result-panel[data-layout="wide"] .result-count{margin-left:14px}
+.result-panel[data-layout="wide"] .result-logo{background:#ffffff26;color:#fff}
+.result-panel[data-layout="wide"] .result-customer strong{color:#fff}
+.result-panel[data-layout="wide"] .result-customer div>span,
+.result-panel[data-layout="wide"] .result-count,
+.result-panel[data-layout="wide"] .result-primary>span,
+.result-panel[data-layout="wide"] .result-primary>span small,
+.result-panel[data-layout="wide"] .result-source{color:#d7d4e8}
+.result-panel[data-layout="wide"] .result-primary{justify-content:center;border-bottom-color:#ffffff33}
+.result-panel[data-layout="wide"] .result-primary>strong{color:#c9c6ff}
+.result-panel[data-layout="wide"] .result-content h3{color:#fff;max-width:520px}
+.result-panel[data-layout="wide"] .result-read{color:#fff;justify-content:center}
