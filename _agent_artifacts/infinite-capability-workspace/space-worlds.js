@@ -19,9 +19,12 @@
       scene.style.transform = `perspective(1000px) rotateY(${turn}deg)`;
       decks.forEach((deck,i) => deck.setAttribute('transform', `rotate(${angle * (i % 2 ? -1 : 1)})`));
       people.forEach((person,i) => {
-        const x = i ? 628 : 289;
+        // Spread founders across the station span by index so any count fits
+        // (two-founder endpoints preserved: index 0 -> 289/408, last -> 628/235).
+        const spread = people.length > 1 ? i / (people.length - 1) : 0;
+        const x = 289 + spread * (628 - 289);
         person.style.left = `${(450 + (x - 450) * Math.cos(turn * Math.PI/180)) / 9}%`;
-        person.style.top = `${(i ? 235 : 408) / 6.2}%`;
+        person.style.top = `${(408 + spread * (235 - 408)) / 6.2}%`;
       });
     } else {
       planets.forEach(({node, radius, phase, speed}) => {
@@ -31,21 +34,30 @@
       });
       const flight = people.map((person,i) => {
         const t = angle * Math.PI / 180;
-        const phase = i ? 2.7 : -.9;
+        // Spread all N founders evenly across ~2pi so their flight paths
+        // stay phase-separated regardless of count (founder 0 stays at -0.9,
+        // matching the original two-founder look).
+        const phase = -.9 + (i / people.length) * 2 * Math.PI;
         // Overlapping waves create a broad, non-orbital flight path.
         const x = 450 + 255 * Math.sin(t * .71 + phase) + 58 * Math.sin(t * 1.43 + phase);
         const y = 320 + 112 * Math.sin(t * .91 + phase) + 42 * Math.cos(t * 1.17 + phase);
         const dx = 255 * .71 * Math.cos(t * .71 + phase) + 58 * 1.43 * Math.cos(t * 1.43 + phase);
         return {x, y, dx, t, phase};
       });
-      const gapX = flight[1].x - flight[0].x, gapY = flight[1].y - flight[0].y;
-      const distance = Math.hypot(gapX, gapY);
+      // Pairwise separation pass: push apart any two ships closer than the
+      // clearance, for every pair, so none overlap regardless of count.
       const clearance = narrow.matches ? 230 : 145;
-      if (distance < clearance) {
-        const push = (clearance - distance) / 2;
-        const nx = distance ? gapX / distance : 1, ny = distance ? gapY / distance : 0;
-        flight[0].x -= nx * push; flight[0].y -= ny * push;
-        flight[1].x += nx * push; flight[1].y += ny * push;
+      for (let a = 0; a < flight.length; a++) {
+        for (let b = a + 1; b < flight.length; b++) {
+          const gapX = flight[b].x - flight[a].x, gapY = flight[b].y - flight[a].y;
+          const distance = Math.hypot(gapX, gapY);
+          if (distance < clearance) {
+            const push = (clearance - distance) / 2;
+            const nx = distance ? gapX / distance : 1, ny = distance ? gapY / distance : 0;
+            flight[a].x -= nx * push; flight[a].y -= ny * push;
+            flight[b].x += nx * push; flight[b].y += ny * push;
+          }
+        }
       }
       people.forEach((person,i) => {
         const {x, y, dx, t, phase} = flight[i];
