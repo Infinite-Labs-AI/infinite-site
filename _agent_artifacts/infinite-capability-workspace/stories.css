@@ -22,4 +22,5 @@
 .result-panel[data-layout="wide"] .result-primary{justify-content:center;border-bottom-color:#ffffff33}
 .result-panel[data-layout="wide"] .result-primary>strong{color:#c9c6ff}
 .result-panel[data-layout="wide"] .result-content h3{color:#fff;max-width:520px}
+.result-panel[data-layout="wide"] .result-quote{color:#fff;max-width:520px;margin-top:24px}
 .result-panel[data-layout="wide"] .result-read{color:#fff;justify-content:center}

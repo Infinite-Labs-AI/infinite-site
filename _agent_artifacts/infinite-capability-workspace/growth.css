@@ -203,7 +203,7 @@
 .result-panel[data-layout=wide] .result-count{margin-left:14px}
 .result-panel[data-layout=wide] .result-primary{justify-content:center;border-bottom:0;padding-bottom:6px}
 .result-panel[data-layout=wide] .result-primary>span{max-width:none}
-.result-panel[data-layout=wide] .result-panel h3,.result-panel[data-layout=wide] h3,.result-panel[data-layout=wide] .result-quote{max-width:none}
+.result-panel[data-layout=wide] .result-panel h3,.result-panel[data-layout=wide] h3{max-width:none}
 .result-panel[data-layout=wide] .result-read{margin-top:6px;justify-content:center;gap:14px}
 .acct-row{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:22px 0 4px}
 .acct-row span{font:400 9px/1 var(--mono);letter-spacing:.05em;color:#b2b8c8;border:1px dashed #dfe3f0;border-radius:20px;padding:8px 12px}
