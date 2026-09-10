@@ -452,3 +452,19 @@
 /* download CTA: leading Apple glyph, so the 22px text/arrow gap is wrong here */
 .button.download{gap:9px}
 .button.download .apple{width:15px;height:15px;flex:none;margin-top:-1px}
+
+/* ---------- integrations marquee (after capabilities) ---------- */
+.integrations{max-width:1270px;margin:0 auto;padding:34px 35px 40px;text-align:center;overflow:hidden}
+.int-eyebrow{display:block;font:500 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#9aa1b8}
+.integrations h2{font-family:Space,Inter,sans-serif;font-weight:400;font-size:clamp(28px,4vw,46px);line-height:1.06;letter-spacing:-.045em;color:#272c3b;margin:16px auto 0;max-width:17ch}
+.integrations h2 em{font-style:normal;color:var(--blue)}
+.int-mq{margin:clamp(30px,4vw,46px) -35px 0;overflow:hidden;
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);
+ mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
+.int-mq-track{display:flex;gap:24px;width:max-content;animation:int-scroll 42s linear infinite}
+.int-mq-track:hover{animation-play-state:paused}
+.int-logo{height:28px;width:auto;object-fit:contain;background:#fff;border:1px solid #e7e9f4;border-radius:12px;
+ padding:14px 22px;box-sizing:content-box;box-shadow:0 6px 16px #2a2c5510;flex:none}
+@keyframes int-scroll{to{transform:translateX(calc(-50% - 12px))}}
+@media(prefers-reduced-motion:reduce){.int-mq-track{animation:none;flex-wrap:wrap;justify-content:center;gap:16px}}
+@media(max-width:760px){.integrations{padding:26px 22px 32px}.int-mq{margin-left:-22px;margin-right:-22px}}
