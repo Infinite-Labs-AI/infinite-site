@@ -22,16 +22,17 @@
   max-width:1160px; margin:auto; height:60px; padding:0 12px 0 22px;
   display:flex; align-items:center; justify-content:space-between; gap:24px;
   border-radius:16px;
-  /* liquid glass — soft frosted material (milky diffusion, heavy blur) */
-  background:rgba(250,250,255,.34);
-  -webkit-backdrop-filter:blur(38px) saturate(1.45) brightness(1.05); backdrop-filter:blur(38px) saturate(1.45) brightness(1.05);
+  /* frosted glass — lavender-tinted + transparent so the page shows through
+     (no white fill, no brightness wash); frosts richer as content scrolls under */
+  background:rgba(224,227,250,.24);
+  -webkit-backdrop-filter:blur(32px) saturate(1.7); backdrop-filter:blur(32px) saturate(1.7);
   border:1px solid rgba(255,255,255,.5);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.72), inset 0 -1px 0 rgba(255,255,255,.14), 0 12px 32px rgba(40,40,90,.18);
   transition:box-shadow .2s, background .2s;
 }
 /* once the page scrolls, firm the fill slightly so text stays legible over busier content */
 .site-header[data-scrolled="true"] .site-header-inner{
-  background:rgba(250,250,255,.44);
+  background:rgba(224,227,250,.42);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8), inset 0 -1px 0 rgba(255,255,255,.14), 0 14px 36px rgba(40,40,90,.22);
 }
 
@@ -85,8 +86,8 @@
   .site-header-nav{
     display:none; position:absolute; top:calc(100% + 8px); left:0; right:0;
     flex-direction:column; align-items:stretch; gap:2px; border-radius:16px;
-    padding:9px; background:rgba(250,250,255,.72);
-    -webkit-backdrop-filter:blur(34px) saturate(1.5) brightness(1.05); backdrop-filter:blur(34px) saturate(1.5) brightness(1.05);
+    padding:9px; background:rgba(233,235,252,.75);
+    -webkit-backdrop-filter:blur(34px) saturate(1.6); backdrop-filter:blur(34px) saturate(1.6);
     border:1px solid rgba(255,255,255,.55);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 20px 44px rgba(48,45,120,.2);
   }
