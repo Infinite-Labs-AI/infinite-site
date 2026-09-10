@@ -373,9 +373,9 @@
 .hold-offer{font:400 15px/1.4 var(--sans);color:#f7f8ff;margin:0}
 .hold-offer b{font-weight:500}
 .hold-spots{display:flex;align-items:center;gap:8px;font:400 12px/1.4 var(--sans);color:#c9cbe4;margin:6px 0 14px}
-/* moved under the Monthly/Annual toggle — readable on the light pricing header */
-.hold-spots-inline{justify-content:center;color:#7a8196;font-weight:500;margin:14px auto 0}
-.hold-spots-inline i{width:7px;height:7px;border-radius:50%;background:#e2664f;box-shadow:0 0 0 3px #e2664f26}
+/* spots-left line, inside the dark done-for-you card, below the billing line */
+.hold-spots-inline{color:#f5f5f4a3;font-weight:500;margin:12px 0 0}
+.hold-spots-inline i{width:7px;height:7px;border-radius:50%;background:#f0956b;box-shadow:0 0 0 3px #f0956b2e}
 .hold-spots i{width:6px;height:6px;border-radius:50%;background:#e0a05f;flex:none;
  box-shadow:0 0 0 3px #e0a05f2e}
 .hold-btn{position:relative;isolation:isolate;overflow:visible;display:flex;align-items:center;gap:10px;
