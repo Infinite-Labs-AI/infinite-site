@@ -22,20 +22,25 @@ function isCurrent(currentPath, href) {
 }
 
 export function renderSiteHeader({ currentPath = "/" } = {}) {
-  const links = NAV.map((item) => {
+  const navLinks = NAV.filter((item) => !item.external).map((item) => {
     const current = isCurrent(currentPath, item.href) ? ' aria-current="page"' : "";
-    if (item.external) {
-      return `<a class="sh-hub" href="${escapeHtml(item.href)}" target="_blank" rel="noopener">${escapeHtml(item.label)} <span aria-hidden="true">↗</span></a>`;
-    }
     return `<a href="${escapeHtml(item.href)}"${current}>${escapeHtml(item.label)}</a>`;
   }).join("");
+  const hubLinks = NAV.filter((item) => item.external).map((item) =>
+    `<a class="sh-hub" href="${escapeHtml(item.href)}" target="_blank" rel="noopener">${escapeHtml(item.label)} <span aria-hidden="true">↗</span></a>`
+  ).join("");
+  // Internal links live in the collapsible nav; the external Hub sits in the right
+  // cluster next to the CTA. With no internal links, the nav + burger drop out.
+  const nav = navLinks ? `<nav class="site-header-nav" aria-label="Primary">${navLinks}</nav>` : "";
+  const burger = navLinks ? `<button class="site-header-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-header-nav"><span></span><span></span><span></span></button>` : "";
   return `<header class="site-header" data-site-header="public-route-graph-v1">
   <div class="site-header-inner">
     <a class="site-header-logo" href="/" aria-label="Infinite home"><svg class="sh-mark" viewBox="0 0 30 16" aria-hidden="true"><path d="M15 8C15 3 6 3 6 8C6 13 15 13 15 8C15 3 24 3 24 8C24 13 15 13 15 8Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>infinite</a>
-    <nav class="site-header-nav" aria-label="Primary">${links}</nav>
+    ${nav}
     <div class="site-header-right">
+      ${hubLinks}
       <a class="site-header-cta" href="/get-started" data-analytics-cta-id="get-started" data-analytics-cta-location="navigation">Get Infinite <span aria-hidden="true">↗</span></a>
-      <button class="site-header-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-header-nav"><span></span><span></span><span></span></button>
+      ${burger}
     </div>
   </div>
 </header>
