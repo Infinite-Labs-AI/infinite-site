@@ -3,7 +3,7 @@
 // routes (the homepage's Work/Stack/Proof in-page anchors do not generalise);
 // /#pricing and /#faq navigate home then scroll, so they work from any page.
 
-export const SITE_HEADER_STYLESHEET = "/assets/site-header.css?v=3";
+export const SITE_HEADER_STYLESHEET = "/assets/site-header.css?v=4";
 export const SITE_BASE_STYLESHEET = "/assets/site-base.css";
 
 const NAV = [
@@ -45,5 +45,5 @@ export function renderSiteHeader({ currentPath = "/" } = {}) {
     </div>
   </div>
 </header>
-<script>(function(){var h=document.currentScript.previousElementSibling;var f=function(){h.dataset.scrolled=(window.scrollY>4)?"true":"false";};f();addEventListener("scroll",f,{passive:true});var b=h.querySelector(".site-header-burger"),n=h.querySelector(".site-header-nav");if(b&&n){n.id="site-header-nav";var t=function(o){h.dataset.menuOpen=o?"true":"false";b.setAttribute("aria-expanded",o?"true":"false");};b.addEventListener("click",function(){t(h.dataset.menuOpen!=="true");});n.addEventListener("click",function(e){if(e.target.closest("a"))t(false);});addEventListener("keydown",function(e){if(e.key==="Escape")t(false);});}})();</script>`;
+<script>(function(){var h=document.currentScript.previousElementSibling;var darks=[].slice.call(document.querySelectorAll("[data-nav-dark]"));var chk=function(){var p=h.getBoundingClientRect().top+h.offsetHeight/2,d=false;for(var i=0;i<darks.length;i++){var r=darks[i].getBoundingClientRect();if(r.top<=p&&r.bottom>=p){d=true;break;}}h.dataset.onDark=d?"true":"false";};var f=function(){h.dataset.scrolled=(window.scrollY>4)?"true":"false";chk();};f();addEventListener("scroll",f,{passive:true});addEventListener("resize",chk,{passive:true});var b=h.querySelector(".site-header-burger"),n=h.querySelector(".site-header-nav");if(b&&n){n.id="site-header-nav";var t=function(o){h.dataset.menuOpen=o?"true":"false";b.setAttribute("aria-expanded",o?"true":"false");};b.addEventListener("click",function(){t(h.dataset.menuOpen!=="true");});n.addEventListener("click",function(e){if(e.target.closest("a"))t(false);});addEventListener("keydown",function(e){if(e.key==="Escape")t(false);});}})();</script>`;
 }

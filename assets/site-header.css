@@ -39,10 +39,25 @@
   box-shadow:inset 0 1px 0 rgba(255,255,255,.7), inset 0 -1px 0 rgba(255,255,255,.14), 0 14px 36px rgba(48,45,120,.2);
 }
 
+/* OVER A DARK SECTION (marked [data-nav-dark]): invert to light text + dark glass */
+.site-header[data-on-dark="true"] .site-header-inner{
+  background:rgba(22,22,42,.34);
+  border-color:rgba(255,255,255,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 12px 34px rgba(0,0,0,.24);
+}
+.site-header[data-on-dark="true"] .site-header-logo{color:#fff}
+.site-header[data-on-dark="true"] .site-header-logo .sh-mark{color:#b9b6ff}
+.site-header[data-on-dark="true"] .site-header-nav a{color:rgba(255,255,255,.78)}
+.site-header[data-on-dark="true"] .site-header-nav a:hover,
+.site-header[data-on-dark="true"] .site-header-nav a[aria-current="page"]{color:#fff}
+.site-header[data-on-dark="true"] .site-header-burger{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12)}
+.site-header[data-on-dark="true"] .site-header-burger span{background:#fff}
+
 .site-header-logo{
   display:flex; align-items:center; gap:8px;
   font-family:InfHeaderSerif,Georgia,serif; font-size:27px; line-height:1;
   letter-spacing:-1.4px; color:var(--sh-ink); text-decoration:none;
+  transition:color .2s;
 }
 .site-header-logo .sh-mark{font-family:Arial,sans-serif;color:var(--sh-blue);font-size:22px;line-height:1}
 
