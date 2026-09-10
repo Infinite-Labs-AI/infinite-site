@@ -1,0 +1,483 @@
+/* Copy pass — the blocks the reference pages all carry and this one was missing:
+   a trust bar, a full capability inventory, a free-audit offer, pricing, an FAQ
+   and a closer. Plus the third layer each capability card was missing: what the
+   agent actually does, and a line from the agent itself. */
+
+/* ---------- capability cards: the missing layer ---------- */
+.workspace-sub{max-width:560px;margin:16px auto 0;font:400 16px/1.65 var(--sans);color:#6f7a91}
+.ws-msg{display:flex;gap:11px;align-items:baseline;margin:20px 0 0;padding:13px 16px;background:#fff;border:1px solid #e3e7f1;border-radius:11px;font:400 13.5px/1.6 var(--sans);color:#6f7a91;box-shadow:0 8px 20px #56617c08}
+.ws-msg b{font:500 11px/1.6 var(--sans);letter-spacing:.03em;color:#8d95d2;flex:none}
+.ws-msg b:before{content:"✳ ";font-weight:400}
+.ws-approve{margin:0;padding:4px 0 22px;text-align:center;font:400 15px/1.6 var(--sans);color:#7c869c}
+.ws-approve b{font-weight:500;color:#4b5468}
+
+/* ---------- trust bar ---------- */
+.trustbar{max-width:1270px;margin:0 auto;padding:2px 35px 44px;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.trustbar-label{font:500 10px/1 var(--sans);letter-spacing:.14em;color:#a2a8bd}
+.trustbar-logos{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;list-style:none;margin:0;padding:0}
+.trustbar-logos li{font:400 10px/1 var(--mono);letter-spacing:.02em;color:#b0b6c8;border:1px dashed #dde2ee;border-radius:7px;padding:11px 15px;background:#fbfcff}
+.trustbar-note{font:400 10px/1 var(--sans);color:#b8bdcc}
+
+/* ---------- capability inventory ---------- */
+.inventory{max-width:1270px;margin:0 auto;padding:22px 35px 72px}
+.inventory-head{text-align:center;margin-bottom:38px}
+.inventory-head h2{font:400 clamp(34px,4vw,50px)/1.08 var(--display);letter-spacing:-.045em;color:#272c3b;margin:0}
+.inventory-head p{font:400 16px/1.65 var(--sans);color:#6f7a91;max-width:520px;margin:14px auto 0}
+.inventory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e6eaf4;border:1px solid #e6eaf4;border-radius:16px;overflow:hidden}
+.inventory-col{background:#fff;padding:26px 24px 28px}
+.inventory-col h3{font:500 12px/1 var(--sans);letter-spacing:.11em;text-transform:uppercase;color:#8d95d2;margin:0 0 18px}
+.inventory-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
+.inventory-col li{font:400 14px/1.5 var(--sans);color:#6f7a91;padding-left:16px;position:relative}
+.inventory-col li:before{content:"";position:absolute;left:0;top:.55em;width:5px;height:5px;border-radius:50%;background:#c9d0e4}
+
+/* ---------- free audit ---------- */
+.audit{max-width:1270px;margin:0 auto;padding:0 35px 78px;scroll-margin-top:26px}
+.audit-card{display:grid;grid-template-columns:1.15fr .85fr;gap:46px;background-color:#f5f7fe;background-image:radial-gradient(#cad3ec80 .7px,transparent .7px);background-size:22px 22px;border:1px solid #e0e5f1;border-radius:21px;padding:44px 46px}
+.audit-eyebrow{font:500 11px/1.5 var(--sans);letter-spacing:.13em;color:#7374ce}
+.audit-copy h2{font:400 clamp(30px,3.4vw,42px)/1.1 var(--display);letter-spacing:-.04em;color:#272c3b;margin:14px 0 0;max-width:520px}
+.audit-copy>p{font:400 16px/1.7 var(--sans);color:#6f7a91;margin:16px 0 0;max-width:480px}
+.audit-steps{list-style:none;margin:24px 0 0;padding:0;display:flex;flex-direction:column;gap:11px}
+.audit-steps li{display:flex;gap:13px;align-items:baseline;font:400 14px/1.5 var(--sans);color:#7c869c}
+.audit-steps b{font:400 10px/1.6 var(--mono);letter-spacing:.06em;color:#9fa5c9;flex:none}
+.audit-form{background:#fff;border:1px solid #e0e5f1;border-radius:15px;padding:26px;box-shadow:0 12px 30px #45527d0d;align-self:start}
+.audit-form label{display:block;font:500 11px/1 var(--sans);letter-spacing:.06em;color:#9098ad;margin:0 0 8px}
+.audit-form input{width:100%;box-sizing:border-box;border:1px solid #e0e5f1;border-radius:9px;padding:13px 14px;font:400 14px/1.4 var(--sans);color:#3f4759;background:#fdfdff;margin-bottom:17px}
+.audit-form input::placeholder{color:#b3bacb}
+.audit-form input:focus-visible{outline:2px solid #9a9cec;outline-offset:1px;border-color:#c8cdf3}
+.audit-form button{width:100%;border:0;border-radius:9px;background:var(--blue);color:#fff;font:500 14px/1 var(--sans);padding:15px;cursor:pointer;transition:background .18s}
+.audit-form button:hover{background:var(--blue-dark)}
+.audit-form button:focus-visible{outline:3px solid #7979ff;outline-offset:2px}
+.audit-small{font:400 11px/1.6 var(--sans);color:#a5abbd;margin:13px 0 0;text-align:center}
+.audit-error{font:500 12px/1.5 var(--sans);color:#c0392b;margin:11px 0 0;text-align:center}
+.audit-form button:disabled{opacity:.62;cursor:default}
+.audit-small[data-said=true]{color:#7d8a6a}
+
+/* ---------- pricing ---------- */
+.pricing{max-width:1270px;margin:0 auto;padding:26px 35px 72px;scroll-margin-top:26px}
+.pricing-head{text-align:center;margin-bottom:42px}
+.pricing-head h2{font:400 clamp(34px,4vw,52px)/1.08 var(--display);letter-spacing:-.045em;color:#272c3b;margin:0}
+.pricing-head em{font-style:normal;color:var(--blue)}
+.pricing-head p{font:400 16px/1.65 var(--sans);color:#6f7a91;max-width:460px;margin:14px auto 0}
+/* all three cards share a height; the CTA is pushed to the bottom of each */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+.tier{position:relative;display:flex;flex-direction:column;border:1px solid #e0e5f1;border-radius:18px;background:#fff;padding:30px 28px 28px;box-shadow:0 10px 30px #45527d08}
+.tier.is-featured{border-color:#c9cdf5;box-shadow:0 16px 40px #4b47c914}
+.tier-flag{position:absolute;top:-11px;left:28px;font:500 9px/1 var(--sans);letter-spacing:.12em;background:var(--blue);color:#fff;border-radius:20px;padding:7px 12px}
+.tier h3{font:500 20px/1.2 var(--sans);letter-spacing:-.02em;color:#30384b;margin:0}
+.tier-who{font:400 14px/1.6 var(--sans);color:#8b94a8;margin:8px 0 0;min-height:45px}
+.tier-price{margin:20px 0 0;display:flex;align-items:baseline;gap:7px}
+.tier-was-line+.tier-price{margin-top:2px}
+.tier-bill{font:400 12px/1.5 var(--sans);color:#9aa2b6;margin:6px 0 18px}
+.tier.is-dfy .tier-bill{color:#f5f5f48c}
+.tier-price b{font:400 40px/1 var(--display);letter-spacing:-.03em;color:#272c3b}
+.tier-price span{font:400 13px/1 var(--sans);color:#9aa2b6}
+.tier ul{list-style:none;margin:22px 0 0;padding:20px 0 0;border-top:1px solid #eef1f8;display:flex;flex-direction:column;gap:11px}
+.tier li{font:400 14px/1.5 var(--sans);color:#6f7a91;padding-left:20px;position:relative}
+.tier li:before{content:"✓";position:absolute;left:0;top:1px;font-size:11px;color:#8fae6c}
+.tier-cta{display:block;text-align:center;border:1px solid #dfe3f0;border-radius:10px;padding:13px;font:500 13px/1 var(--sans);color:#4b5468;transition:border-color .18s,background .18s}
+.tier-cta:hover{border-color:#c4cae0;background:#fbfcff}
+.tier.is-featured .tier-cta{background:var(--blue);border-color:var(--blue);color:#fff}
+.tier.is-featured .tier-cta:hover{background:var(--blue-dark);border-color:var(--blue-dark)}
+.pricing-note{text-align:center;font:400 12px/1.6 var(--sans);color:#a5abbd;margin:26px 0 0}
+
+/* ---------- faq ---------- */
+.faq{max-width:820px;margin:0 auto;padding:20px 35px 74px}
+.faq-head{text-align:center;margin-bottom:34px}
+.faq-head h2{font:400 clamp(32px,3.8vw,46px)/1.08 var(--display);letter-spacing:-.045em;color:#272c3b;margin:0}
+.faq-list{border-top:1px solid #e8ebf4}
+.faq-item{border-bottom:1px solid #e8ebf4}
+.faq-item summary{list-style:none;cursor:pointer;padding:20px 36px 20px 0;font:500 17px/1.4 var(--sans);letter-spacing:-.02em;color:#30384b;position:relative}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:after{content:"+";position:absolute;right:5px;top:18px;font:400 20px/1 var(--sans);color:#a9b0c6}
+.faq-item[open] summary:after{content:"–"}
+.faq-item summary:focus-visible{outline:3px solid #7979ff;outline-offset:2px;border-radius:6px}
+.faq-item p{margin:0 0 22px;font:400 15px/1.7 var(--sans);color:#6f7a91;max-width:660px}
+
+/* ---------- closer ---------- */
+.closer{max-width:900px;margin:0 auto;padding:16px 35px 92px;text-align:center}
+.closer h2{font:400 clamp(38px,5vw,62px)/1.05 var(--display);letter-spacing:-.045em;color:#272c3b;margin:0}
+.closer em{font-style:normal;color:var(--blue)}
+.closer p{font:400 17px/1.7 var(--sans);color:#6f7a91;max-width:560px;margin:22px auto 0}
+.closer-actions{display:flex;gap:12px;justify-content:center;margin-top:30px;flex-wrap:wrap}
+
+@media(max-width:1000px){
+ .inventory-grid{grid-template-columns:repeat(2,1fr)}
+ .audit-card{grid-template-columns:1fr;gap:30px;padding:34px}
+ /* keep the three tiers on one row down to the mobile-nav breakpoint; tighten the
+    gap/padding so they still fit before they finally stack */
+ .pricing{padding-left:26px;padding-right:26px}
+ .pricing-grid{gap:14px}
+}
+@media(max-width:760px){
+ .pricing-grid{grid-template-columns:1fr;max-width:470px;margin:0 auto;gap:20px}
+ .tier-who{min-height:0}
+}
+@media(max-width:800px){
+ .inventory,.pricing,.faq,.closer{padding-left:22px;padding-right:22px}
+ .audit{padding-left:22px;padding-right:22px}
+ .trustbar{padding:0 22px 32px;gap:14px}
+ .inventory-grid{grid-template-columns:1fr}
+ .audit-card{padding:26px 24px}
+ .ws-msg{font-size:13px;margin-top:16px}
+ .closer{padding-bottom:70px}
+}
+@media(prefers-reduced-motion:reduce){
+ .audit-form button,.tier-cta{transition:none}
+}
+
+/* ---------- nav ---------- */
+.nav-cta{border:1px solid #dfe3f0;border-radius:8px;padding:10px 14px;color:#4b5468;transition:border-color .18s,background .18s}
+.nav-cta:hover{border-color:#c4cae0;background:#fbfcff}
+@media(max-width:760px){
+ .navlinks a.nav-cta{display:inline-flex;font-size:10px;padding:8px 11px}
+}
+
+/* ---------- hero ---------- */
+/* The global site-header is sticky and sits in flow ABOVE .top (which paints the
+   lavender), so on load its 74px strip showed the white body. Pull .top up under
+   the header (and re-pad by the same amount) so the lavender fills that strip and
+   the hero content stays put. Header height: 74px desktop, 64px at <=900px. */
+.top{margin-top:-74px;padding-top:74px}
+@media(max-width:900px){.top{margin-top:-64px;padding-top:64px}}
+.hero .sub{max-width:565px}
+@media(max-width:760px){.hero .sub{max-width:340px}}
+.tier-price.is-text b{font-size:27px}
+
+/* the inventory now sits beside pricing as a spec sheet, so it reads quieter */
+.inventory.is-spec{padding-top:8px;padding-bottom:20px}
+.inventory.is-spec .inventory-head{margin-bottom:30px}
+.inventory.is-spec .inventory-head h2{font-size:clamp(30px,3.3vw,40px)}
+.inventory.is-spec .inventory-col{padding:22px 20px 24px}
+.inventory.is-spec .inventory-col li{font-size:13px}
+.inventory.is-spec .inventory-col ul{gap:9px}
+
+@media(max-width:800px){
+ /* stacked rows make a two-column key misleading; the muted/ticked pairing carries it */
+}
+
+/* ---------- customer stories, Gomega's case-study shape ---------- */
+/* one big figure, a label, then a sentence carrying a second number */
+.result-primary strong{font:400 clamp(46px,5vw,62px)/1 var(--display);letter-spacing:-.05em;color:var(--blue);display:flex;align-items:baseline}
+.result-primary strong small{font-size:.52em;letter-spacing:-.02em;margin-left:.02em}
+.result-primary>span{font:500 13px/1.45 var(--sans);color:#6b6480;max-width:150px}
+.result-panel h3{font:400 21px/1.5 var(--display);letter-spacing:-.02em;color:#4a4460;margin:22px 0 0;max-width:430px}
+/* the story is now told in the founder's own words, not a restated stat */
+.result-quote{font:400 20px/1.52 var(--display);letter-spacing:-.018em;color:#403a58;margin:22px 0 0;max-width:440px}
+.result-source{display:block;margin:16px 0 22px;font:400 10px/1.4 var(--mono);letter-spacing:.04em;color:#b6bccb}
+.results-tabs{flex-wrap:wrap}
+/* .result-support used to hold the button down with margin-top:auto; it is gone now */
+.result-read{margin-top:auto}
+.result-source{margin-bottom:26px}
+/* the outcome titles run longer than the category names they replaced */
+.ws-caption h3{font-size:25px;line-height:1.22}
+.ws-caption h3 a{gap:14px;align-items:flex-start}
+.inventory.is-spec .inventory-col{padding:22px 17px 24px}
+.inventory.is-spec .inventory-col li{font-size:12.5px;padding-left:14px}
+@media(max-width:1100px){.ws-caption h3{font-size:23px}}
+/* each channel gets a small drawn panel in the same language as the capability cards */
+.inventory-art{display:block;width:100%;height:124px;margin:0 0 18px;border-radius:11px;border:1px solid #e6ebf7;
+ background:linear-gradient(#f4f7ff,#eef2fd)}
+.inventory-col:nth-child(4) .inventory-art{background:linear-gradient(#f7faf1,#f1f6e6);border-color:#e5edd6}
+.inventory.is-spec .inventory-col{padding:18px 18px 24px}
+@media(max-width:800px){.inventory-art{height:150px}}
+
+/* ---------- case studies: a different layout per story ---------- */
+/* 01 · overlay — the flagship number sits on a card over full-bleed photography */
+.result-panel[data-layout=overlay]{grid-template-columns:1fr;position:relative;min-height:520px}
+.result-panel[data-layout=overlay] .result-image{position:absolute;inset:0;min-height:0;z-index:0}
+.result-panel[data-layout=overlay] .result-image-caption{left:auto;right:34px;bottom:30px;text-align:right;max-width:290px}
+.result-panel[data-layout=overlay] .result-content{position:relative;z-index:2;margin:40px;max-width:490px;background:#fff;border-radius:15px;padding:30px 34px 26px;box-shadow:0 24px 60px #2b2a4526}
+.result-panel[data-layout=overlay] .result-read{margin-top:24px}
+
+/* 02 · drawn — no photograph; the page it is talking about, with the live figure on it */
+.result-visual{position:relative;display:grid;place-items:center;padding:40px;
+ background:linear-gradient(#f3f6ff,#eceffd);border-left:1px solid #e6e9f7}
+.cv-page{position:relative;width:min(290px,100%);background:#fff;border:1px solid #dfe3f2;border-radius:12px;
+ padding:16px 18px 20px;box-shadow:0 20px 44px #3b427b14;display:flex;flex-direction:column;gap:9px}
+.cv-bar{display:flex;gap:5px;margin-bottom:6px}
+.cv-bar i{width:6px;height:6px;border-radius:50%;background:#e3e7f3}
+.cv-h{height:11px;border-radius:5px;background:#cfd5f0}
+.cv-h.short{height:11px;width:62%;background:#dde2f4}
+.cv-line{height:5px;border-radius:3px;background:#edf0f9}
+.cv-line.s{width:70%}
+.cv-cta{align-self:flex-start;margin-top:5px;background:var(--blue);color:#fff;border-radius:7px;
+ padding:9px 15px;font:500 11px/1 var(--sans)}
+.cv-badge{position:absolute;right:22px;bottom:78px;background:#fff;border:1px solid #d9def1;border-radius:11px;
+ padding:11px 14px;box-shadow:0 12px 30px #3b427b1a;font:400 11px/1.4 var(--sans);color:#7b8299;max-width:150px}
+.cv-badge b{display:block;font:400 27px/1 var(--display);letter-spacing:-.04em;color:var(--blue);margin-bottom:3px}
+.cv-note{position:absolute;left:26px;bottom:22px;font:400 9px/1.5 var(--mono);letter-spacing:.05em;color:#a9b0c6}
+
+/* 03 · wide — an average across accounts is not one customer, so it gets no portrait */
+.result-panel[data-layout=wide]{grid-template-columns:1fr;min-height:0}
+.result-panel[data-layout=wide] .result-content{align-items:center;text-align:center;padding:54px 40px 44px;max-width:640px;margin:0 auto}
+.result-panel[data-layout=wide] .result-customer{justify-content:center}
+.result-panel[data-layout=wide] .result-count{margin-left:14px}
+.result-panel[data-layout=wide] .result-primary{justify-content:center;border-bottom:0;padding-bottom:6px}
+.result-panel[data-layout=wide] .result-primary>span{max-width:none}
+.result-panel[data-layout=wide] .result-panel h3,.result-panel[data-layout=wide] h3{max-width:none}
+.result-panel[data-layout=wide] .result-read{margin-top:6px;justify-content:center;gap:14px}
+.acct-row{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:22px 0 4px}
+.acct-row span{font:400 9px/1 var(--mono);letter-spacing:.05em;color:#b2b8c8;border:1px dashed #dfe3f0;border-radius:20px;padding:8px 12px}
+
+/* 04 · mirror — photograph leads, copy follows */
+.result-panel[data-layout=mirror]{grid-template-columns:1fr 1.08fr}
+.result-panel[data-layout=mirror] .result-image,
+.result-panel[data-layout=mirror] .result-visual{order:-1}
+.result-panel[data-layout=mirror] .result-image-caption{left:30px;right:24px}
+
+@media(max-width:900px){
+ .result-panel[data-layout=overlay]{min-height:0}
+ .result-panel[data-layout=overlay] .result-image{position:relative;min-height:250px}
+ .result-panel[data-layout=overlay] .result-content{margin:0;max-width:none;box-shadow:none;border-radius:0}
+ .result-panel[data-layout=overlay] .result-image-caption{left:24px;right:24px;text-align:left;max-width:none}
+ .result-panel[data-layout=mirror]{grid-template-columns:1fr}
+ .result-visual{padding:30px 24px;border-left:0;border-top:1px solid #e6e9f7}
+ .cv-badge{position:static;margin-top:16px;max-width:none;display:inline-block}
+ .cv-note{position:static;display:block;margin-top:12px}
+ .result-panel[data-layout=wide] .result-content{padding:36px 22px 30px}
+}
+
+/* 04 · the leads story is a line going up, drawn over a photograph so it reads
+   as data on top of a real place rather than a chart floating on a panel */
+.result-visual.ch{align-content:center;padding:44px 40px 38px;border-left:0;border-right:0;
+ background:linear-gradient(180deg,#0a0d16b8,#0a0d16f0), url(/assets/growth/story-office.jpg) center/cover no-repeat}
+.ch-graph{display:block;width:100%;max-width:400px;height:auto}
+.ch-grid path{stroke:#ffffff26;stroke-width:1}
+.ch-area{fill:url(#chFill)}
+.ch-line{fill:none;stroke:#cfccff;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.ch-halo{fill:#cfccff;opacity:.22}
+.ch-dot{fill:#0a0d16;stroke:#fff;stroke-width:2.8}
+.ch-axis{display:flex;justify-content:space-between;width:100%;max-width:400px;margin-top:4px;
+ font:400 9px/1 var(--mono);letter-spacing:.07em;color:#ffffff8a}
+.ch-axis i{font-style:normal}
+.ch-badge{position:absolute;right:44px;top:44px;border-radius:12px;padding:12px 15px;
+ background:#ffffff1c;border:1px solid #ffffff33;-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);
+ font:400 11px/1.4 var(--sans);color:#ffffffc4}
+.ch-badge b{display:block;font:400 28px/1 var(--display);letter-spacing:-.04em;color:#fff;margin-bottom:2px}
+.ch-note{position:absolute;left:40px;bottom:20px;font:400 9px/1.5 var(--mono);letter-spacing:.05em;color:#ffffff6b}
+@media(max-width:900px){
+ .result-visual.ch{padding:28px 22px 24px}
+ .ch-badge{position:static;display:inline-block;margin-bottom:14px}
+ .ch-note{position:static;display:block;margin-top:10px}
+}
+
+/* ---------- founder proof: heading and quote left, the scene large on the right ---------- */
+@media(min-width:1040px){
+ /* full-bleed so a scene half again as big clips at the viewport, not mid-container */
+ .founder-proof{max-width:none;width:100%;padding:45px 0 100px;overflow:hidden}
+ .founder-world{max-width:1270px;margin:0 auto;padding-left:35px;
+  display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);
+  grid-template-areas:"head stage" "quote stage";
+  grid-template-rows:auto 1fr;column-gap:40px;align-items:start;min-height:600px}
+ .proof-heading{grid-area:head;text-align:left;margin:0 0 30px;position:relative;z-index:2}
+ /* 52px wrapped each half onto two lines in this column; this keeps it to the two the <br> intends */
+ .proof-heading h2{font-size:clamp(30px,2.55vw,38px);margin-top:0}
+ .founder-quotes{position:relative;z-index:2}
+ .founder-quotes{grid-area:quote;width:auto;padding:0;grid-template-columns:1fr}
+ /* space-worlds.css sizes this with [data-world] selectors, so match that weight */
+ .founder-world[data-world] .station-stage{grid-area:stage;position:relative;top:0;left:0;
+  width:150%;max-width:none;margin:0;justify-self:start;transform:translateX(-10%);
+  align-self:center;background:none}
+}
+/* Below the grid layout the scene is absolutely-positioned, so the world reserves its
+   height with min-height. The stock 1100px ([data-world="solar"]) is tuned for the top of
+   the band and leaves a big dead gap at narrower widths — instead track the stage, whose
+   height is (100vw - 48px) * 620/900 sitting under a 220px top offset. */
+@media(min-width:701px) and (max-width:1039px){
+ .founder-world[data-world="solar"]{min-height:calc(240px + (100vw - 48px) * 0.6889)}
+}
+/* the done-for-you tier goes dark, in the live site's language:
+   near-black ground, a green/blue radial lift, white-alpha surfaces, #f5f5f4 text */
+.tier.is-dfy{color:#f5f5f4;border-color:#f5f5f41f;box-shadow:0 28px 90px #00000047;
+ background:radial-gradient(circle at 50% 16%,#74e3a024,#84ccff0d 34%,transparent 60%),
+  linear-gradient(180deg,#0c0e13,#07090d)}
+.tier.is-dfy:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+ background-image:linear-gradient(#ffffff0a 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);
+ background-size:34px 34px;-webkit-mask-image:radial-gradient(circle at 50% 26%,#000,transparent 74%);
+ mask-image:radial-gradient(circle at 50% 26%,#000,transparent 74%)}
+/* lift content above the grid overlay — but not the flag, which straddles the border */
+.tier.is-dfy>*{position:relative}
+.tier.is-dfy>.tier-flag{position:absolute}
+.tier.is-dfy h3{color:#f5f5f4}
+.tier.is-dfy .tier-who{color:#f5f5f4a3}
+.tier.is-dfy .tier-price b{color:#fff}
+.tier.is-dfy .tier-price span{color:#f5f5f48c}
+.tier.is-dfy ul{border-top-color:#f5f5f41f}
+.tier.is-dfy li{color:#f5f5f4d1}
+.tier.is-dfy li:before{color:#74e3a0}
+.tier.is-dfy li:first-child{font-weight:500;color:#fff;padding-left:0}
+.tier.is-dfy li:first-child:before{content:none}
+.tier.is-dfy .tier-cta{background:#f5f5f4;border-color:#f5f5f4;color:#101016}
+.tier.is-dfy .tier-cta:hover{background:#fff;border-color:#fff}
+.tier-flag.alt{background:#74e3a0;color:#07090d}
+
+/* ---------- open source / CLI, in the live site's dark language ---------- */
+.cli{position:relative;overflow:hidden;margin:0 0 8px;padding:78px 0 82px;
+ background:radial-gradient(circle at 50% 0%,#ffffff0f,transparent 55%),
+  linear-gradient(180deg,#282a3d,#1e1f2e 52%,#282a3d);color:#eef0fb}
+.cli:before{content:"";position:absolute;inset:0;pointer-events:none;
+ background-image:linear-gradient(#ffffff07 1px,transparent 1px),linear-gradient(90deg,#ffffff05 1px,transparent 1px);
+ background-size:56px 56px;-webkit-mask-image:radial-gradient(circle at 50% 38%,#000,transparent 76%);
+ mask-image:radial-gradient(circle at 50% 38%,#000,transparent 76%)}
+.cli-inner{position:relative;max-width:1080px;margin:0 auto;padding:0 35px}
+.cli-head{text-align:center;margin-bottom:34px}
+.cli-head>span{font:500 11px/1.5 var(--sans);letter-spacing:.14em;color:#9aa1b8}
+.cli-head h2{font:400 clamp(34px,4.2vw,54px)/1.06 var(--display);letter-spacing:-.045em;color:#f7f8ff;margin:16px 0 0}
+/* one colour for the whole heading — no second-colour highlight in here */
+.cli-head em{font-style:normal;color:inherit}
+.cli-head p{font:400 16px/1.7 var(--sans);color:#cdd0e6;max-width:610px;margin:16px auto 0}
+
+.cli-term{position:relative;max-width:640px;margin:0 auto;border:1px solid #ffffff26;border-radius:14px;
+ background:linear-gradient(180deg,#ffffff12,#ffffff07);padding:14px 16px 16px;box-shadow:0 28px 90px #00000047}
+.cli-bar{display:flex;align-items:center;gap:6px;margin-bottom:14px}
+.cli-bar i{width:9px;height:9px;border-radius:50%;background:#ffffff1f}
+.cli-bar b{margin-left:8px;font:400 9px/1 var(--mono);letter-spacing:.12em;color:#a9adc9;font-weight:400}
+.cli-cmd{display:block;font:400 15px/1.6 var(--mono);color:#f7f8ff;padding:0 74px 0 2px;word-break:break-all}
+.cli-prompt{color:#93a08a;margin-right:11px}
+.cli-copy{position:absolute;right:14px;top:44px;border:1px solid #f5f5f42e;background:#ffffff14;color:#f5f5f4cc;
+ border-radius:8px;padding:8px 12px;font:400 11px/1 var(--sans);cursor:pointer;transition:background .16s}
+.cli-copy:hover{background:#ffffff24}
+.cli-copy:focus-visible{outline:3px solid #7979ff;outline-offset:2px}
+.cli-copy[data-done=true]{color:#cdd6c2;border-color:#cdd6c25c}
+.cli-small{display:block;margin-top:13px;font:400 11px/1.5 var(--sans);color:#a4a8c4}
+
+.cli-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px}
+.cli-card{display:block;border:1px solid #ffffff1f;border-radius:14px;padding:20px;
+ background:linear-gradient(180deg,#ffffff0f,#ffffff05);transition:border-color .18s,background .18s}
+.cli-card:hover{border-color:#ffffff42;background:linear-gradient(180deg,#ffffff17,#ffffff08)}
+.cli-card h3{display:flex;align-items:center;gap:8px;font:500 15px/1.3 var(--sans);color:#f7f8ff;margin:0}
+.cli-card h3 span{color:#8f97b0;font-size:13px}
+.cli-card p{font:400 13px/1.6 var(--sans);color:#c2c5da;margin:8px 0 0}
+
+/* ---------- site footer ---------- */
+.site-footer{border-top:1px solid #eceff7;background:#fbfcff}
+.sf-inner{max-width:1270px;margin:0 auto;padding:56px 35px 40px;display:grid;
+ grid-template-columns:1.5fr repeat(6,1fr);gap:34px 26px}
+.sf-logo{display:inline-flex;align-items:baseline;gap:8px;font-family:var(--display);font-size:29px;
+ line-height:1;letter-spacing:-1.3px;color:var(--ink)}
+.sf-logo span{font-family:Arial,sans-serif;color:var(--blue);font-size:21px;letter-spacing:0}
+.sf-brand p{font:400 13px/1.6 var(--sans);color:#8b94a8;margin:14px 0 0;max-width:230px}
+.sf-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.sf-col h3{font:500 10px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:#a2a8bd;margin:0 0 3px}
+.sf-col a{font:400 13px/1.5 var(--sans);color:#6f7a91;transition:color .15s}
+.sf-col a:hover{color:var(--blue)}
+.sf-base{max-width:1270px;margin:0 auto;padding:18px 35px 34px;border-top:1px solid #eceff7;
+ display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+ font:400 11.5px/1.6 var(--sans);color:#a2a8bd}
+
+@media(max-width:1100px){
+ .sf-inner{grid-template-columns:1fr 1fr 1fr;gap:30px 24px}
+ .sf-brand{grid-column:1/-1}
+ .cli-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+ .cli{padding:56px 0 60px}
+ .cli-inner{padding:0 22px}
+ .cli-grid{grid-template-columns:1fr}
+ .cli-cmd{font-size:13px;padding-right:0}
+ .cli-copy{position:static;display:block;margin-top:12px;width:100%}
+ .sf-inner{grid-template-columns:1fr 1fr;padding:40px 22px 30px}
+ .sf-base{padding:16px 22px 28px}
+}
+
+/* ---------- hold to claim, ported from the desktop app's onboarding CTA ---------- */
+.hold-block{margin:20px 0 0;padding:16px;border:1px solid #ffffff1f;border-radius:13px;
+ background:linear-gradient(180deg,#ffffff12,#ffffff07)}
+.hold-offer{font:400 15px/1.4 var(--sans);color:#f7f8ff;margin:0}
+.hold-offer b{font-weight:500}
+.hold-spots{display:flex;align-items:center;gap:8px;font:400 12px/1.4 var(--sans);color:#c9cbe4;margin:6px 0 14px}
+/* spots-left line, inside the dark done-for-you card, below the billing line.
+   The billing line's 18px bottom margin collapses with this and dominates the
+   gap, so tighten the billing line's bottom margin in this card. */
+.is-dfy .tier-bill{margin-bottom:3px}
+.hold-spots-inline{color:#f5f5f4a3;font-weight:500;margin:2px 0 0}
+.hold-spots-inline i{width:7px;height:7px;border-radius:50%;background:#f0956b;box-shadow:0 0 0 3px #f0956b2e}
+/* done-for-you: the strike $10,000 sits above /month beside the big price, so
+   $2,000 comes up and the block tightens */
+.tier-price.dfy-price{margin-top:8px;align-items:center;gap:11px;flex-wrap:nowrap}
+.dfy-price .price-side{display:flex;flex-direction:column;line-height:1.2;gap:1px}
+.dfy-price .price-side .price-per{font:400 13px/1.2 var(--sans);color:#f5f5f48c}
+/* more breathing room below the spots line, before the CTA */
+.is-dfy .tier-cta{margin-top:22px}
+.hold-spots i{width:6px;height:6px;border-radius:50%;background:#e0a05f;flex:none;
+ box-shadow:0 0 0 3px #e0a05f2e}
+.hold-btn{position:relative;isolation:isolate;overflow:visible;display:flex;align-items:center;gap:10px;
+ width:100%;border:1px solid #ffffff2e;border-radius:10px;padding:13px 15px;cursor:pointer;
+ background:#ffffff12;color:#f7f8ff;-webkit-user-select:none;user-select:none;touch-action:none}
+.hold-btn:active{transform:none}
+.hold-btn:focus-visible{outline:2px solid #9ea6ff;outline-offset:3px}
+.hold-btn>*:not(.hold-heat):not(.hold-ring):not(.hold-wave){position:relative;z-index:2}
+/* the fill warms as the charge builds */
+/* a solid left-to-right sweep. scaleX is unmistakable and does not depend on mask support
+   or on alpha maths reading correctly against the card behind it. */
+.hold-heat{position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;
+ background:var(--blue);transform:scaleX(var(--charge,0));transform-origin:left center}
+/* an angular fill around the rim, masked to a 2px ring */
+.hold-ring{position:absolute;inset:-3px;z-index:3;border-radius:inherit;padding:2px;pointer-events:none;
+ opacity:0;transition:opacity .14s ease;
+ background:conic-gradient(from -90deg,#fff 0deg,#9ea6ff calc(var(--charge,0) * 300deg),
+  #ffffff17 calc(var(--charge,0) * 360deg),#ffffff17 360deg);
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+ -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+ mask-composite:exclude}
+.hold-btn[data-phase=charging] .hold-ring{opacity:1}
+/* one shockwave on release; one is punctuation, three would be a cartoon */
+.hold-wave{position:absolute;inset:0;z-index:3;border-radius:inherit;pointer-events:none;opacity:0;
+ border:1.5px solid #ffffffd9}
+.hold-btn[data-burst="1"] .hold-wave{animation:hold-shock 620ms cubic-bezier(.15,.7,.25,1) forwards}
+.hold-btn[data-burst="1"]{animation:hold-pop 420ms cubic-bezier(.22,1.4,.36,1)}
+.hold-btn[data-phase=declined]{animation:hold-nope 320ms cubic-bezier(.36,.07,.19,.97)}
+.hold-chev{font-size:15px;color:#c4cade;line-height:1}
+.hold-btn[data-phase=done] .hold-chev{color:#fff}
+/* the label swaps between three widths; a min-width stops the pill resizing mid-charge */
+.hold-label{display:inline-block;min-width:150px;text-align:left;font:400 13px/1 var(--sans)}
+.hold-btn[data-phase=charging] .hold-label{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.hold-note{font:400 11px/1.6 var(--sans);color:#b6b9d0;margin:11px 0 0}
+.hold-note a{color:#dbe0f2;border-bottom:1px solid #dbe0f259}
+.hold-note[hidden]{display:none}
+@keyframes hold-shock{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+@keyframes hold-pop{0%{transform:scale(1)}22%{transform:scale(1.05)}60%{transform:scale(.995)}100%{transform:scale(1)}}
+@keyframes hold-nope{10%{transform:translateX(-4px)}30%{transform:translateX(4px)}50%{transform:translateX(-3px)}70%{transform:translateX(2px)}100%{transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){
+ .hold-btn[data-burst="1"],.hold-btn[data-burst="1"] .hold-wave,.hold-btn[data-phase=declined]{animation:none}
+}
+
+/* ---------- monthly / annual, matching the live site's toggle ---------- */
+.bill{display:inline-flex;gap:4px;margin:26px auto 0;padding:4px;border:1px solid #e3e7f3;
+ border-radius:11px;background:#f7f9ff}
+.bill-btn{display:inline-flex;align-items:baseline;gap:8px;border:0;border-radius:8px;background:none;
+ padding:10px 16px;font:500 13px/1 var(--sans);color:#7c869c;cursor:pointer;transition:background .16s,color .16s}
+.bill-btn i{font-style:normal;font:400 11px/1 var(--sans);color:#9aa2b6}
+.bill-btn[aria-pressed=true]{background:#fff;color:#30384b;box-shadow:0 2px 6px #45527d14}
+.bill-btn[aria-pressed=true] i{color:var(--blue)}
+.bill-btn:focus-visible{outline:3px solid #7979ff;outline-offset:2px}
+@media(max-width:520px){.bill-btn i{display:none}}
+.tier.is-dfy /* Unfair's anchor: the old price struck through, sitting above the real one */
+.tier-was-line{margin:4px 0 0}
+.tier-was-line:has(.tier-was:empty){display:none}
+.tier-was{font:400 15px/1.3 var(--sans);color:#a9b0c2;text-decoration-thickness:1px}
+.tier-was:empty{display:none}
+.tier.is-dfy .tier-was{color:#f5f5f47a}
+.tier-price{flex-wrap:wrap}
+.tier-bill:empty{display:none}
+.tier-bill:empty+.tier-cta,.tier-price+.tier-cta{margin-top:18px}
+
+/* download CTA: leading Apple glyph, so the 22px text/arrow gap is wrong here */
+.button.download{gap:9px}
+.button.download .apple{width:15px;height:15px;flex:none;margin-top:-1px}
+
+/* ---------- integrations marquee (after capabilities) ---------- */
+.integrations{max-width:1270px;margin:0 auto;padding:34px 35px 40px;text-align:center;overflow:hidden}
+.int-eyebrow{display:block;font:500 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#9aa1b8}
+.integrations h2{font-family:Space,Inter,sans-serif;font-weight:400;font-size:clamp(28px,4vw,46px);line-height:1.06;letter-spacing:-.045em;color:#272c3b;margin:16px auto 0;max-width:17ch}
+.integrations h2 em{font-style:normal;color:var(--blue)}
+.int-mq{margin:clamp(30px,4vw,46px) -35px 0;overflow:hidden;
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);
+ mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
+.int-mq-track{display:flex;gap:24px;width:max-content;animation:int-scroll 42s linear infinite}
+.int-mq-track:hover{animation-play-state:paused}
+.int-logo{height:28px;width:auto;object-fit:contain;background:#fff;border:1px solid #e7e9f4;border-radius:12px;
+ padding:14px 22px;box-sizing:content-box;box-shadow:0 6px 16px #2a2c5510;flex:none}
+@keyframes int-scroll{to{transform:translateX(calc(-50% - 12px))}}
+@media(prefers-reduced-motion:reduce){.int-mq-track{animation:none;flex-wrap:wrap;justify-content:center;gap:16px}}
+@media(max-width:760px){.integrations{padding:26px 22px 32px}.int-mq{margin-left:-22px;margin-right:-22px}}

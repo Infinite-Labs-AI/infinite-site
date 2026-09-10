@@ -5,25 +5,80 @@ import { join } from "node:path";
 import { PUBLIC_ROUTES, SITEMAP_ROUTES, assertPublicSiteManifest } from "./lib/public-site-manifest.mjs";
 import { renderLlmsText, renderSitemapXml } from "./lib/site-graph-renderers.mjs";
 import { renderSiteFooter, SITE_FOOTER_STYLESHEET } from "./lib/site-footer.mjs";
+import { renderSiteHeader, SITE_HEADER_STYLESHEET, SITE_BASE_STYLESHEET } from "./lib/site-header.mjs";
 
 export function applySiteGraph(distDir) {
   assertPublicSiteManifest();
   writeFileSync(join(distDir, "sitemap.xml"), renderSitemapXml(SITEMAP_ROUTES));
   writeFileSync(join(distDir, "llms.txt"), renderLlmsText({ routes: PUBLIC_ROUTES }));
 
-  for (const route of PUBLIC_ROUTES.filter((candidate) => candidate.footer)) {
+  for (const route of PUBLIC_ROUTES.filter((candidate) => candidate.footer || candidate.header !== false)) {
     const htmlPath = route.path === "/" ? join(distDir, "index.html") : join(distDir, route.path.slice(1), "index.html");
     if (!existsSync(htmlPath)) {
       throw new Error(`Missing route HTML for ${route.path}: ${htmlPath}`);
     }
     const current = readFileSync(htmlPath, "utf8");
-    writeFileSync(
-      htmlPath,
-      applySiteFooterToHtml(current, renderSiteFooter({ status: route.title }), {
+    let next = current;
+    if (route.footer) {
+      next = applySiteFooterToHtml(next, renderSiteFooter({ status: route.title }), {
         deferStylesheet: route.path === "/",
-      }),
-    );
+      });
+    }
+    if (route.header !== false) {
+      next = applySiteHeaderToHtml(next, renderSiteHeader({ currentPath: route.path }), {
+        deferStylesheet: route.path === "/",
+      });
+    }
+    writeFileSync(htmlPath, next);
   }
+}
+
+export function applySiteHeaderToHtml(html, headerHtml, { deferStylesheet = false } = {}) {
+  // Strip each page family's existing header, plus our own on a re-run (idempotent),
+  // then insert the shared header immediately after the opening <body> tag.
+  const strippers = [
+    // our own, on a rebuild — includes the trailing scroll <script>
+    /[\t ]*<header\b(?=[^>]*data-site-header="public-route-graph-v1")[\s\S]*?<\/header>\s*<script>[\s\S]*?<\/script>[\t ]*/gm,
+    /[\t ]*<header\b(?=[^>]*data-site-header="public-route-graph-v1")[\s\S]*?<\/header>[\t ]*/gm,
+    // features
+    /[\t ]*<header\b[^>]*class="[^"]*\bfeature-shell\b[^"]*"[\s\S]*?<\/header>[\t ]*/gm,
+    // seo pages (agents / compare / tools) — top-level <nav class="seo-nav">
+    /[\t ]*<nav\b[^>]*class="[^"]*\bseo-nav\b[^"]*"[\s\S]*?<\/nav>[\t ]*/gm,
+    // get-started / privacy / terms
+    /[\t ]*<header\b[^>]*class="[^"]*\btopbar\b[^"]*"[\s\S]*?<\/header>[\t ]*/gm,
+    // option-4 homepage — <header class="site-header"> that is NOT our own (no data-site-header)
+    /[\t ]*<header\b(?![^>]*data-site-header)[^>]*class="site-header"[\s\S]*?<\/header>[\t ]*/gm,
+    // solar homepage — its bespoke <nav class="nav" aria-label="Main navigation"> (when solar becomes /)
+    /[\t ]*<nav\b[^>]*class="nav"[^>]*aria-label="Main navigation"[\s\S]*?<\/nav>[\t ]*/gm,
+  ];
+  let stripped = html;
+  for (const pattern of strippers) stripped = stripped.replace(pattern, "\n");
+
+  const bodyOpen = stripped.match(/<body\b[^>]*>/);
+  if (!bodyOpen) throw new Error("Cannot inject site header into HTML without <body>");
+  const withHeader = stripped.replace(bodyOpen[0], `${bodyOpen[0]}\n${headerHtml}\n`);
+
+  return ensureSiteHeaderStylesheet(withHeader, { deferStylesheet });
+}
+
+function ensureSiteHeaderStylesheet(html, { deferStylesheet = false } = {}) {
+  if (!html.includes("</head>")) {
+    throw new Error("Cannot inject site header stylesheet into HTML without </head>");
+  }
+  const sheets = [SITE_BASE_STYLESHEET, SITE_HEADER_STYLESHEET];
+  let stripped = html;
+  for (const href of sheets) {
+    stripped = stripped
+      .replace(new RegExp(`\\s*<noscript>\\s*<link\\b[^>]*href=["']${escapeRegExp(href)}["'][^>]*>\\s*<\\/noscript>`, "g"), "")
+      .replace(new RegExp(`\\s*<link\\b[^>]*rel=["']stylesheet["'][^>]*href=["']${escapeRegExp(href)}["'][^>]*>`, "g"), "");
+  }
+  const linkFor = (href) =>
+    deferStylesheet
+      ? `  <link rel="stylesheet" href="${href}" media="print" onload="this.media='all';this.onload=null">\n  <noscript><link rel="stylesheet" href="${href}"></noscript>`
+      : `  <link rel="stylesheet" href="${href}">`;
+  // base loads before header
+  const links = sheets.map(linkFor).join("\n");
+  return stripped.replace("</head>", `${links}\n</head>`);
 }
 
 export function applySiteFooterToHtml(html, footerHtml, { deferStylesheet = false } = {}) {

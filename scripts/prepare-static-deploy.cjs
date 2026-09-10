@@ -4,29 +4,43 @@ const { execFileSync } = require("node:child_process");
 
 const repoRoot = process.cwd();
 const distDir = path.join(repoRoot, "dist");
+// The option-4 artifact dir remains the shared asset library (favicons, social preview,
+// logos) the AEO head references. The homepage HTML + its page CSS/JS now live in the
+// capability workspace (the solar design), sourced under the SAME filename the build has
+// always called the homepage.
 const artifactDir = path.join(
   repoRoot,
   "_agent_artifacts",
   "infinite-option-4-desktop-tokens",
 );
-const homepageSource = path.join(artifactDir, "index-scheme-wrangle.html");
-const homepageCriticalSource = path.join(artifactDir, "homepage-critical.css");
-const homepageBundleName = "homepage-20260729-founder-x-posts.css";
-const homepageStylesheets = [
-  path.join(repoRoot, "_agent_artifacts", "shared", "glaze-hero.css"),
-  path.join(artifactDir, "problem-todesktop.css"),
-  path.join(artifactDir, "light-common.css"),
-  path.join(artifactDir, "light-sky.css"),
-  path.join(artifactDir, "light-sky-polish.css"),
-  path.join(artifactDir, "scheme-variants.css"),
+const homepageDir = path.join(
+  repoRoot,
+  "_agent_artifacts",
+  "infinite-capability-workspace",
+);
+const homepageSource = path.join(homepageDir, "index-scheme-wrangle.html");
+const homepageBundleName = "homepage-20260908-solar.css";
+// Above-the-fold: the hero + nav critical styles. solar keeps these in its inline <style>
+// blocks; trail.css adds the hero's signal/possibility layer — both inline as critical CSS so
+// the first paint never blocks on an external stylesheet and never flashes unstyled.
+const homepageCriticalStylesheets = [path.join(homepageDir, "trail.css")];
+// Below-the-fold sections: bundled into one stylesheet loaded non-render-blocking (media=print
+// swap) after first paint. space-worlds styles the retired world picker (inert) but ships in the
+// same deferred lane so nothing about it can block paint.
+const homepageBundleStylesheets = [
+  path.join(homepageDir, "workspace.css"),
+  path.join(homepageDir, "proof.css"),
+  path.join(homepageDir, "space-worlds.css"),
+  path.join(homepageDir, "stories.css"),
+  path.join(homepageDir, "growth.css"),
 ];
-const homepageStylesheetTags = [
-  '<link rel="stylesheet" href="../shared/glaze-hero.css">',
-  '<link rel="stylesheet" href="problem-todesktop.css">',
-  '<link rel="stylesheet" href="light-common.css">',
-  '<link rel="stylesheet" href="light-sky.css">',
-  '<link rel="stylesheet" href="light-sky-polish.css?v=final-polish2">',
-  '<link rel="stylesheet" href="scheme-variants.css?v=mobile-hero1-belowhero1">',
+// solar loads these page scripts sibling-relative; they travel to the dist root next to index.html.
+const homepageScripts = [
+  "trail.js",
+  "workspace.js",
+  "space-worlds.js",
+  "stories.js",
+  "growth.js",
 ];
 
 process.env.GOOGLE_ANALYTICS_TAG_ID ||= "G-JE3BZS61FZ";
@@ -85,35 +99,60 @@ for (const entry of deployEntries) {
 
 copyFromArtifact("assets", "assets");
 copyFromArtifact("logos", "logos");
+// solar's page scripts sit at the dist root next to index.html (loaded sibling-relative).
+for (const script of homepageScripts) {
+  copyPath(path.join(homepageDir, script), path.join(distDir, script));
+}
+
 const homepageSourceHtml = fs.readFileSync(homepageSource, "utf8");
-const inlineHomepageStyles = [...homepageSourceHtml.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(
-  (match) => match[1],
-);
-const homepageCss = bundleHomepageStyles(homepageStylesheets, inlineHomepageStyles);
-const homepageCriticalCss = `${fs.readFileSync(homepageCriticalSource, "utf8").trim()}
-html[data-scheme="wrangle"] .download-compatibility{max-width:600px;margin:12px auto 0;color:#626b73;font-size:12px;line-height:1.45;text-align:center}
-html[data-scheme="wrangle"] .download-compatibility a{color:#2f3032;font-weight:700;text-decoration:underline;text-underline-offset:3px}`;
+
+// Critical (above-fold): solar's inline <style> blocks + the hero's trail.css, minified and
+// inlined so first paint never blocks on — nor flashes without — an external stylesheet. The
+// [^>]* allows <style id="font-study-styles">, which a bare /<style>/ would miss.
+const inlineHomepageStyles = [
+  ...homepageSourceHtml.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g),
+].map((match) => match[1]);
+const homepageCriticalCss = bundleHomepageStyles(homepageCriticalStylesheets, inlineHomepageStyles);
+
+// Deferred (below-fold): the section stylesheets minified into one bundle, loaded after paint.
+const homepageCss = bundleHomepageStyles(homepageBundleStylesheets, []);
 fs.writeFileSync(path.join(distDir, homepageBundleName), homepageCss);
 
-let homepageHtml = homepageSourceHtml
-  .replace(/\s*<style>[\s\S]*?<\/style>/g, "")
-  .replaceAll("../../assets/", "assets/")
-  .replaceAll("../shared/", "shared/");
+// Strip every inline <style> block and every page stylesheet <link>, then inject the inlined
+// critical CSS + the deferred bundle where the first page stylesheet was. solar's asset refs are
+// already root-relative (/assets, /fonts), so no path rewrite is needed.
+let homepageHtml = homepageSourceHtml.replace(/\s*<style\b[^>]*>[\s\S]*?<\/style>/g, "");
 
-for (const [index, tag] of homepageStylesheetTags.entries()) {
-  homepageHtml = homepageHtml.replace(
-    tag.replace("../shared/", "shared/"),
-    index === 0
-      ? [
-          `<style data-homepage-critical>${homepageCriticalCss}</style>`,
-          `<link rel="stylesheet" href="${homepageBundleName}" media="print" onload="this.media='all';this.onload=null">`,
-          `<noscript><link rel="stylesheet" href="${homepageBundleName}"></noscript>`,
-        ].join("\n  ")
-      : "",
-  );
+const homepageLinkTags = [
+  ...homepageHtml.matchAll(/<link rel="stylesheet" href="[^"]+\.css[^"]*">/g),
+].map((match) => match[0]);
+const criticalInjection = [
+  `<style data-homepage-critical>${homepageCriticalCss}</style>`,
+  `<link rel="stylesheet" href="${homepageBundleName}" media="print" onload="this.media='all';this.onload=null">`,
+  `<noscript><link rel="stylesheet" href="${homepageBundleName}"></noscript>`,
+].join("\n  ");
+for (const [index, tag] of homepageLinkTags.entries()) {
+  homepageHtml = homepageHtml.replace(tag, index === 0 ? criticalInjection : "");
 }
 
 fs.writeFileSync(path.join(distDir, "index.html"), homepageHtml);
+
+// The growth pages ship from the capability workspace. Each becomes a directory index so the
+// middleware manifest can canonicalize its path, and its page-local CSS/JS travel into the same
+// directory — which is why those references stay sibling-relative while shared fonts and images
+// are root-relative. Runs BEFORE inject-analytics so these pages get the same analytics treatment
+// as every other page.
+const growthSourceDir = path.join(repoRoot, "_agent_artifacts/infinite-capability-workspace");
+const growthPages = [{ dir: "audit", html: "audit.html", assets: ["audit-page.css", "audit-page.js"] }];
+
+for (const page of growthPages) {
+  const targetDir = path.join(distDir, page.dir);
+  fs.mkdirSync(targetDir, { recursive: true });
+  copyPath(path.join(growthSourceDir, page.html), path.join(targetDir, "index.html"));
+  for (const asset of page.assets) {
+    copyPath(path.join(growthSourceDir, asset), path.join(targetDir, asset));
+  }
+}
 
 // The two launch-video pages are generated from the public dataset rather than written by hand.
 // Runs BEFORE inject-analytics so the generated HTML gets the same analytics + apex-URL treatment

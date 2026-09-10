@@ -1,0 +1,103 @@
+.workspace-capabilities{max-width:1270px;padding:85px 35px 65px;margin:auto;scroll-margin-top:30px}.workspace-heading{text-align:center;margin-bottom:42px}.workspace-heading h2{font:400 54px/1.08 var(--display);letter-spacing:-.045em;color:#272c3b;margin:0}.workspace-heading em{font-style:normal;color:var(--blue)}
+.work-surface{border:1px solid #e0e5f1;border-radius:21px;background-color:#f5f7fe;background-image:radial-gradient(#cad3ec80 .7px,transparent .7px);background-size:22px 22px;box-shadow:0 12px 32px #313d6109;padding:0 46px;overflow:hidden}.surface-header,.surface-footer{display:flex;justify-content:space-between;align-items:center;gap:20px;color:#8993aa}.surface-header{padding:22px 0 20px;border-bottom:1px solid #dfe5f3;font-size:12px}.surface-brand{color:#727fa1}.surface-status{display:flex;gap:7px;align-items:center;font-size:11px}.surface-status i{height:5px;width:5px;border-radius:50%;background:#a8b88c}.surface-footer{font-size:12px;border-top:1px solid #dfe5f3;padding:19px 0 22px;color:#939caf}
+.workspace-stations{display:grid;grid-template-columns:1fr 1fr;gap:15px 90px;padding:31px 14px 39px}.ws-station{min-width:0;position:relative}.ws-search{padding-top:65px}.ws-content{padding-top:1px}.ws-tests{padding-top:69px}.ws-artifact{position:relative;height:244px;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}.ws-artifact:focus-visible{outline:2px solid #9a9cec;outline-offset:9px;border-radius:9px}.ws-caption{padding:17px 0 34px;max-width:385px}.ws-number{font:500 11px/1.5 var(--sans);color:#9b9fc0;letter-spacing:.07em}.ws-caption h3{font:500 26px/1.2 var(--sans);letter-spacing:-.04em;margin:10px 0 12px;color:#30384b}.ws-caption h3 a{display:inline-flex;align-items:center;gap:22px}.ws-caption h3 a>span{font-size:20px;color:#aaaed0;font-weight:400;opacity:0;transition:opacity .2s}.ws-caption h3 a:hover>span,.ws-caption h3 a:focus-visible>span{opacity:1}.ws-caption p{font:400 16px/1.6 var(--sans);color:#6f7a91;margin:0;max-width:350px}
+/* A conversation is a paper note, with a useful reply tucked underneath. */
+.lead-paper{position:absolute;left:0;right:9px;top:14px;background:white;border:1px solid #e3e7f1;border-radius:10px;padding:19px 21px;box-shadow:0 15px 27px #56617c0d;transform:rotate(-3deg);z-index:2;transition:transform .45s cubic-bezier(.2,.8,.3,1)}.paper-top{display:flex;align-items:center;gap:9px;font-size:12px;color:#8b96ad}.source-bubble{height:28px;width:28px;background:#eef0ff;border-radius:8px;color:#8d95d2;display:grid;place-items:center;font:13px var(--sans);flex:none}.paper-top small{margin-left:auto;font-size:10px;color:#b0b8c8}.lead-paper blockquote{font:400 34px/1.04 Instrument,Georgia,serif;letter-spacing:-.7px;color:#58647e;margin:24px 0 23px}.paper-bottom{border-top:1px solid #edf0f6;padding-top:13px;display:flex;gap:7px;align-items:center;font-size:11px;color:#a0aabd}.paper-bottom>span:last-child{margin-left:auto;color:#acaddc;font-size:16px}.intent-dot{height:5px;width:5px;border-radius:50%;background:#aebd95;flex:none}.paper-pin{position:absolute;left:45%;top:8px;width:40px;height:15px;transform:rotate(7deg);background:#bdc4ff88;border:1px solid #ccd2f4aa;z-index:3}.reply-slip{position:absolute;bottom:6px;left:27px;right:0;background:#e7e8fc;border:1px solid #d9dcf2;border-radius:8px;padding:13px 15px;transform:rotate(2deg) translateY(-10px);opacity:.6;z-index:1;transition:transform .45s,opacity .45s}.reply-slip b{display:block;font-size:11px;font-weight:500;color:#7b7dba;margin-bottom:6px}.reply-slip>span{font-size:14px;color:#7f86a5}.lead-artifact[data-active=true] .lead-paper{transform:rotate(-4deg) translateY(-18px)}.lead-artifact[data-active=true] .reply-slip{transform:rotate(2deg) translateY(14px);opacity:1}
+/* Search is open, typographic and horizontal, not another app window. */
+.search-artifact{padding:17px 0 0;height:244px}.search-query{padding:12px 15px;display:flex;align-items:center;gap:11px;background:white;border:1px solid #dce2f1;border-radius:25px;box-shadow:0 4px 13px #485b7b07;font:13px/1.4 var(--sans);color:#8b99b2;position:relative;z-index:2}.search-query>span:first-child{font-size:22px;color:#9fafe0;line-height:1}.search-query i{width:2px;height:15px;background:#b2b9d5;opacity:0;transition:opacity .3s}.search-result{margin:18px 12px 0;position:relative}.result-domain{font-size:11px;color:#929eab}.search-result h4{font:500 21px/1.25 var(--sans);letter-spacing:-.5px;color:#6869d2;margin:9px 0 16px}.result-lines{transition:opacity .3s}.result-lines i{height:5px;background:#d8dfed;border-radius:4px;display:block;margin:7px 0;width:95%}.result-lines i:nth-child(2){width:84%}.result-lines i:last-child{width:62%}.expanded-answer{position:absolute;left:0;right:0;top:65px;opacity:0;transform:translateY(7px);transition:opacity .4s,transform .4s;background:#f5f7fe}.expanded-answer b{display:block;font-size:14px;line-height:1.4;color:#76859c;font-weight:500;max-width:340px}.expanded-answer>span{display:block;font-size:12px;line-height:1.5;color:#9aa5b8;margin-top:8px}.answer-stamp{position:absolute;bottom:0;right:6px;font:9px/1.5 var(--mono);letter-spacing:.07em;padding:7px 10px;background:#edf1ff;border:1px solid #d8e0f6;border-radius:3px;transform:rotate(-3deg);color:#8c98c6}.search-artifact[data-active=true] .result-lines{opacity:0}.search-artifact[data-active=true] .expanded-answer{opacity:1;transform:translateY(0)}.search-artifact[data-active=true] .search-query i{opacity:1}
+/* A content idea changes format, from a compact cover to a wide post. */
+.content-artifact{height:251px}.format-sheet{position:absolute;right:19px;top:5px;width:183px;height:205px;padding:18px;background:#6665db;color:#efeeff;border:1px solid #9492ea;border-radius:6px;transform:rotate(8deg);box-shadow:0 9px 23px #6568a714;transition:transform .5s}.format-sheet>span{font:8px var(--mono);letter-spacing:.05em}.format-sheet>b{font:400 44px/1 Instrument,serif;letter-spacing:-1px;display:block;margin-top:35px}.format-sheet>i{font-style:normal;font-size:32px;position:absolute;bottom:15px;right:18px;color:#aaa8f1}.content-sheet{position:absolute;left:9px;top:19px;width:194px;height:205px;background:#f0f5b8;color:#606a3e;border:1px solid #e5ecae;border-radius:6px;padding:17px;transform:rotate(-7deg);box-shadow:0 12px 25px #717b4c12;transition:width .5s,height .5s,transform .5s,background .5s;z-index:2}.sheet-brand{display:flex;justify-content:space-between;font:16px Instrument,serif}.sheet-brand>span{font-size:22px;line-height:1}.sheet-copy{font:400 37px/1.02 Instrument,serif;letter-spacing:-.7px;display:block;margin-top:25px}.sheet-format{position:absolute;left:17px;bottom:14px;font:7px var(--mono);letter-spacing:.03em;color:#8e9966}.format-tag{position:absolute;bottom:0;right:0;font-size:12px;color:#959db2}.content-artifact[data-active=true] .content-sheet{width:calc(100% - 27px);height:156px;transform:rotate(-1deg) translateY(16px);background:#f1f5cc}.content-artifact[data-active=true] .sheet-copy{font-size:29px;margin-top:13px}.content-artifact[data-active=true] .format-sheet{transform:rotate(11deg) translate(6px,-5px)}
+/* Test planning is one changeable specimen, rather than two miniature sites. */
+.test-artifact{height:244px;padding-top:13px}.test-note{padding:19px 22px 17px;background:#fff;border:1px solid #e1e6f2;border-radius:8px;box-shadow:0 12px 24px #5f6a810b;transform:rotate(2deg);transition:transform .45s,border-color .45s}.test-note-top{display:flex;justify-content:space-between;align-items:center;gap:12px;font:10px var(--mono);color:#a0abc1}.ab-toggle{display:flex;position:relative;gap:5px;background:#f1f3fb;padding:3px;border-radius:7px}.ab-toggle b{font:11px var(--sans);z-index:1;padding:4px 8px;color:#9ea8c2}.ab-toggle i{position:absolute;left:3px;top:3px;bottom:3px;width:26px;border:1px solid #dfdffa;background:#e6e4fb;border-radius:5px;transition:transform .4s}.test-message{font:400 35px/1.04 Instrument,serif;color:#79839a;letter-spacing:-.6px;margin:19px 0 17px;min-height:73px;white-space:pre-line}.test-rule{height:1px;background:#edf0f6}.test-question{font-size:12px;color:#a0aabd;line-height:1.5;margin-top:12px}.test-stamp{font-size:12px;color:#969eba;position:absolute;bottom:-1px;right:5px;transform:rotate(-2deg)}.test-stamp>span{color:#a5a0d9;margin-right:6px}.test-artifact[data-active=true] .test-note{transform:rotate(-1deg);border-color:#d0d4f1}.test-artifact[data-active=true] .test-message{color:#7b73bb}.test-artifact[data-active=true] .ab-toggle i{transform:translateX(31px)}
+
+@media(max-width:1100px){.work-surface{padding:0 30px}.workspace-stations{gap:15px 50px;padding-left:0;padding-right:0}.lead-paper{padding:17px}.lead-paper blockquote{font-size:30px}.paper-top{font-size:11px}.paper-bottom{font-size:10px}.search-query{font-size:12px;padding:12px}.format-sheet{right:6px;width:157px}.content-sheet{width:173px;left:0}.sheet-copy{font-size:33px}.ws-caption h3{font-size:24px}.test-note{padding:18px}.test-message{font-size:32px}}
+@media(max-width:800px){.workspace-capabilities{padding:65px 22px 60px}.workspace-heading h2{font-size:42px}.work-surface{padding:0 22px}.surface-status{display:none}.workspace-stations{grid-template-columns:1fr;padding:24px 0 25px;gap:35px}.ws-search,.ws-tests,.ws-content{padding-top:0}.ws-station{max-width:450px;width:100%;margin:auto}.ws-artifact{height:245px}.ws-caption{padding:20px 0 9px;max-width:100%}.ws-caption h3{font-size:25px}.ws-caption p{font-size:16px;max-width:100%}.ws-number{font-size:10px}.surface-footer{flex-direction:column;align-items:flex-start;gap:6px;font-size:11px}.lead-paper blockquote{font-size:31px}.search-result h4{font-size:21px}.format-sheet{width:177px;right:14px}.content-sheet{width:186px;left:5px}.sheet-copy{font-size:35px}.test-note-top{font-size:9px}.test-message{font-size:34px}.ws-caption h3 a>span{opacity:1}}
+@media(max-width:390px){.workspace-capabilities{padding-left:15px;padding-right:15px}.work-surface{padding:0 17px}.paper-top{gap:6px;font-size:10px}.paper-top small{font-size:9px}.lead-paper blockquote{font-size:28px}.paper-bottom{font-size:9px}.reply-slip{left:10px}.reply-slip>span{font-size:12px}.search-query{font-size:11px;gap:7px}.search-result h4{font-size:19px}.expanded-answer b{font-size:13px}.expanded-answer>span{font-size:11px}.content-sheet{width:165px}.format-sheet{width:155px;right:8px}.sheet-copy{font-size:31px}.content-artifact[data-active=true] .sheet-copy{font-size:25px}.test-message{font-size:31px}.test-note{padding:17px}.test-question{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.ws-artifact *{transition:none!important}}
+/* Keep the shared canvas, but give each piece an unmistakable heading-first group. */
+.workspace-stations{row-gap:43px;padding-top:34px;padding-bottom:45px}
+.ws-station{border-top:1px solid #d9e1ef;padding-top:20px}
+.ws-caption{padding:0 0 24px;max-width:100%}
+.ws-number{font-size:11px;color:#8b96b0;letter-spacing:.07em}
+.ws-caption h3{font-size:27px;margin:9px 0 11px}
+.ws-caption p{max-width:370px;color:#69788f}
+.ws-search{padding-top:20px;margin-top:62px}
+.ws-content{padding-top:20px}
+.ws-tests{padding-top:20px;margin-top:62px}
+@media(max-width:800px){.workspace-stations{row-gap:37px;padding-top:26px}.ws-search,.ws-tests{margin-top:0}.ws-station{padding-top:19px}.ws-caption{padding-bottom:22px}.ws-caption h3{font-size:25px}.ws-caption p{max-width:none}.ws-number{font-size:11px}}
+
+/* Remove the unnecessary top dividers on the first two work areas. */
+.ws-leads,.ws-search{border-top:0}
+
+/* Homepage internal-linking additions (SEO + attribution): the contextual feature-page links
+   below the capability stations, and the "explore the agent ecosystem" link in the CLI section. */
+.capability-links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:34px auto;padding-bottom:48px;max-width:840px}
+.capability-links a{font-size:12px;color:var(--muted);text-decoration:none;padding:8px 15px;border:1px solid var(--line);border-radius:999px;background:#fff;transition:border-color .15s,color .15s}
+.capability-links a:hover{border-color:var(--blue);color:var(--blue)}
+.cli-agents-link{margin-top:14px}
+.cli-agents-link a{color:var(--blue);font-size:13px;font-weight:500;text-decoration:none}
+.cli-agents-link a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* 05 Ads + 06 Email — two new stations, each a UNIQUE demo in the workspace style. */
+.ws-ads{padding-top:20px}
+.ws-email{padding-top:20px;margin-top:62px}
+@media(max-width:800px){.ws-email{margin-top:0}}
+/* Ads: six real competitor ad creatives Infinite tracks, layered as a fan — one plays like a
+   video, and every card wears a compact Facebook/Instagram feed-ad frame (brand header + creative). */
+.ads-artifact{height:366px}
+.ad-creative{position:absolute;margin:0;padding:7px;background:#fff;border:1px solid #e7e7f3;border-radius:13px;box-shadow:0 16px 34px #3a46631f;overflow:hidden}
+.ad-media{position:relative;border-radius:7px;overflow:hidden}
+.ad-media img,.ad-media video{display:block;width:100%;height:auto}
+/* Social-ad chrome: circular brand logo + name + muted @handle, a "Sponsored" line with a tiny
+   platform glyph, and the Active/Video format badge folded into the top-right. */
+.ad-head{display:flex;align-items:center;gap:5px;padding:4px 4px 6px}
+.ad-logo{width:19px;height:19px;flex:none;border-radius:50%;overflow:hidden;background:#f1f2fb;border:1px solid #e4e5f2;box-shadow:0 1px 2px #3a46630f}
+.ad-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.ad-id{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px}
+.ad-name{display:flex;align-items:baseline;gap:4px;min-width:0}
+.ad-name b{flex:none;font:700 9px/1.15 var(--sans);letter-spacing:-.01em;color:#2b3040}
+.ad-handle{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:normal;font:400 7.5px/1 var(--sans);color:#a2a8bd}
+.ad-spon{display:flex;align-items:center;gap:3px;font:400 7.5px/1 var(--sans);color:#9aa1b6}
+.ad-glyph{flex:none;color:#bcc0ce}
+.ad-badge{flex:none;align-self:center;font:600 7px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:#7d84a8;background:#eef0ff;border:1px solid #e0e3f6;border-radius:20px;padding:3px 5px}
+.ad-b1{width:134px;left:22px;top:6px;transform:rotate(-15deg);z-index:1;opacity:.92}
+.ad-b2{width:132px;right:18px;top:2px;transform:rotate(15deg);z-index:1;opacity:.92}
+.ad-b3{width:150px;left:50%;margin-left:-40px;top:-4px;transform:rotate(11deg);z-index:0;opacity:.92}
+.ad-c1{width:150px;left:0;top:70px;transform:rotate(-8deg);z-index:2}
+.ad-c3{width:152px;right:0;top:64px;transform:rotate(8deg);z-index:3}
+.ad-c2{width:168px;left:50%;margin-left:-84px;top:26px;transform:rotate(-1deg);z-index:4}
+.ad-video .ad-media img{animation:ad-kenburns 9s ease-in-out infinite alternate}
+@keyframes ad-kenburns{from{transform:scale(1.05)}to{transform:scale(1.15) translateY(-5px)}}
+.ad-scrim{position:absolute;inset:0;background:linear-gradient(180deg,#0b0b1a00 55%,#0b0b1a5e);pointer-events:none}
+.ad-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fffffff2;box-shadow:0 3px 11px #0b0b2238;display:grid;place-items:center}
+.ad-play::after{content:"";margin-left:3px;border-style:solid;border-width:6px 0 6px 11px;border-color:transparent transparent transparent #3d3df5}
+.ad-dur{position:absolute;top:8px;right:8px;font:8px/1 var(--mono);color:#fff;background:#0b0b1aad;border-radius:3px;padding:3px 5px}
+.ad-timeline{position:absolute;left:8px;right:8px;bottom:8px;height:3px;border-radius:3px;background:#ffffff5c;overflow:hidden}
+.ad-timeline i{display:block;height:100%;background:#fff;transform-origin:left;transform:scaleX(0);animation:ad-progress 9s linear infinite}
+@keyframes ad-progress{0%{transform:scaleX(0)}96%,100%{transform:scaleX(1)}}
+/* Email: a letter on paper that writes itself, in your voice. */
+.email-artifact{height:348px;padding-top:2px}
+.letter{position:absolute;left:0;right:8px;top:8px;bottom:10px;background:#fff;border:1px solid #e6e3f1;border-radius:12px;box-shadow:0 15px 30px #4a466316;padding:19px 22px;overflow:hidden}
+.letter-head{display:flex;align-items:center;gap:9px;font-size:12px;color:#8b96ad;margin-bottom:15px}
+.letter-head small{margin-left:auto;font-size:10px;color:#aab2c2}
+.letter-greeting{font:400 19px/1.55 Instrument,Georgia,serif;color:#585073;margin:0 0 3px}
+.letter-line{font:400 19px/1.55 Instrument,Georgia,serif;color:#6a6291;margin:0;white-space:nowrap;width:fit-content;clip-path:inset(0 100% 0 0)}
+.letter-line-1{animation:letter-type1 8s steps(24) infinite}
+.letter-line-2{animation:letter-type2 8s steps(30) infinite}
+.letter-line-2::after{content:"";display:inline-block;width:2px;height:18px;background:#8d7fce;margin-left:3px;vertical-align:-3px;animation:letter-caret 1.05s step-end infinite}
+.letter-sign{font:400 11px/1.5 var(--sans);color:#a49fc0;margin:16px 0 0;opacity:0;animation:letter-sign 8s ease infinite}
+@keyframes letter-type1{0%{clip-path:inset(0 100% 0 0)}15%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
+@keyframes letter-type2{0%,17%{clip-path:inset(0 100% 0 0)}42%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
+@keyframes letter-sign{0%,52%{opacity:0}66%,100%{opacity:1}}
+@keyframes letter-caret{50%{opacity:0}}
+@media(max-width:1100px){.ad-b1{width:118px}.ad-b2{width:116px}.ad-b3{width:132px;margin-left:-35px}.ad-c1{width:132px}.ad-c3{width:134px}.ad-c2{width:152px;margin-left:-76px}.letter-greeting,.letter-line{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.ad-video img,.ad-timeline i,.letter-line,.letter-sign{animation:none!important}.letter-line{clip-path:none}.letter-sign{opacity:1}}
+/* Social proof + CTA under the capability cards (replaces the old reassurance line). */
+.ws-proof{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:11px 18px;padding:6px 0 24px;text-align:center}
+.ws-proof-faces{display:inline-flex;flex:none}
+.ws-proof-faces img{width:30px;height:30px;border-radius:50%;border:2px solid #fff;margin-right:-9px;box-shadow:0 2px 7px #38427714;background:#eef0f7}
+.ws-proof-text{margin:0;font:400 15px/1.5 var(--sans);color:#5c6479}
+.ws-proof-text b{color:#30384b;font-weight:600}
+.ws-proof-text a{color:var(--blue);text-decoration:none;font-weight:500}
+.ws-proof-text a:hover{text-decoration:underline;text-underline-offset:2px}
+@media(max-width:560px){.ws-proof{gap:10px}.ws-proof-text{font-size:14px;text-align:center}}

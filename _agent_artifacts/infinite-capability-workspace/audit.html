@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auditing your site — Infinite</title>
+<style>
+@font-face{font-family:Instrument;src:url('/fonts/instrument/InstrumentSerif-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url('/fonts/inter/inter-latin-wght-normal.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:Mono;src:url('/fonts/infinite-ui/jetbrains-mono-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Space;src:url('/fonts/infinite-ui/space-grotesk-500.woff2') format('woff2');font-weight:500;font-display:swap}
+:root{--ink:#242532;--muted:#7b7d8d;--blue:#3d3df5;--blue-dark:#2929cb;--wash:#edf0ff;--line:#e3e5ef;--mint:#eaf4d7;--display:Instrument,Georgia,serif;--sans:Inter,Arial,sans-serif;--mono:Mono,monospace}
+body[data-type="space"]{--display:Space,Inter,sans-serif}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;color:var(--ink);font:14px/1.6 var(--sans);background:#fff}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+button{cursor:pointer;color:inherit}
+.skip{position:absolute;left:-9999px}
+.skip:focus{left:12px;top:12px;background:#fff;padding:10px 14px;border-radius:8px;z-index:60}
+</style>
+<link rel="stylesheet" href="audit-page.css?v=7">
+</head>
+<body data-type="space">
+<a class="skip" href="#audit-main">Skip to content</a>
+
+<header class="nav" aria-label="Main navigation">
+ <a class="logo" href="/" aria-label="Infinite home"><span class="asterisk" aria-hidden="true">✳</span>infinite</a>
+ <div class="navlinks">
+  <a class="nav-back" href="/"><span aria-hidden="true">←</span> Back to the site</a>
+  <a class="nav-cta" href="https://infinite.fast/get-started?cta=audit" data-download-location="audit" data-analytics-cta-id="get-started" data-analytics-cta-location="navigation">Download for Mac</a>
+ </div>
+</header>
+
+<main class="audit-page" id="audit-main">
+
+ <section class="scan" aria-labelledby="scan-title">
+  <div class="scan-inner">
+
+   <span class="scan-eyebrow"><i class="pulse" aria-hidden="true"></i><b data-phase-label>Audit started</b></span>
+   <h1 id="scan-title">We're going through<br><em data-site>your site</em>.</h1>
+   <p class="scan-sub">Four agents are reading it right now. This is what each one is doing.</p>
+
+   <div class="scan-stage" aria-hidden="true">
+    <div class="scan-window">
+     <span class="scan-chrome"><i></i><i></i><i></i><b data-site-chip>your site</b></span>
+     <div class="scan-page">
+      <span class="scan-beam"></span>
+      <div class="wf wf-nav"   style="--d:.10s" data-tag="nav"><i style="--w:26%"></i><i style="--w:11%"></i><i style="--w:11%"></i><i style="--w:11%"></i></div>
+      <div class="wf wf-hero"  style="--d:.55s" data-tag="h1"><i style="--w:84%"></i><i style="--w:62%"></i></div>
+      <div class="wf wf-sub"   style="--d:.95s" data-tag="copy"><i style="--w:70%"></i><i style="--w:52%"></i></div>
+      <div class="wf wf-cta"   style="--d:1.30s" data-tag="cta"><i style="--w:30%"></i><i style="--w:22%"></i></div>
+      <div class="wf wf-cards" style="--d:1.85s" data-tag="offer"><i style="--w:32%"></i><i style="--w:32%"></i><i style="--w:32%"></i></div>
+      <div class="wf wf-body"  style="--d:2.35s" data-tag="pricing"><i style="--w:92%"></i><i style="--w:78%"></i><i style="--w:88%"></i></div>
+      <div class="wf wf-form"  style="--d:2.85s" data-tag="form"><i style="--w:56%"></i><i style="--w:24%"></i></div>
+     </div>
+    </div>
+    <div class="scan-meter"><span class="scan-meter-fill" data-meter></span></div>
+   </div>
+
+   <ol class="scan-steps" data-steps>
+    <li data-state="running">
+     <span class="step-n">01</span>
+     <span class="step-body"><b>Reading the site</b><small>Your pages, your copy, and what you actually sell</small></span>
+     <span class="step-mark" aria-hidden="true"></span>
+    </li>
+    <li data-state="queued">
+     <span class="step-n">02</span>
+     <span class="step-body"><b>Finding buying signals</b><small>People describing your problem on Reddit, X and forums</small></span>
+     <span class="step-mark" aria-hidden="true"></span>
+    </li>
+    <li data-state="queued">
+     <span class="step-n">03</span>
+     <span class="step-body"><b>Checking search visibility</b><small>What you rank for, and what the AI answers say about you</small></span>
+     <span class="step-mark" aria-hidden="true"></span>
+    </li>
+    <li data-state="queued">
+     <span class="step-n">04</span>
+     <span class="step-body"><b>Testing the landing page</b><small>Where the visits you already get stop turning into customers</small></span>
+     <span class="step-mark" aria-hidden="true"></span>
+    </li>
+   </ol>
+
+   <p class="scan-foot" data-foot>This takes a while to do properly. You'll have it within a day.</p>
+
+  </div>
+ </section>
+
+ <aside class="book" aria-labelledby="book-title">
+  <div class="book-inner">
+   <span class="book-eyebrow">STEP TWO</span>
+   <h2 id="book-title">While that runs,<br><em>grab twenty minutes.</em></h2>
+   <p class="book-sub">Book a time to go through the audit line by line, and pick the first thing to change.</p>
+
+   <div class="book-embed" id="cal-inline"></div>
+
+   <div class="book-direct" data-cal-fallback hidden>
+    <p>The calendar didn't load. It opens on Cal.com instead, with your details filled in.</p>
+    <a data-cal-direct href="https://cal.com/founders-ultima/infinite-demo" target="_blank" rel="noopener">Open the calendar <span aria-hidden="true">↗</span></a>
+   </div>
+
+   <div class="book-fallback" data-fallback>
+    <div class="cal-sketch" aria-hidden="true">
+     <div class="cal-sketch-head"><b>September 2026</b><span>‹ ›</span></div>
+     <div class="cal-sketch-dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+     <div class="cal-sketch-grid" data-cal-grid></div>
+    </div>
+    <p class="book-fallback-note"><b>Cal.com booking grid loads here.</b>Set <code>CAL_LINK</code> in <code>audit-page.js</code> to the Infinite event and this panel is replaced by the live embed.</p>
+   </div>
+
+   <ul class="book-agenda">
+    <li>Which conversations are worth replying to first</li>
+    <li>The searches you're missing, and the pages that would win them</li>
+    <li>The one change to test on your landing page</li>
+   </ul>
+  </div>
+ </aside>
+
+</main>
+
+<script src="audit-page.js?v=9" defer></script>
+</body>
+</html>

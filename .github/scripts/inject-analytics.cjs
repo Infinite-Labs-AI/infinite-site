@@ -280,7 +280,7 @@ function posthogSnippet({ apiHost, uiHost, projectToken }) {
         (e.__SV = 1));
     })(document, window.posthog || []);
     var NO_REPLAY_PATHS = ["/startup-launch-videos"];
-    var SENSITIVE_PATHS = ["/get-started"];
+    var SENSITIVE_PATHS = ["/get-started", "/audit"];
     var POSTHOG_PATH_HERE = location.pathname;
     if (POSTHOG_PATH_HERE.length > 1 && POSTHOG_PATH_HERE.charAt(POSTHOG_PATH_HERE.length - 1) === "/") {
       POSTHOG_PATH_HERE = POSTHOG_PATH_HERE.slice(0, -1);

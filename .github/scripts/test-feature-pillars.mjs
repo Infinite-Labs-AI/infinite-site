@@ -148,7 +148,7 @@ assert.deepEqual(
   ["/", ...featurePaths],
   "manifest must atomically activate the homepage plus all seven feature documents in binding order",
 );
-assert.equal(PUBLIC_ROUTES.length, 22, "final public graph has exactly 22 routes, including the noindex get-started gate");
+assert.equal(PUBLIC_ROUTES.length, 23, "final public graph has exactly 23 routes, including the noindex get-started gate and audit page");
 assert.deepEqual(
   PUBLIC_ROUTES.find((route) => route.path === "/get-started/"),
   {
@@ -159,6 +159,7 @@ assert.deepEqual(
     indexable: false,
     documentLog: true,
     footer: false,
+    header: true,
     title: "Get started with Infinite",
     llmsSummary: "Email verification gate for downloading Infinite for Mac and opening the desktop app already signed in.",
     sitemap: null,
@@ -320,7 +321,7 @@ function assertHomepageLinks(html, label) {
     ["SEO + AEO", "/features/seo-aeo/", "feature-seo-aeo"],
     ["X + Instagram Content", "/features/x-instagram-content/", "feature-x-instagram-content"],
     ["AI Ads", "/features/ads/", "feature-ads"],
-    ["Email — availability", "/features/email/", "feature-email"],
+    ["Email Newsletters", "/features/email/", "feature-email"],
     ["Websites + A/B Ideas", "/features/websites-ab-testing/", "feature-websites-ab-testing"],
   ]) {
     const [text, href, ctaId] = item;
