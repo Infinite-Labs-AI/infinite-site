@@ -103,7 +103,13 @@
 @media(max-width:1000px){
  .inventory-grid{grid-template-columns:repeat(2,1fr)}
  .audit-card{grid-template-columns:1fr;gap:30px;padding:34px}
- .pricing-grid{grid-template-columns:1fr;max-width:470px;margin:0 auto}
+ /* keep the three tiers on one row down to the mobile-nav breakpoint; tighten the
+    gap/padding so they still fit before they finally stack */
+ .pricing{padding-left:26px;padding-right:26px}
+ .pricing-grid{gap:14px}
+}
+@media(max-width:760px){
+ .pricing-grid{grid-template-columns:1fr;max-width:470px;margin:0 auto;gap:20px}
  .tier-who{min-height:0}
 }
 @media(max-width:800px){
@@ -272,6 +278,13 @@
  .founder-world[data-world] .station-stage{grid-area:stage;position:relative;top:0;left:0;
   width:150%;max-width:none;margin:0;justify-self:start;transform:translateX(-10%);
   align-self:center;background:none}
+}
+/* Below the grid layout the scene is absolutely-positioned, so the world reserves its
+   height with min-height. The stock 1100px ([data-world="solar"]) is tuned for the top of
+   the band and leaves a big dead gap at narrower widths — instead track the stage, whose
+   height is (100vw - 48px) * 620/900 sitting under a 220px top offset. */
+@media(min-width:701px) and (max-width:1039px){
+ .founder-world[data-world="solar"]{min-height:calc(240px + (100vw - 48px) * 0.6889)}
 }
 /* the done-for-you tier goes dark, in the live site's language:
    near-black ground, a green/blue radial lift, white-alpha surfaces, #f5f5f4 text */
