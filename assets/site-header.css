@@ -59,7 +59,9 @@
   letter-spacing:-1.4px; color:var(--sh-ink); text-decoration:none;
   transition:color .2s;
 }
-.site-header-logo .sh-mark{font-family:Arial,sans-serif;color:var(--sh-blue);font-size:22px;line-height:1}
+/* the mark is an infinity loop (lemniscate); stroke inherits currentColor so it
+   inverts over dark sections like the wordmark does */
+.site-header-logo .sh-mark{display:block;flex:none;width:27px;height:14px;color:var(--sh-blue)}
 
 /* flat links — no capsule; current page gets a blue underline */
 .site-header-nav{display:flex; align-items:center; gap:24px}
@@ -72,6 +74,22 @@
 .site-header-nav a[aria-current="page"]::after{
   content:""; position:absolute; left:0; right:0; bottom:-3px; height:2px; border-radius:2px; background:var(--sh-blue);
 }
+
+/* GTM Hub — a small pill button, secondary to the blue primary CTA: a soft
+   indigo tint with an outline so it reads as a button of a different colour */
+.site-header-nav a.sh-hub{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:13px; font-weight:500; color:var(--sh-blue);
+  background:rgba(61,61,245,.09); border:1px solid rgba(61,61,245,.24);
+  border-radius:999px; padding:8px 15px; line-height:1;
+  transition:background .15s, border-color .15s, color .15s;
+}
+.site-header-nav a.sh-hub:hover{background:rgba(61,61,245,.16); border-color:rgba(61,61,245,.4); color:var(--sh-blue-dark)}
+.site-header-nav a.sh-hub::after{display:none}
+.site-header[data-on-dark="true"] .site-header-nav a.sh-hub{
+  background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.3); color:#fff;
+}
+.site-header[data-on-dark="true"] .site-header-nav a.sh-hub:hover{background:rgba(255,255,255,.22)}
 
 /* blue primary CTA */
 .site-header-cta{
