@@ -22,16 +22,17 @@
   max-width:1160px; margin:auto; height:60px; padding:0 12px 0 22px;
   display:flex; align-items:center; justify-content:space-between; gap:24px;
   border-radius:16px;
-  background:linear-gradient(180deg,rgba(240,241,255,.36),rgba(228,230,252,.20));
-  -webkit-backdrop-filter:blur(20px) saturate(1.8); backdrop-filter:blur(20px) saturate(1.8);
-  border:1px solid rgba(255,255,255,.55);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 10px 30px rgba(48,45,120,.14);
+  /* liquid glass — see-through frost, dialled ~20% back from full strength */
+  background:rgba(250,250,255,.24);
+  -webkit-backdrop-filter:blur(25px) saturate(1.7) brightness(1.04); backdrop-filter:blur(25px) saturate(1.7) brightness(1.04);
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72), inset 0 -1px 0 rgba(255,255,255,.14), 0 12px 32px rgba(40,40,90,.18);
   transition:box-shadow .2s, background .2s;
 }
-/* once the page scrolls, firm the shadow slightly so it reads over busier content */
+/* once the page scrolls, firm the fill slightly so text stays legible over busier content */
 .site-header[data-scrolled="true"] .site-header-inner{
-  background:linear-gradient(180deg,rgba(240,241,255,.5),rgba(228,230,252,.34));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 12px 34px rgba(48,45,120,.2);
+  background:rgba(250,250,255,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), inset 0 -1px 0 rgba(255,255,255,.14), 0 14px 36px rgba(40,40,90,.22);
 }
 
 .site-header-logo{
