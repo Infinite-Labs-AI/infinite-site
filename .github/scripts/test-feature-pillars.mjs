@@ -321,7 +321,7 @@ function assertHomepageLinks(html, label) {
     ["SEO + AEO", "/features/seo-aeo/", "feature-seo-aeo"],
     ["X + Instagram Content", "/features/x-instagram-content/", "feature-x-instagram-content"],
     ["AI Ads", "/features/ads/", "feature-ads"],
-    ["Email — availability", "/features/email/", "feature-email"],
+    ["Email Newsletters", "/features/email/", "feature-email"],
     ["Websites + A/B Ideas", "/features/websites-ab-testing/", "feature-websites-ab-testing"],
   ]) {
     const [text, href, ctaId] = item;

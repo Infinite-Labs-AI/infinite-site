@@ -75,7 +75,7 @@ function assertHomepage(html, label) {
     ["/features/seo-aeo/", "feature-seo-aeo", "SEO + AEO"],
     ["/features/x-instagram-content/", "feature-x-instagram-content", "X + Instagram Content"],
     ["/features/ads/", "feature-ads", "AI Ads"],
-    ["/features/email/", "feature-email", "Email — availability"],
+    ["/features/email/", "feature-email", "Email Newsletters"],
     ["/features/websites-ab-testing/", "feature-websites-ab-testing", "Websites + A/B Ideas"],
   ]) {
     assert.match(html, new RegExp(`<a[^>]*href="${escapeRegExp(href)}"[^>]*data-analytics-cta-id="${ctaId}"[^>]*data-analytics-cta-location="homepage-capabilities"[^>]*>${escapeRegExp(text)}<\\/a>`), `${label}: Task 6 contextual feature link ${text}`);
