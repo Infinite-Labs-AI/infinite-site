@@ -127,7 +127,12 @@
 }
 
 /* ---------- hero ---------- */
-/* headline is back to the original, so its width is too; only the sub is longer */
+/* The global site-header is sticky and sits in flow ABOVE .top (which paints the
+   lavender), so on load its 74px strip showed the white body. Pull .top up under
+   the header (and re-pad by the same amount) so the lavender fills that strip and
+   the hero content stays put. Header height: 74px desktop, 64px at <=900px. */
+.top{margin-top:-74px;padding-top:74px}
+@media(max-width:900px){.top{margin-top:-64px;padding-top:64px}}
 .hero .sub{max-width:565px}
 @media(max-width:760px){.hero .sub{max-width:340px}}
 .tier-price.is-text b{font-size:27px}
