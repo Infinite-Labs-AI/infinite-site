@@ -148,7 +148,7 @@ assert.deepEqual(
   ["/", ...featurePaths],
   "manifest must atomically activate the homepage plus all seven feature documents in binding order",
 );
-assert.equal(PUBLIC_ROUTES.length, 23, "final public graph has exactly 23 routes, including the noindex get-started gate and audit page");
+assert.equal(PUBLIC_ROUTES.length, 24, "final public graph has exactly 24 routes, including the noindex get-started gate and audit page");
 assert.deepEqual(
   PUBLIC_ROUTES.find((route) => route.path === "/get-started/"),
   {
@@ -173,7 +173,7 @@ assert.deepEqual(
     { label: "SEO + AEO", href: "/features/seo-aeo/", ctaId: "feature-seo-aeo" },
     { label: "X + Instagram Content", href: "/features/x-instagram-content/", ctaId: "feature-x-instagram-content" },
     { label: "AI Ads", href: "/features/ads/", ctaId: "feature-ads" },
-    { label: "Email — availability", href: "/features/email/", ctaId: "feature-email" },
+    { label: "Email Newsletters", href: "/features/email/", ctaId: "feature-email" },
     { label: "Websites + A/B Ideas", href: "/features/websites-ab-testing/", ctaId: "feature-websites-ab-testing" },
   ],
   "final Product footer column must activate all six bounded destinations",
