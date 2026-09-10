@@ -35,7 +35,7 @@ export function renderSiteHeader({ currentPath = "/" } = {}) {
   const burger = navLinks ? `<button class="site-header-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-header-nav"><span></span><span></span><span></span></button>` : "";
   return `<header class="site-header" data-site-header="public-route-graph-v1">
   <div class="site-header-inner">
-    <a class="site-header-logo" href="/" aria-label="Infinite home"><svg class="sh-mark" viewBox="0 0 30 16" aria-hidden="true"><path d="M15 8C15 3 6 3 6 8C6 13 15 13 15 8C15 3 24 3 24 8C24 13 15 13 15 8Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>infinite</a>
+    <a class="site-header-logo" href="/" aria-label="Infinite home"><img class="sh-mark" src="/logos/infinite-ring-clean-96.webp" width="28" height="28" alt="" decoding="async">infinite</a>
     ${nav}
     <div class="site-header-right">
       ${hubLinks}

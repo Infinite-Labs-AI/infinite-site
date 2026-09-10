@@ -59,9 +59,9 @@
   letter-spacing:-1.4px; color:var(--sh-ink); text-decoration:none;
   transition:color .2s;
 }
-/* the mark is an infinity loop (lemniscate); stroke inherits currentColor so it
-   inverts over dark sections like the wordmark does */
-.site-header-logo .sh-mark{display:block;flex:none;width:27px;height:14px;color:var(--sh-blue)}
+/* the mark is the infinite-ring icon — a dark cosmic tile, rounded so it reads
+   as an intentional icon chip beside the wordmark */
+.site-header-logo .sh-mark{display:block;flex:none;width:28px;height:28px;border-radius:7px}
 
 /* flat links — no capsule; current page gets a blue underline */
 .site-header-nav{display:flex; align-items:center; gap:24px}
