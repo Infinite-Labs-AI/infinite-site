@@ -3,6 +3,12 @@ import { FOOTER_COLUMNS } from "./public-site-manifest.mjs";
 export const SITE_FOOTER_STYLESHEET = "/assets/site-footer.css";
 
 export function renderSiteFooter({ status = "Public route graph" } = {}) {
+  // The Company links move into the bottom bar as one inline row (between the
+  // copyright and the status), so the main grid holds brand + the 5 remaining
+  // columns and fills its 6 tracks cleanly.
+  const gridColumns = FOOTER_COLUMNS.filter((column) => column.label !== "Company");
+  const company = FOOTER_COLUMNS.find((column) => column.label === "Company");
+  const companyLinks = company ? company.links.map(renderLink).join("\n      ") : "";
   return `<footer class="public-site-footer" data-site-footer="public-route-graph-v1">
   <div class="public-site-footer-inner">
     <div class="public-site-footer-brand">
@@ -10,10 +16,13 @@ export function renderSiteFooter({ status = "Public route graph" } = {}) {
       <strong>Infinite</strong>
       <p>AI CMO workspace for founders and small teams.</p>
     </div>
-    ${FOOTER_COLUMNS.map(renderColumn).join("\n    ")}
+    ${gridColumns.map(renderColumn).join("\n    ")}
   </div>
   <div class="public-site-footer-bottom">
     <span>© 2026 Ultima AI, Inc.</span>
+    ${company ? `<nav class="public-site-footer-bottom-links" aria-label="${escapeHtml(company.label)}">
+      ${companyLinks}
+    </nav>` : ""}
     <span>${escapeHtml(status)}</span>
   </div>
 </footer>`;

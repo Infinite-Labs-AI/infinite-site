@@ -98,13 +98,36 @@
   position: relative;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 12px 20px;
   max-width: 1180px;
   margin: 48px auto 0;
   color: #56616b;
   font-size: 12px;
   font-weight: 460;
+}
+
+/* Company links, moved into the bottom bar as one inline row */
+.public-site-footer-bottom-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 18px;
+}
+.public-site-footer-bottom-links a {
+  display: inline-block;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 460;
+  color: #56616b;
+}
+.public-site-footer-bottom-links a:hover {
+  color: #101418;
+  transform: none;
 }
 
 @media (max-width: 920px) {
