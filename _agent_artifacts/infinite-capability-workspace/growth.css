@@ -379,6 +379,13 @@
 .is-dfy .tier-bill{margin-bottom:3px}
 .hold-spots-inline{color:#f5f5f4a3;font-weight:500;margin:2px 0 0}
 .hold-spots-inline i{width:7px;height:7px;border-radius:50%;background:#f0956b;box-shadow:0 0 0 3px #f0956b2e}
+/* done-for-you: the strike $10,000 sits above /month beside the big price, so
+   $2,000 comes up and the block tightens */
+.tier-price.dfy-price{margin-top:8px;align-items:center;gap:11px;flex-wrap:nowrap}
+.dfy-price .price-side{display:flex;flex-direction:column;line-height:1.2;gap:1px}
+.dfy-price .price-side .price-per{font:400 13px/1.2 var(--sans);color:#f5f5f48c}
+/* more breathing room below the spots line, before the CTA */
+.is-dfy .tier-cta{margin-top:22px}
 .hold-spots i{width:6px;height:6px;border-radius:50%;background:#e0a05f;flex:none;
  box-shadow:0 0 0 3px #e0a05f2e}
 .hold-btn{position:relative;isolation:isolate;overflow:visible;display:flex;align-items:center;gap:10px;
