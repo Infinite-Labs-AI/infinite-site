@@ -1,77 +1,96 @@
-/* Shared sticky site header — one component across every public page (Variation B:
-   capsule nav). Self-contained: its own tokens + logo face, so it renders identically
-   no matter which page's stylesheet sits below it. */
+/* Shared sticky site header — one component across every public page.
+   Direction: FLOATING GLASS ISLAND — the bar detaches into a rounded, frosted
+   lavender-glass island that floats just below the top edge. Translucent
+   (backdrop-filter), so content blurs through it rather than a flat white fill.
+   Self-contained: its own tokens + logo face, so it renders identically no
+   matter which page's stylesheet sits below it. */
 @font-face{font-family:InfHeaderSerif;src:url('/fonts/instrument/InstrumentSerif-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
 
 .site-header{
-  --sh-ink:#242532; --sh-muted:#5c6070; --sh-blue:#3d3df5;
-  --sh-line:#e6e8f2; --sh-bg:#ffffffd9; --sh-capsule:#f3f4fb;
+  --sh-ink:#242532; --sh-muted:#5c6070; --sh-blue:#3d3df5; --sh-blue-dark:#2929cb;
+  --sh-line:#e6e8f2;
   position:sticky; top:0; z-index:100;
-  background:var(--sh-bg);
-  -webkit-backdrop-filter:saturate(1.4) blur(14px); backdrop-filter:saturate(1.4) blur(14px);
-  border-bottom:1px solid transparent;
-  transition:border-color .2s, box-shadow .2s;
+  background:transparent;                 /* wrapper is transparent; the island carries the glass */
+  padding:14px clamp(14px,3vw,26px) 0;    /* floats below the top edge, with side gutters */
+  transition:padding .2s;
   font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
-.site-header[data-scrolled="true"]{border-bottom-color:var(--sh-line);box-shadow:0 1px 0 #2a2f5108}
+
+/* the floating glass island */
 .site-header-inner{
-  max-width:1380px; margin:auto; height:68px; padding:0 40px;
+  position:relative;
+  max-width:1160px; margin:auto; height:60px; padding:0 12px 0 22px;
   display:flex; align-items:center; justify-content:space-between; gap:24px;
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(240,241,255,.36),rgba(228,230,252,.20));
+  -webkit-backdrop-filter:blur(20px) saturate(1.8); backdrop-filter:blur(20px) saturate(1.8);
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 10px 30px rgba(48,45,120,.14);
+  transition:box-shadow .2s, background .2s;
 }
+/* once the page scrolls, firm the shadow slightly so it reads over busier content */
+.site-header[data-scrolled="true"] .site-header-inner{
+  background:linear-gradient(180deg,rgba(240,241,255,.5),rgba(228,230,252,.34));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 12px 34px rgba(48,45,120,.2);
+}
+
 .site-header-logo{
   display:flex; align-items:center; gap:8px;
-  font-family:InfHeaderSerif,Georgia,serif; font-size:28px; line-height:1;
+  font-family:InfHeaderSerif,Georgia,serif; font-size:27px; line-height:1;
   letter-spacing:-1.4px; color:var(--sh-ink); text-decoration:none;
 }
 .site-header-logo .sh-mark{font-family:Arial,sans-serif;color:var(--sh-blue);font-size:22px;line-height:1}
 
-/* capsule nav */
-.site-header-nav{
-  display:flex; align-items:center; gap:4px;
-  background:var(--sh-capsule); border:1px solid var(--sh-line);
-  border-radius:999px; padding:7px 8px;
-}
+/* flat links — no capsule; current page gets a blue underline */
+.site-header-nav{display:flex; align-items:center; gap:24px}
 .site-header-nav a{
-  font-size:13px; color:var(--sh-muted); text-decoration:none; line-height:1;
-  padding:7px 13px; border-radius:999px; transition:background .15s,color .15s;
+  position:relative; font-size:13px; color:var(--sh-muted); text-decoration:none; line-height:1;
+  padding:6px 0; transition:color .15s;
 }
-.site-header-nav a:hover{color:var(--sh-ink);background:#fff}
-.site-header-nav a[aria-current="page"]{color:var(--sh-ink);font-weight:500;background:#fff;box-shadow:0 1px 2px #2a2f5114}
+.site-header-nav a:hover{color:var(--sh-ink)}
+.site-header-nav a[aria-current="page"]{color:var(--sh-ink);font-weight:500}
+.site-header-nav a[aria-current="page"]::after{
+  content:""; position:absolute; left:0; right:0; bottom:-3px; height:2px; border-radius:2px; background:var(--sh-blue);
+}
 
+/* blue primary CTA */
 .site-header-cta{
   display:inline-flex; align-items:center; gap:6px;
   font-size:13px; font-weight:500; color:#fff; text-decoration:none;
-  background:var(--sh-ink); border-radius:999px; padding:10px 18px;
+  background:var(--sh-blue); border-radius:999px; padding:10px 18px;
+  box-shadow:0 6px 16px #3d3df540, inset 0 1px 0 rgba(255,255,255,.3);
   transition:background .15s, transform .06s;
 }
-.site-header-cta:hover{background:#33374a}
+.site-header-cta:hover{background:var(--sh-blue-dark)}
 .site-header-cta:active{transform:translateY(1px)}
 .site-header a:focus-visible,.site-header-cta:focus-visible,.site-header-burger:focus-visible{outline:2px solid var(--sh-blue);outline-offset:3px}
 
 .site-header-right{display:flex;align-items:center;gap:12px}
 
 /* hamburger — hidden on desktop */
-.site-header-burger{display:none;flex-direction:column;justify-content:center;gap:4px;width:38px;height:38px;padding:0 9px;border:1px solid var(--sh-line);border-radius:9px;background:#fff;cursor:pointer}
+.site-header-burger{display:none;flex-direction:column;justify-content:center;gap:4px;width:38px;height:38px;padding:0 9px;border:1px solid rgba(255,255,255,.6);border-radius:9px;background:rgba(255,255,255,.4);cursor:pointer}
 .site-header-burger span{display:block;height:1.6px;background:var(--sh-ink);border-radius:2px;transition:transform .2s,opacity .2s}
 .site-header[data-menu-open="true"] .site-header-burger span:nth-child(1){transform:translateY(5.6px) rotate(45deg)}
 .site-header[data-menu-open="true"] .site-header-burger span:nth-child(2){opacity:0}
 .site-header[data-menu-open="true"] .site-header-burger span:nth-child(3){transform:translateY(-5.6px) rotate(-45deg)}
 
 @media(max-width:900px){
-  .site-header-inner{height:60px;padding:0 22px;gap:14px}
-  .site-header-logo{font-size:24px}
+  .site-header{padding:10px clamp(12px,3vw,18px) 0}
+  .site-header-inner{height:54px;padding:0 12px 0 16px;gap:14px}
+  .site-header-logo{font-size:23px}
   .site-header-burger{display:flex}
   .site-header-cta{padding:9px 14px;font-size:12px}
-  /* nav becomes a dropdown panel below the header */
+  /* nav drops as a frosted panel below the island */
   .site-header-nav{
-    display:none;position:absolute;top:100%;left:0;right:0;
-    flex-direction:column;align-items:stretch;gap:2px;border-radius:0;
-    padding:10px 18px 16px;background:#fff;border-top:1px solid var(--sh-line);
-    border-bottom:1px solid var(--sh-line);box-shadow:0 20px 40px #2a2f5112;
+    display:none; position:absolute; top:calc(100% + 8px); left:0; right:0;
+    flex-direction:column; align-items:stretch; gap:2px; border-radius:14px;
+    padding:10px; background:rgba(245,246,255,.9);
+    -webkit-backdrop-filter:blur(20px) saturate(1.6); backdrop-filter:blur(20px) saturate(1.6);
+    border:1px solid rgba(255,255,255,.6); box-shadow:0 20px 44px rgba(48,45,120,.18);
   }
   .site-header[data-menu-open="true"] .site-header-nav{display:flex}
-  .site-header-nav a{padding:12px 12px;border-radius:8px;font-size:15px}
-  .site-header-nav a[aria-current="page"]{background:var(--sh-capsule)}
+  .site-header-nav a{padding:12px;border-radius:8px;font-size:15px}
+  .site-header-nav a[aria-current="page"]::after{display:none}
+  .site-header-nav a[aria-current="page"]{background:rgba(61,61,245,.1)}
 }
-@media(prefers-reduced-motion:reduce){.site-header-burger span{transition:none}}
-@media(prefers-reduced-motion:reduce){.site-header,.site-header-nav a,.site-header-cta{transition:none}}
+@media(prefers-reduced-motion:reduce){.site-header-burger span,.site-header,.site-header-inner,.site-header-nav a,.site-header-cta{transition:none}}
