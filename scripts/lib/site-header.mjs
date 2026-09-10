@@ -3,7 +3,7 @@
 // routes (the homepage's Work/Stack/Proof in-page anchors do not generalise);
 // /#pricing and /#faq navigate home then scroll, so they work from any page.
 
-export const SITE_HEADER_STYLESHEET = "/assets/site-header.css";
+export const SITE_HEADER_STYLESHEET = "/assets/site-header.css?v=3";
 export const SITE_BASE_STYLESHEET = "/assets/site-base.css";
 
 const NAV = [
