@@ -546,12 +546,10 @@
 .infi-dash .hm-kpi-delta{font-size:12px;font-weight:600;color:#1a7f3c}
 .infi-dash .hero-chart{flex:1;min-width:0}
 .infi-dash .hero-chart svg{display:block;width:100%;height:auto}
-.infi-dash.anim .hm-line{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.7s cubic-bezier(.22,1,.36,1)}
-.infi-dash.anim .hm-area{opacity:0;transition:opacity 1.1s ease .5s}
-.infi-dash.anim .hm-dot{opacity:0;transition:opacity .5s ease 1.5s}
-.infi-dash.anim.in-view .hm-line{stroke-dashoffset:0}
-.infi-dash.anim.in-view .hm-area,.infi-dash.anim.in-view .hm-dot{opacity:1}
-@media(prefers-reduced-motion:reduce){.infi-dash.anim .hm-line{stroke-dashoffset:0;transition:none}.infi-dash.anim .hm-area,.infi-dash.anim .hm-dot{opacity:1;transition:none}}
+/* the chart rises up from the baseline, driven frame-by-frame by the same JS as the
+   revenue count-up (chart height == the revenue value) so they climb together */
+.infi-dash.anim .hm-plot{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(.58);will-change:transform}
+@media(prefers-reduced-motion:reduce){.infi-dash.anim .hm-plot{transform:none}}
 .infi-dash.anim.in-view .hm-ping{transform-box:fill-box;transform-origin:center;animation:hm-ping 2.4s ease-out 1.7s infinite}
 @keyframes hm-ping{0%{transform:scale(.5);opacity:.4}70%{transform:scale(2.1);opacity:0}100%{transform:scale(2.1);opacity:0}}
 @media(prefers-reduced-motion:reduce){.infi-dash .hm-ping{animation:none!important}}
