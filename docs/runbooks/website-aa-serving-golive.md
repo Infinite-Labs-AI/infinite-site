@@ -121,6 +121,21 @@ enroll + beacon; explicit deny ⇒ neither; DNT ⇒ neither and no cookie; GPC �
   `rehearse` and `launch` refuse `connection_unavailable`. The grant is what lets the engine
   set `INFINITE_EXPERIMENTS_ENABLED` and redeploy production itself
   (`hosting/control.ts:179` `setSwitch`, `:213` `redeployProduction`).
+  - ⚠️ **Grant SCOPE is not recorded in the DB** (`website_host_connections` stores only an
+    opaque `encrypted_grant`; `status='connected'` proves only that the OAuth handshake
+    completed). The grant MUST carry **Environment Variables: read+write** AND
+    **Deployments: write** on the Vercel integration for account `team_kpHrEqBuuxfgfiIw9p80Rchz`
+    / project `prj_ouLsgX7HVm33TQjXNvN8ZoVVcJQp`. **Confirm both scopes on the Vercel dashboard
+    BEFORE the watched crossing** (River/Athena) — the engine cannot self-check them
+    crossing-free, and a missing scope surfaces only mid-rehearse: `setSwitch` →
+    `HostingError access_denied` (`control.ts` `requireEnvWriteScope`) if env-write is absent,
+    or `redeployProduction` fails if deploy scope is absent.
+  - ⚠️ **`verified_commit` must be current, not stale.** `redeployProduction` deploys ONLY
+    `binding.verifiedCommit` (`control.ts:210` `commit_not_verified`). As of this writing the
+    connection's `verified_commit` is a **pre-config** commit and `setup_status='needs_deployment'`
+    — so the connection is NOT crossing-ready as-is. It must be advanced to the config-carrying
+    merge commit and its setup completed — see **§3.5** (done AFTER the dormant merge, BEFORE
+    §4/§5).
 
 **SITE Vercel env** (project `prj_ouLsgX7HVm33TQjXNvN8ZoVVcJQp`), production target only:
 
@@ -255,6 +270,36 @@ curl -sS -o /dev/null -w '%{http_code}\n' https://infinite.fast/__infinite_exper
 
 If the digest does not match `originalContentSha256`, production is not serving the bytes
 `config.mjs` froze — do not proceed to §4.
+
+---
+
+## 3.5 Re-verify the hosting connection against the merge commit (before create/rehearse)
+
+**Why (load-bearing, easy to miss).** §5's rehearse and §6's go-live redeploy production by
+telling the engine to deploy `binding.verifiedCommit` (`control.ts:210`, `:213`
+`redeployProduction`) — NOT "whatever main is now". If the hosting connection's
+`verified_commit` still points at a **pre-config** commit (its state before this A/A branch
+landed; see §1), the engine's rehearse/launch redeploy would ship the **pre-config homepage**
+→ no bootstrap, no marked arms → `verifyArmsServed`/`verifyOriginalServed` never match →
+`rehearse` never resolves → `assessLaunch` refuses. The dormant merge (§3) advances *main*, but
+it does NOT advance the hosting connection's `verified_commit` on its own.
+
+**Step (operator, prod state change — NOT crossing-free; do AFTER §3, BEFORE §4).** Re-verify /
+complete the hosting connection so that:
+- `verified_commit` == the config-carrying **dormant-merge commit** on `infinite-site` `main`
+  (the commit §3 produced — the one whose build carries `config.mjs` + the bootstrap), and
+- `setup_status` advances off `needs_deployment` to a fully-connected deploy-ready state.
+
+Run the engine's verify-hosting flow for the connection (the same path that set `verified_commit`
+originally) against the merge commit, then confirm the DB row:
+```
+# read-only confirm after re-verify:
+#   website_host_connections.verified_commit == <the §3 dormant-merge SHA on infinite-site main>
+#   website_host_connections.setup_status    == connected/ready (not 'needs_deployment')
+```
+If `verified_commit` is not advanced here, STOP — do not proceed to §4/§5 (the rehearsal would
+redeploy the pre-config page and fail). This step + the scope confirmation in §1 are the two
+hosting prerequisites that gate the whole watched crossing.
 
 ---
 
