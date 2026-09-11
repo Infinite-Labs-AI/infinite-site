@@ -49,6 +49,36 @@ if (!manifest.experiments.length) {
 }
 
 const siteSourceKey = process.env.INFINITE_SITE_SOURCE_KEY;
+
+// PROD-GATE. A populated manifest pins the REAL production homepage bytes and binds the arms to the
+// live pixel's source key. Reproducing those bytes — and therefore building/verifying the arms —
+// requires BOTH a production build (VERCEL_ENV=production, so inject-analytics.cjs:14 embeds the
+// site source key and the prod pixel ids) AND the INFINITE_SITE_SOURCE_KEY secret itself. Vercel's
+// production deploy has both; a non-prod build does NOT:
+//   • the .github/scripts/test-*.mjs contract suite builds with VERCEL_ENV=production but no
+//     INFINITE_SITE_SOURCE_KEY (a dormant fixture), so the arm build would throw at
+//     experiment-build.mjs:88 for the missing key;
+//   • a build that has the key but VERCEL_ENV!=="production" drops the key from the analytics tag
+//     (inject-analytics.cjs:14), so its homepage bytes can never match the prod-pinned manifest and
+//     assertEmitterMatch would throw on the wrong target.
+// Either way the throw fires BEFORE dist is finished and has nothing to say about production. So a
+// non-prod build behaves like the dormant (empty-manifest) case: it does NOT build arms, but it
+// STILL verifies the committed config.mjs is exactly the emitter output for its own committed
+// manifest — a hand-edit to the hosts/format/structure still fails closed. The full arm build +
+// fresh-emitter equality + A/A byte-identity below run ONLY on the production/deploy path, so the
+// HIGH-1 guarantee (config.mjs must match the real prod build byte-for-byte, and the prod build
+// fails closed on any homepage-bytes drift) is unchanged.
+const isProductionServingBuild =
+  process.env.VERCEL_ENV === "production" && /^site_[A-Za-z0-9_-]+$/.test(siteSourceKey || "");
+if (!isProductionServingBuild) {
+  assertEmitterMatch(manifest);
+  console.log(
+    "[experiments] non-production build (VERCEL_ENV!=production or no INFINITE_SITE_SOURCE_KEY) — " +
+      "arms not built; committed config.mjs verified as emitter output for its manifest",
+  );
+  process.exit(0);
+}
+
 const { manifest: fresh, files } = buildArmsIntoDist({
   repoRoot,
   distDir,

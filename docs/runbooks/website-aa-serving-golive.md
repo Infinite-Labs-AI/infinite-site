@@ -225,14 +225,21 @@ rebuilds the arms and asserts the re-emitted manifest is byte-identical to commi
 ## 3. Merge DORMANT to production (`INFINITE_EXPERIMENTS_ENABLED` unset)
 
 Open the PR from this branch into the site's default branch **with the authored
-`config.mjs` from §2**. Expect the PR's Vercel **preview** build to FAIL — preview bytes ≠
-production bytes (§2), and `experiment-build.mjs:87-89` requires `INFINITE_SITE_SOURCE_KEY`
-which preview does not embed. That failure is the fail-closed check doing its job on the
-wrong target; it is not a signal about production. **There is no preview rehearsal**
-(the byte divergence and the create ordering in §4 both break it). Merge; production
-auto-deploys via Vercel; the production build must be GREEN (`[experiments] built 2 arm
-file(s) …; config.mjs verified` in the build log — a red production build means §2 was not
-production-identical: production keeps the previous deployment, go back to §2).
+`config.mjs` from §2**. Arm-building and the prod-hash `assertEmitterMatch` are **prod-gated**
+(`build-experiment-artifacts.mjs`): they run only when the build is BOTH `VERCEL_ENV=production`
+AND carries a valid `INFINITE_SITE_SOURCE_KEY` — i.e. Vercel's production deploy and nothing else.
+Any other build (the `.github/scripts/test-*.mjs` "Local contract" CI suite, and the Vercel
+**preview** deploy, neither of which embeds the pixel secret) instead behaves like the dormant
+empty-manifest case: it builds NO arms but still verifies the committed `config.mjs` is exactly the
+emitter output for its own manifest, so a hand-edit still fails closed. The preview deploy no longer
+red-fails at `experiment-build.mjs` on the missing key, and the CI contract tests stay green — the
+prod-hash equality that preview/CI could never satisfy simply does not run off the production path.
+**There is no preview rehearsal** (the byte divergence and the create ordering in §4 both break it).
+Merge; production auto-deploys via Vercel; the production build must be GREEN (`[experiments] built
+2 arm file(s) …; config.mjs verified` in the build log — a red production build means §2 was not
+production-identical: production keeps the previous deployment, go back to §2). A production build
+that logs `[experiments] non-production build …` means `VERCEL_ENV`/`INFINITE_SITE_SOURCE_KEY` were
+not set on the prod target — fix the env (§1) and redeploy; do not treat that as go-live.
 
 **What "dormant" now means — accurately.** With `INFINITE_EXPERIMENTS_ENABLED` unset the
 router passes every visitor to the original page (`runtime.mjs:130` `pass('disabled')`),
