@@ -25,10 +25,14 @@ import { buildExperimentArtifacts } from "../../lib/infinite-experiments/build-a
 export const CLIENT_PUBLIC_PATH = "assets/infinite-experiments/client.mjs";
 
 /** The one-line bootstrap injected into every served homepage/arm. It never initialises, resets or
- * reconfigures the site's own analytics — it only bridges the EXISTING consent decision (stored key
- * infinite_analytics_consent + the infinite:analytics-consent-change event) into the experiment
- * consent cookie and posts one exposure beacon per person per revision. getVisitorId reuses the
- * Infinite pixel's anonymousId (window.__infiniteHandoffContext) so exposure joins the pixel. */
+ * reconfigures the site's own analytics and adds NO UI and NO new storage — it reuses the site's
+ * EXISTING consent apparatus verbatim: the stored key infinite_analytics_consent and the
+ * infinite:analytics-consent-change event that already gate GA4/PostHog/pixel
+ * (.github/scripts/inject-analytics.cjs __infiniteConsentGate). consentMode "not_required" mirrors
+ * that gate's opt-out model EXACTLY: a fresh visitor with no prior interaction records on load; an
+ * explicit stored "denied" or a DNT/GPC signal suppresses the beacon (the client's own decision()
+ * reads both). getVisitorId reuses the Infinite pixel's anonymousId (window.__infiniteHandoffContext)
+ * so exposure joins the pixel. */
 export function clientBootstrapSnippet(siteSourceKey) {
   return [
     '<script type="module">',
@@ -36,7 +40,9 @@ export function clientBootstrapSnippet(siteSourceKey) {
     "createExperimentClient({",
     `  siteSourceKey: ${JSON.stringify(siteSourceKey)},`,
     '  personCookieName: "__Host-infinite-person",',
-    '  consentMode: "required",',
+    // Opt-out, matching the site's not_required analytics policy: enroll/record on load unless the
+    // visitor has explicitly opted out (infinite_analytics_consent="denied") or sends DNT/GPC.
+    '  consentMode: "not_required",',
     '  consentStorageKey: "infinite_analytics_consent",',
     '  consentCookie: { name: "infinite_experiment_consent", grantedValue: "granted", deniedValue: "denied" },',
     "  getVisitorId: function () {",

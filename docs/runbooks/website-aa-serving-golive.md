@@ -52,12 +52,24 @@ register a proof manifest** for the revision: `proof_required` stays false, the
 beacon is accepted and recorded unverified (HTTP 202, `route.ts:44-46`). Registering
 a manifest would make the same beacon `invalid_exposure` (`route.ts:113-114`).
 
-**Consent gotcha.** The site's analytics policy is `not_required`
-(`.github/scripts/inject-analytics.cjs:47`) but the serving router's `config.mjs`
-is `consentMode:"required"`. So the A/A **only enrolls visitors who explicitly
-grant** via the site banner (event `infinite:analytics-consent-change` / storage
-`infinite_analytics_consent`). Undecided visitors get the original page and no
-assignment. Expect lower enrollment than raw traffic; this is intended and safe.
+**Consent (opt-out, mirrors the site — no new UI).** The site's analytics are
+`not_required` (`inject-analytics.cjs:47`) with an opt-out state machine that
+already gates GA4/PostHog/pixel (`inject-analytics.cjs:224-241`
+`__infiniteConsentGate`): a fresh visitor is collected **on load**; an explicit
+stored `infinite_analytics_consent="denied"` or a DNT/GPC signal is not. The
+serving mirrors this **exactly** and adds **no banner, no prompt, no new storage**:
+- the router is constructed with `consentMode:"not_required"`
+  (`middleware.js`, overriding the emitter's hard-coded `"required"`, which config.mjs
+  keeps as pure emitter output) → a fresh visitor **enrolls on the first request**;
+  an `infinite_experiment_consent="denied"` cookie ⇒ `consent_denied`, a DNT/GPC
+  header ⇒ `privacy_signal` (`runtime-source.ts:148-150`);
+- the injected client runs with `consentMode:"not_required"` and reads the site's
+  EXISTING key `infinite_analytics_consent` + DNT/GPC (`client-source.ts:34-49`) →
+  fresh visitor's beacon records on load (`consentState:"not_required"`); an
+  explicit opt-out suppresses the beacon and expires the person/assignment cookies.
+
+Verified locally: fresh visitor ⇒ enroll + beacon on load; `denied` cookie / DNT /
+GPC ⇒ no enroll; opted-out client ⇒ no beacon + cookies cleared.
 
 ---
 

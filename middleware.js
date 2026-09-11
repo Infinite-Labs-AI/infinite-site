@@ -246,7 +246,17 @@ function siteMiddleware(request) {
 // arm's private artifact — but only for an eligible document navigation to a configured page while
 // enabled. Every other request, and every doubt, yields the original page (pass), so a null/empty
 // manifest or an unset INFINITE_EXPERIMENTS_ENABLED / signing secret leaves the site untouched.
-const routeExperiment = createExperimentRouter({ ...deployment, manifest });
+//
+// CONSENT POLICY: this site's analytics are not_required (inject-analytics.cjs consent.mode
+// "not_required" + the __infiniteConsentGate opt-out state machine that already governs
+// GA4/PostHog/pixel). The single config.mjs emitter hard-codes consentMode "required", which is
+// the wrong policy for THIS site — it would only enroll visitors who explicitly grant. We override
+// it to "not_required" at construction (config.mjs stays pure emitter output) so the serving layer
+// mirrors the site EXACTLY: a fresh visitor is enrolled on the first request, while an explicit
+// opt-out (an infinite_experiment_consent="denied" cookie the client bridges from the site's stored
+// infinite_analytics_consent="denied") and a DNT/GPC signal are still refused (consent_denied /
+// privacy_signal). No new UI, no new storage — only the site's existing consent state is read.
+const routeExperiment = createExperimentRouter({ ...deployment, consentMode: "not_required", manifest });
 
 export default composeExperimentMiddleware(siteMiddleware, routeExperiment, { next, rewrite });
 
