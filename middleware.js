@@ -1,5 +1,15 @@
-import { next } from "@vercel/functions";
+import { next, rewrite } from "@vercel/functions";
 import { KNOWN_DOCUMENT_PATHS as MANIFEST_DOCUMENT_PATHS } from "./scripts/lib/public-site-manifest.mjs";
+// Infinite page-experiments serving layer (dormant install packet, lib/infinite-experiments/).
+// composeExperimentMiddleware wraps the site middleware below and only ever acts once the site
+// middleware has already returned a pass-through (`x-middleware-next`) response — so auth,
+// redirects, the /download 307 and the document-marker lane keep exact precedence. With
+// config.mjs carrying an empty manifest, or INFINITE_EXPERIMENTS_ENABLED unset, or the signing
+// secret absent, the router falls through to the original page for every visitor: the wrapped
+// middleware is byte-for-byte the old one until an experiment is both configured and enabled.
+import { composeExperimentMiddleware } from "./lib/infinite-experiments/vercel.mjs";
+import { createExperimentRouter } from "./lib/infinite-experiments/runtime.mjs";
+import { deployment, manifest } from "./lib/infinite-experiments/config.mjs";
 
 const BOT_UA = /bot|crawler|spider|preview|headless|lighthouse|curl|wget/i;
 // CLI/tooling agents (mirrors the drain's learned list, 2026-08-04): classified before BOT_UA
@@ -214,7 +224,7 @@ async function documentMarkerThenNext(request, path) {
   return next();
 }
 
-export default function middleware(request) {
+function siteMiddleware(request) {
   const path = normalizedPath(request.url);
   if (path === "/download") {
     // LIVE-TEST FINDING (2026-08-18): on this static deployment a vercel.json /download redirect
@@ -230,6 +240,28 @@ export default function middleware(request) {
   if (isProductionDocumentNavigation(request, path)) return documentMarkerThenNext(request, path);
   return next();
 }
+
+// The router snapshots config.mjs (deployment env + the frozen manifest) once per isolate. It
+// mints the __Host-infinite-person cookie, buckets 50/50 by HMAC and rewrites to the assigned
+// arm's private artifact — but only for an eligible document navigation to a configured page while
+// enabled. Every other request, and every doubt, yields the original page (pass), so a null/empty
+// manifest or an unset INFINITE_EXPERIMENTS_ENABLED / signing secret leaves the site untouched.
+//
+// CONSENT POLICY: this site's analytics are not_required (inject-analytics.cjs consent.mode
+// "not_required" + the __infiniteConsentGate opt-out state machine that already governs
+// GA4/PostHog/pixel). The single config.mjs emitter hard-codes consentMode "required", which is
+// the wrong policy for THIS site — it would only enroll visitors who explicitly grant. We override
+// it to "not_required" at construction (config.mjs stays pure emitter output) so the serving layer
+// mirrors the site EXACTLY: a fresh visitor is enrolled on the first request, while an explicit
+// opt-out (an infinite_experiment_consent="denied" cookie the client bridges from the site's stored
+// infinite_analytics_consent="denied") and a DNT/GPC signal are still refused (consent_denied /
+// privacy_signal). No new UI, no new storage — only the site's existing consent state is read.
+// The options are exported so test-experiment-consent.mjs can pin the override (the spread ORDER is
+// the policy: `consentMode` must follow `...deployment`); the router snapshots them at construction.
+export const EXPERIMENT_ROUTER_OPTIONS = { ...deployment, consentMode: "not_required", manifest };
+const routeExperiment = createExperimentRouter(EXPERIMENT_ROUTER_OPTIONS);
+
+export default composeExperimentMiddleware(siteMiddleware, routeExperiment, { next, rewrite });
 
 export const config = {
   runtime: "edge",

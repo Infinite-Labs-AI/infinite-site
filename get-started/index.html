@@ -464,6 +464,14 @@
       // rest silently, never a 400), so nothing malformed leaves the browser either.
       var FB_COOKIE = /^fb\.[0-9]{1,2}\.[0-9]{1,20}\.[A-Za-z0-9_%.-]{1,512}$/;
       var GCLID = /^[A-Za-z0-9_-]{1,512}$/;
+      // Website A/B attribution: the serving layer (installed later) sets a first-party
+      // __Host-infinite-person cookie identifying visitor+arm. When present we pass its value as
+      // experimentPersonId so the cloud can join this sign-in to the exposure by the SAME one-way key
+      // (site-authentication.ts HMACs it into handoff_claims.experiment_person_key; it is never stored
+      // raw). Shape mirrors the cloud parser EXACTLY (handoff-claims.ts EXPERIMENT_PERSON_ID) so nothing
+      // malformed leaves the browser: a bad value would reject the whole claim, so we omit unless it is
+      // exactly 32 lowercase hex. Absent cookie ⇒ no field ⇒ strict no-op (serving isn't installed yet).
+      var PERSON_ID = /^[a-f0-9]{32}$/;
       function cookieValue(name) {
         try {
           var parts = String(document.cookie || "").split(";");
@@ -485,10 +493,19 @@
         if (GCLID.test(gclid)) body.gclid = gclid;
         return body;
       }
+      // First-party experiment person id — analogous to the anonymousId/sessionId handoff ids, NOT an
+      // ad-network click id, so it is not gated on ad consent (the serving layer decides whether the
+      // cookie exists at all). Defensive: cookieValue already try/catches; the shape check omits the
+      // field whenever the cookie is absent ("") or malformed, matching the cloud parser's contract.
+      function experimentPerson(body) {
+        var person = cookieValue("__Host-infinite-person");
+        if (PERSON_ID.test(person)) body.experimentPersonId = person;
+        return body;
+      }
       function claimBody(body) {
         var attribution = campaignAttribution();
         for (var key in attribution) body[key] = attribution[key];
-        return adClickIds(handoffIds(body));
+        return experimentPerson(adClickIds(handoffIds(body)));
       }
       function authStorage() {
         return {

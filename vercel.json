@@ -122,6 +122,10 @@
       "destination": "https://api.ultima.inc/api/analytics/events/collect"
     },
     {
+      "source": "/infinite/experiment",
+      "destination": "https://api.ultima.inc/api/site-optimization/exposure"
+    },
+    {
       "source": "/infinite/auth/otp",
       "destination": "https://api.ultima.inc/api/auth/otp"
     },

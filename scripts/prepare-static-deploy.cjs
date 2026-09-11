@@ -176,6 +176,18 @@ execFileSync(process.execPath, [path.join(repoRoot, ".github/scripts/inject-anal
 });
 normalizeApexAbsoluteUrls(distDir);
 
+// LAST: the Infinite page-experiments post-build step. It runs on the fully assembled, analytics-
+// injected, apex-normalized dist/index.html — buildExperimentArtifacts must see the exact final
+// bytes a visitor receives. With the shipped empty manifest it only verifies config.mjs and builds
+// nothing (the site is byte-for-byte unchanged); once an experiment is authored it injects the
+// exposure client and builds the immutable control/test arms into dist. Runs as an ESM child
+// because this file is CJS.
+execFileSync(process.execPath, [path.join(repoRoot, "scripts/build-experiment-artifacts.mjs")], {
+  cwd: repoRoot,
+  env: process.env,
+  stdio: "inherit",
+});
+
 function copyFromArtifact(sourceEntry, targetEntry) {
   copyPath(path.join(artifactDir, sourceEntry), path.join(distDir, targetEntry));
 }
