@@ -256,7 +256,10 @@ function siteMiddleware(request) {
 // opt-out (an infinite_experiment_consent="denied" cookie the client bridges from the site's stored
 // infinite_analytics_consent="denied") and a DNT/GPC signal are still refused (consent_denied /
 // privacy_signal). No new UI, no new storage — only the site's existing consent state is read.
-const routeExperiment = createExperimentRouter({ ...deployment, consentMode: "not_required", manifest });
+// The options are exported so test-experiment-consent.mjs can pin the override (the spread ORDER is
+// the policy: `consentMode` must follow `...deployment`); the router snapshots them at construction.
+export const EXPERIMENT_ROUTER_OPTIONS = { ...deployment, consentMode: "not_required", manifest };
+const routeExperiment = createExperimentRouter(EXPERIMENT_ROUTER_OPTIONS);
 
 export default composeExperimentMiddleware(siteMiddleware, routeExperiment, { next, rewrite });
 
