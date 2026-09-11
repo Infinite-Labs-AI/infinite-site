@@ -61,7 +61,6 @@ process.env.POSTHOG_PROJECT_TOKEN ||=
 
 const deployEntries = [
   "agents",
-  "features",
   "compare",
   "pricing",
   "get-started",

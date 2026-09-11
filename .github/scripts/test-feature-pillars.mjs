@@ -143,12 +143,8 @@ const pages = [
 const shippedSections = ["What it does", "Evidence", "Where the data comes from", "Review boundary", "Limitations", "Related"];
 const featurePaths = pages.map((page) => page.path);
 
-assert.deepEqual(
-  PUBLIC_ROUTES.slice(0, 8).map((route) => route.path),
-  ["/", ...featurePaths],
-  "manifest must atomically activate the homepage plus all seven feature documents in binding order",
-);
-assert.equal(PUBLIC_ROUTES.length, 24, "final public graph has exactly 24 routes, including the noindex get-started gate and audit page");
+assert.equal(PUBLIC_ROUTES[0]?.path, "/", "homepage is the first public route");
+assert.equal(PUBLIC_ROUTES.length, 17, "final public graph has exactly 17 routes (feature pages removed; features live on the homepage)");
 assert.deepEqual(
   PUBLIC_ROUTES.find((route) => route.path === "/get-started/"),
   {
@@ -169,30 +165,18 @@ assert.deepEqual(
 assert.deepEqual(
   FOOTER_COLUMNS[0]?.links.map(({ label, href, ctaId }) => ({ label, href, ctaId })),
   [
-    { label: "AI Marketing Agents", href: "/features/ai-marketing-agents/", ctaId: "feature-ai-marketing-agents" },
-    { label: "SEO + AEO", href: "/features/seo-aeo/", ctaId: "feature-seo-aeo" },
-    { label: "X + Instagram Content", href: "/features/x-instagram-content/", ctaId: "feature-x-instagram-content" },
-    { label: "AI Ads", href: "/features/ads/", ctaId: "feature-ads" },
-    { label: "Email Newsletters", href: "/features/email/", ctaId: "feature-email" },
-    { label: "Websites + A/B Ideas", href: "/features/websites-ab-testing/", ctaId: "feature-websites-ab-testing" },
+    { label: "AI Marketing Agents", href: "/#inventory", ctaId: "home" },
+    { label: "SEO + AEO", href: "/#inventory", ctaId: "home" },
+    { label: "X + Instagram Content", href: "/#inventory", ctaId: "home" },
+    { label: "AI Ads", href: "/#inventory", ctaId: "home" },
+    { label: "Email Newsletters", href: "/#inventory", ctaId: "home" },
+    { label: "Websites + A/B Ideas", href: "/#inventory", ctaId: "home" },
   ],
-  "final Product footer column must activate all six bounded destinations",
+  "Product footer column links to the homepage channel inventory",
 );
 
-assert.ok(existsSync(join(repoRoot, "assets/feature-pages.css")), "shared feature-page CSS must exist");
-const css = read("assets/feature-pages.css");
-assert.match(css, /@media\s*\(max-width:\s*760px\)/, "feature pages need a mobile layout");
-assert.match(css, /--feature-text:\s*#14202b/i, "feature text token is the reviewed high-contrast value");
-assert.match(css, /--feature-muted:\s*#53616e/i, "feature muted token is the reviewed accessible value");
-assertFocusContrast(css);
-
-for (const page of pages) {
-  assert.ok(existsSync(join(repoRoot, page.file)), `${page.file} must exist`);
-  assertFeaturePage(read(page.file), page, `source ${page.path}`);
-}
-assertHubStatuses(read("features/index.html"), "source hub");
+// features live only on the homepage now — verify the six capability links there
 assertHomepageLinks(read("_agent_artifacts/infinite-option-4-desktop-tokens/index-scheme-wrangle.html"), "source homepage");
-assertLlmsRoles(read("llms.txt"), "source llms.txt");
 
 const dataset = await serveDatasetFixture();
 try {
@@ -212,15 +196,9 @@ try {
     },
     stdio: "inherit",
   });
-  for (const page of pages) {
-    const builtFile = page.path === "/features/" ? "dist/features/index.html" : `dist${page.path}index.html`;
-    assertFeaturePage(read(builtFile), page, `build ${page.path}`);
-  }
-  assertHubStatuses(read("dist/features/index.html"), "build hub");
-  assert.match(read("dist/features/index.html"), /AI CMO workspace for founders and small teams\./i, "built footer keeps the useful product description");
-  assert.doesNotMatch(read("dist/features/index.html"), /The public graph links/i, "built footer omits rejected public-graph copy");
   assertHomepageLinks(read("dist/index.html"), "build homepage");
-  assertLlmsRoles(read("dist/llms.txt"), "build llms.txt");
+  assert.match(read("dist/index.html"), /AI CMO workspace for founders and small teams\./i, "built footer keeps the useful product description");
+  assert.doesNotMatch(read("dist/index.html"), /The public graph links/i, "built footer omits rejected public-graph copy");
 } finally {
   dataset.close();
   rmSync(distDir, { recursive: true, force: true });
@@ -317,12 +295,12 @@ function assertHubStatuses(html, label) {
 function assertHomepageLinks(html, label) {
   assert.doesNotMatch(html, /Perplexity|TikTok/i, `${label}: no unshipped AEO engine or content connector claim`);
   for (const item of [
-    ["AI Marketing Agents", "/features/ai-marketing-agents/", "feature-ai-marketing-agents"],
-    ["SEO + AEO", "/features/seo-aeo/", "feature-seo-aeo"],
-    ["X + Instagram Content", "/features/x-instagram-content/", "feature-x-instagram-content"],
-    ["AI Ads", "/features/ads/", "feature-ads"],
-    ["Email Newsletters", "/features/email/", "feature-email"],
-    ["Websites + A/B Ideas", "/features/websites-ab-testing/", "feature-websites-ab-testing"],
+    ["AI Marketing Agents", "/#inventory", "feature-ai-marketing-agents"],
+    ["SEO + AEO", "/#inventory", "feature-seo-aeo"],
+    ["X + Instagram Content", "/#inventory", "feature-x-instagram-content"],
+    ["AI Ads", "/#inventory", "feature-ads"],
+    ["Email Newsletters", "/#inventory", "feature-email"],
+    ["Websites + A/B Ideas", "/#inventory", "feature-websites-ab-testing"],
   ]) {
     const [text, href, ctaId] = item;
     assert.match(
