@@ -27,13 +27,14 @@ export function applySiteGraph(distDir) {
     if (route.header !== false) {
       next = applySiteHeaderToHtml(next, renderSiteHeader({ currentPath: route.path }), {
         deferStylesheet: route.path === "/",
+        distDir,
       });
     }
     writeFileSync(htmlPath, next);
   }
 }
 
-export function applySiteHeaderToHtml(html, headerHtml, { deferStylesheet = false } = {}) {
+export function applySiteHeaderToHtml(html, headerHtml, { deferStylesheet = false, distDir } = {}) {
   // Strip each page family's existing header, plus our own on a re-run (idempotent),
   // then insert the shared header immediately after the opening <body> tag.
   const strippers = [
@@ -58,10 +59,10 @@ export function applySiteHeaderToHtml(html, headerHtml, { deferStylesheet = fals
   if (!bodyOpen) throw new Error("Cannot inject site header into HTML without <body>");
   const withHeader = stripped.replace(bodyOpen[0], `${bodyOpen[0]}\n${headerHtml}\n`);
 
-  return ensureSiteHeaderStylesheet(withHeader, { deferStylesheet });
+  return ensureSiteHeaderStylesheet(withHeader, { deferStylesheet, distDir });
 }
 
-function ensureSiteHeaderStylesheet(html, { deferStylesheet = false } = {}) {
+function ensureSiteHeaderStylesheet(html, { deferStylesheet = false, distDir } = {}) {
   if (!html.includes("</head>")) {
     throw new Error("Cannot inject site header stylesheet into HTML without </head>");
   }
@@ -71,6 +72,20 @@ function ensureSiteHeaderStylesheet(html, { deferStylesheet = false } = {}) {
     stripped = stripped
       .replace(new RegExp(`\\s*<noscript>\\s*<link\\b[^>]*href=["']${escapeRegExp(href)}["'][^>]*>\\s*<\\/noscript>`, "g"), "")
       .replace(new RegExp(`\\s*<link\\b[^>]*rel=["']stylesheet["'][^>]*href=["']${escapeRegExp(href)}["'][^>]*>`, "g"), "");
+  }
+  // Idempotent on re-runs: drop any previously inlined shell CSS.
+  stripped = stripped.replace(/\n?\/\* SITE-SHELL-CRITICAL-START \*\/[\s\S]*?\/\* SITE-SHELL-CRITICAL-END \*\//g, "");
+  // The shared header (and its base tokens/fonts) is above the fold on every page.
+  // The homepage forbids render-blocking stylesheet <link>s AND caps itself to a single
+  // critical <style> block, so deferring the header CSS flashes an unstyled header on
+  // load. Merge the header + base CSS into the homepage's existing critical block — no
+  // new <style>, no blocking link, so the header paints styled on first paint. Other
+  // pages keep their render-blocking links.
+  if (deferStylesheet && distDir && stripped.includes("<style data-homepage-critical>")) {
+    const css = sheets
+      .map((href) => readFileSync(join(distDir, href.split("?")[0].replace(/^\//, "")), "utf8").trim())
+      .join("\n");
+    return stripped.replace("</style>", `\n/* SITE-SHELL-CRITICAL-START */\n${css}\n/* SITE-SHELL-CRITICAL-END */\n</style>`);
   }
   const linkFor = (href) =>
     deferStylesheet

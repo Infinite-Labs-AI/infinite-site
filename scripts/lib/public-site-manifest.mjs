@@ -203,6 +203,17 @@ export const PUBLIC_ROUTES = deepFreeze([
     priority: "0.7",
   }),
   route({
+    id: "pricing",
+    path: "/pricing/",
+    source: "pricing/index.html",
+    owner: "pricing",
+    title: "Infinite pricing",
+    llmsSummary: "Infinite pricing — Starter, Growth, and a done-for-you plan, with a full feature-by-feature comparison across all six growth channels.",
+    lastmod: "2026-09-11",
+    changefreq: "monthly",
+    priority: "0.8",
+  }),
+  route({
     id: "get-started",
     path: "/get-started/",
     source: "get-started/index.html",
@@ -275,7 +286,7 @@ export const FOOTER_COLUMNS = deepFreeze([
     internal("SEO + AEO", "/features/seo-aeo/", "feature-seo-aeo"),
     internal("X + Instagram Content", "/features/x-instagram-content/", "feature-x-instagram-content"),
     internal("AI Ads", "/features/ads/", "feature-ads"),
-    internal("Email — availability", "/features/email/", "feature-email"),
+    internal("Email Newsletters", "/features/email/", "feature-email"),
     internal("Websites + A/B Ideas", "/features/websites-ab-testing/", "feature-websites-ab-testing"),
   ]),
   footerColumn("Agents & Open Source", [

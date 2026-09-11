@@ -35,6 +35,7 @@ const expectedRoutes = [
   "/compare/infinite-vs-blaze/",
   "/compare/infinite-vs-okara/",
   "/compare/infinite-vs-ploy/",
+  "/pricing/",
   "/get-started/",
   "/audit/",
   "/startup-launch-videos/",
@@ -65,7 +66,7 @@ const expectedFooterColumns = Object.freeze([
     footerLink("SEO + AEO", "/features/seo-aeo/", "feature-seo-aeo"),
     footerLink("X + Instagram Content", "/features/x-instagram-content/", "feature-x-instagram-content"),
     footerLink("AI Ads", "/features/ads/", "feature-ads"),
-    footerLink("Email — availability", "/features/email/", "feature-email"),
+    footerLink("Email Newsletters", "/features/email/", "feature-email"),
     footerLink("Websites + A/B Ideas", "/features/websites-ab-testing/", "feature-websites-ab-testing"),
   ]),
   footerColumn("Agents & Open Source", [
@@ -223,7 +224,7 @@ function assertManifest() {
   assert.deepEqual(
     PUBLIC_ROUTES.map((route) => route.path),
     expectedRoutes,
-    "manifest must contain exactly the final 23 public document routes in canonical order",
+    "manifest must contain exactly the final 24 public document routes in canonical order",
   );
   assert.deepEqual(
     SITEMAP_ROUTES.map((route) => route.path),

@@ -7,6 +7,7 @@ export const SITE_HEADER_STYLESHEET = "/assets/site-header.css?v=4";
 export const SITE_BASE_STYLESHEET = "/assets/site-base.css";
 
 const NAV = [
+  { label: "Pricing", href: "/pricing/" },
   { label: "GTM Hub", href: "https://hub.infinite.fast/", external: true },
 ];
 
