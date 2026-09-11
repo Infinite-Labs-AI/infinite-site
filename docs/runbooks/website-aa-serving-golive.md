@@ -134,8 +134,8 @@ enroll + beacon; explicit deny ⇒ neither; DNT ⇒ neither and no cookie; GPC �
     `binding.verifiedCommit` (`control.ts:210` `commit_not_verified`). As of this writing the
     connection's `verified_commit` is a **pre-config** commit and `setup_status='needs_deployment'`
     — so the connection is NOT crossing-ready as-is. It must be advanced to the config-carrying
-    merge commit and its setup completed — see **§3.5** (done AFTER the dormant merge, BEFORE
-    §4/§5).
+    merge commit and its setup completed — see **§5.0** (done immediately BEFORE rehearse, AFTER
+    all merges including any §4 dates-correction re-merge).
 
 **SITE Vercel env** (project `prj_ouLsgX7HVm33TQjXNvN8ZoVVcJQp`), production target only:
 
@@ -273,36 +273,6 @@ If the digest does not match `originalContentSha256`, production is not serving 
 
 ---
 
-## 3.5 Re-verify the hosting connection against the merge commit (before create/rehearse)
-
-**Why (load-bearing, easy to miss).** §5's rehearse and §6's go-live redeploy production by
-telling the engine to deploy `binding.verifiedCommit` (`control.ts:210`, `:213`
-`redeployProduction`) — NOT "whatever main is now". If the hosting connection's
-`verified_commit` still points at a **pre-config** commit (its state before this A/A branch
-landed; see §1), the engine's rehearse/launch redeploy would ship the **pre-config homepage**
-→ no bootstrap, no marked arms → `verifyArmsServed`/`verifyOriginalServed` never match →
-`rehearse` never resolves → `assessLaunch` refuses. The dormant merge (§3) advances *main*, but
-it does NOT advance the hosting connection's `verified_commit` on its own.
-
-**Step (operator, prod state change — NOT crossing-free; do AFTER §3, BEFORE §4).** Re-verify /
-complete the hosting connection so that:
-- `verified_commit` == the config-carrying **dormant-merge commit** on `infinite-site` `main`
-  (the commit §3 produced — the one whose build carries `config.mjs` + the bootstrap), and
-- `setup_status` advances off `needs_deployment` to a fully-connected deploy-ready state.
-
-Run the engine's verify-hosting flow for the connection (the same path that set `verified_commit`
-originally) against the merge commit, then confirm the DB row:
-```
-# read-only confirm after re-verify:
-#   website_host_connections.verified_commit == <the §3 dormant-merge SHA on infinite-site main>
-#   website_host_connections.setup_status    == connected/ready (not 'needs_deployment')
-```
-If `verified_commit` is not advanced here, STOP — do not proceed to §4/§5 (the rehearsal would
-redeploy the pre-config page and fail). This step + the scope confirmation in §1 are the two
-hosting prerequisites that gate the whole watched crossing.
-
----
-
 ## 4. Create the experiment against PRODUCTION (prod DB write — NOT crossing-free)
 
 **Why create must come AFTER the dormant merge.** `create` freezes `controlArtifact =
@@ -350,6 +320,31 @@ live at launch time, and no human action can substitute for those receipts.
 ---
 
 ## 5. Rehearse ON PRODUCTION (the env-flip dance, spelled out)
+
+**§5.0 — FIRST, re-verify the hosting connection against the CURRENT site `main` HEAD (operator; prod state change; NOT crossing-free).**
+`rehearse` (and §6 go-live) redeploy production by telling the engine to deploy
+`binding.verifiedCommit` (`control.ts:210` `commit_not_verified`, `:213` `redeployProduction`) —
+NOT "whatever `main` is now". If the hosting connection's `verified_commit` points at any commit
+other than the one carrying the committed `config.mjs` + bootstrap, the rehearse/launch redeploy
+ships the **wrong** homepage → no marked arms / a non-original original → `verifyArmsServed` /
+`verifyOriginalServed` never match → `rehearse` never resolves → `assessLaunch` refuses. As of this
+writing `verified_commit` is a **pre-config** commit and `setup_status='needs_deployment'` (§1), so
+the connection is NOT crossing-ready as-is; and note **§4 can move `main` again** — if the engine's
+create-time `durationDays/attributionDays` differ from the frozen §2 window, you re-emit + re-commit
+`config.mjs` (same hashes, new window) and re-merge, which re-stales `verified_commit`. So do this
+re-verify **HERE, immediately before rehearse, AFTER all merges (incl. any §4 dates-correction)** —
+not right after §3, or it goes stale again.
+
+Re-verify / complete the hosting connection (the same engine verify-hosting flow that set
+`verified_commit` originally) against the **current `infinite-site` `main` HEAD**, then confirm:
+```
+# read-only confirm before rehearse:
+#   website_host_connections.verified_commit == <current infinite-site main HEAD (the committed config.mjs)>
+#   website_host_connections.setup_status    == connected/ready (not 'needs_deployment')
+```
+If `verified_commit` ≠ the current config-carrying main HEAD, STOP — do not rehearse (it would
+redeploy the wrong commit and fail). This step + the env-write/deploy scope confirmation in §1 are
+the two hosting prerequisites that gate the whole watched crossing.
 
 `rehearse` (`website-experiment.mts:435` → `service.ts:714-733` `rehearseRollback`) runs
 only from `ready` with no exposure yet recorded and no effect in flight. It is **one route
