@@ -18,13 +18,6 @@ const repoRoot = new URL("../..", import.meta.url).pathname;
 const distDir = join(repoRoot, "dist");
 const expectedRoutes = [
   "/",
-  "/features/",
-  "/features/ai-marketing-agents/",
-  "/features/seo-aeo/",
-  "/features/x-instagram-content/",
-  "/features/ads/",
-  "/features/email/",
-  "/features/websites-ab-testing/",
   "/agents/",
   "/tools/",
   "/tools/high-intent-lead-finder-template/",
@@ -62,12 +55,12 @@ const expectedRouteFields = [
 ];
 const expectedFooterColumns = Object.freeze([
   footerColumn("Product", [
-    footerLink("AI Marketing Agents", "/features/ai-marketing-agents/", "feature-ai-marketing-agents"),
-    footerLink("SEO + AEO", "/features/seo-aeo/", "feature-seo-aeo"),
-    footerLink("X + Instagram Content", "/features/x-instagram-content/", "feature-x-instagram-content"),
-    footerLink("AI Ads", "/features/ads/", "feature-ads"),
-    footerLink("Email Newsletters", "/features/email/", "feature-email"),
-    footerLink("Websites + A/B Ideas", "/features/websites-ab-testing/", "feature-websites-ab-testing"),
+    footerLink("AI Marketing Agents", "/#inventory", "home", "inventory"),
+    footerLink("SEO + AEO", "/#inventory", "home", "inventory"),
+    footerLink("X + Instagram Content", "/#inventory", "home", "inventory"),
+    footerLink("AI Ads", "/#inventory", "home", "inventory"),
+    footerLink("Email Newsletters", "/#inventory", "home", "inventory"),
+    footerLink("Websites + A/B Ideas", "/#inventory", "home", "inventory"),
   ]),
   footerColumn("Agents & Open Source", [
     footerLink("Agent Ecosystem", "/agents/", "agents"),
@@ -224,7 +217,7 @@ function assertManifest() {
   assert.deepEqual(
     PUBLIC_ROUTES.map((route) => route.path),
     expectedRoutes,
-    "manifest must contain exactly the final 24 public document routes in canonical order",
+    "manifest must contain exactly the final 17 public document routes in canonical order",
   );
   assert.deepEqual(
     SITEMAP_ROUTES.map((route) => route.path),
@@ -286,9 +279,10 @@ function assertManifest() {
 }
 
 function assertFooterHref(href, routePaths, label) {
-  if (href === "/download" || href === "/llms.txt" || href === "/sitemap.xml" || href === "/#pricing") return;
+  if (href === "/download" || href === "/llms.txt" || href === "/sitemap.xml") return;
   if (href.startsWith("/")) {
-    assert.ok(routePaths.has(href), `${label}: internal footer href must point at an existing manifest route: ${href}`);
+    const base = href.split("#")[0] || "/";
+    assert.ok(routePaths.has(base), `${label}: internal footer href must point at an existing manifest route: ${href}`);
     return;
   }
   assert.match(
@@ -373,8 +367,8 @@ function footerColumn(label, links) {
   return { label, links };
 }
 
-function footerLink(label, href, ctaId) {
-  return { label, href, ctaId, ctaLocation: "site-footer" };
+function footerLink(label, href, ctaId, requiredFragment) {
+  return { label, href, ctaId, ctaLocation: "site-footer", ...(requiredFragment ? { requiredFragment } : {}) };
 }
 
 function specialFooterLink(label, href) {

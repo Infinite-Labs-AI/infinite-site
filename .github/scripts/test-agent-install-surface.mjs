@@ -71,12 +71,12 @@ function assertHomepage(html, label) {
   });
   assert.match(html, /href="\/agents\/"[^>]*>Explore the agent ecosystem</, `${label}: Agents path is visible`);
   for (const [href, ctaId, text] of [
-    ["/features/ai-marketing-agents/", "feature-ai-marketing-agents", "AI Marketing Agents"],
-    ["/features/seo-aeo/", "feature-seo-aeo", "SEO + AEO"],
-    ["/features/x-instagram-content/", "feature-x-instagram-content", "X + Instagram Content"],
-    ["/features/ads/", "feature-ads", "AI Ads"],
-    ["/features/email/", "feature-email", "Email Newsletters"],
-    ["/features/websites-ab-testing/", "feature-websites-ab-testing", "Websites + A/B Ideas"],
+    ["/#inventory", "feature-ai-marketing-agents", "AI Marketing Agents"],
+    ["/#inventory", "feature-seo-aeo", "SEO + AEO"],
+    ["/#inventory", "feature-x-instagram-content", "X + Instagram Content"],
+    ["/#inventory", "feature-ads", "AI Ads"],
+    ["/#inventory", "feature-email", "Email Newsletters"],
+    ["/#inventory", "feature-websites-ab-testing", "Websites + A/B Ideas"],
   ]) {
     assert.match(html, new RegExp(`<a[^>]*href="${escapeRegExp(href)}"[^>]*data-analytics-cta-id="${ctaId}"[^>]*data-analytics-cta-location="homepage-capabilities"[^>]*>${escapeRegExp(text)}<\\/a>`), `${label}: Task 6 contextual feature link ${text}`);
   }
@@ -207,15 +207,15 @@ function assertLlms(text, label) {
   assert.match(text, /Dry-run never submits or spends a Qwoted credit/);
   assert.match(text, /normal run can submit at most one pitch and spend a credit/);
   assert.match(text, /synced growth data[\s\S]*local Postgres/i);
-  for (const [status, route, name] of [
-    ["Shipped", "/features/ai-marketing-agents/", "AI Marketing Agents"],
-    ["Shipped", "/features/seo-aeo/", "SEO + AEO"],
-    ["Shipped", "/features/x-instagram-content/", "X + Instagram Content"],
-    ["Shipped", "/features/ads/", "AI Ads"],
-    ["Current availability", "/features/email/", "Email"],
-    ["CRO + A/B test ideas", "/features/websites-ab-testing/", "Websites + A/B Ideas"],
+  for (const [status, name] of [
+    ["Shipped", "AI Marketing Agents"],
+    ["Shipped", "SEO + AEO"],
+    ["Shipped", "X + Instagram Content"],
+    ["Shipped", "AI Ads"],
+    ["Current availability", "Email"],
+    ["CRO + A/B test ideas", "Websites + A/B Ideas"],
   ]) {
-    assert.match(text, new RegExp(`- \\*\\*${escapeRegExp(status)}\\*\\* — \\[${escapeRegExp(name)}\\]\\(https:\\/\\/infinite\\.fast${escapeRegExp(route)}\\)`), `${label}: status-aware feature role ${name}`);
+    assert.match(text, new RegExp(`- \\*\\*${escapeRegExp(name)}\\*\\* \\(${escapeRegExp(status)}\\):`), `${label}: status-aware feature role ${name}`);
   }
 }
 

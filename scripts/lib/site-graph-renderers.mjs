@@ -28,12 +28,14 @@ ${routeLine("/tools/", "Tools")}
 
 ## Features and availability
 
-- **Shipped** — [AI Marketing Agents](${absoluteSiteUrl("/features/ai-marketing-agents/")}): ${routeByPath.get("/features/ai-marketing-agents/")?.llmsSummary}
-- **Shipped** — [SEO + AEO](${absoluteSiteUrl("/features/seo-aeo/")}): ${routeByPath.get("/features/seo-aeo/")?.llmsSummary}
-- **Shipped** — [X + Instagram Content](${absoluteSiteUrl("/features/x-instagram-content/")}): ${routeByPath.get("/features/x-instagram-content/")?.llmsSummary}
-- **Shipped** — [AI Ads](${absoluteSiteUrl("/features/ads/")}): ${routeByPath.get("/features/ads/")?.llmsSummary}
-- **Current availability** — [Email](${absoluteSiteUrl("/features/email/")}): ${routeByPath.get("/features/email/")?.llmsSummary}
-- **CRO + A/B test ideas** — [Websites + A/B Ideas](${absoluteSiteUrl("/features/websites-ab-testing/")}): ${routeByPath.get("/features/websites-ab-testing/")?.llmsSummary}
+All six channels run from the homepage — see [the channel inventory](${absoluteSiteUrl("/#inventory")}):
+
+- **AI Marketing Agents** (Shipped): Scoped buyer-intent scanning, evidence, scoring, and lead triage.
+- **SEO + AEO** (Shipped): Metered research, review, publishing, search reporting, and sampled AI-citation workflow.
+- **X + Instagram Content** (Shipped): X and Instagram research, bounded drafting, human review, and supported publishing.
+- **AI Ads** (Shipped): Meta-first evidence, paused proposals, confirmations, policy guards, Google Ads infrastructure, and history.
+- **Email** (Current availability): Launch requirements for retained email operations infrastructure; not a public product surface.
+- **Websites + A/B Ideas** (CRO + A/B test ideas): Landing-page CRO planning and test ideas for existing pages; not a builder or live A/B-test runtime.
 
 ## Pricing
 

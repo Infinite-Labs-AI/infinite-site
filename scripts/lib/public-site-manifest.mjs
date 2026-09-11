@@ -16,83 +16,6 @@ export const PUBLIC_ROUTES = deepFreeze([
     priority: "1.0",
   }),
   route({
-    id: "features",
-    path: "/features/",
-    source: "features/index.html",
-    owner: "features",
-    title: "Infinite Features | Infinite",
-    llmsSummary: "Status-aware map of Infinite's shipped workflows and current availability.",
-    lastmod: "2026-08-30",
-    changefreq: "monthly",
-    priority: "0.8",
-  }),
-  route({
-    id: "feature-ai-marketing-agents",
-    path: "/features/ai-marketing-agents/",
-    source: "features/ai-marketing-agents/index.html",
-    owner: "features",
-    title: "AI Marketing Agents for Founders | Infinite",
-    llmsSummary: "Shipped AI CMO workflow for scoped buyer-intent scanning, evidence, scoring, and lead triage.",
-    lastmod: "2026-08-30",
-    changefreq: "monthly",
-    priority: "0.8",
-  }),
-  route({
-    id: "feature-seo-aeo",
-    path: "/features/seo-aeo/",
-    source: "features/seo-aeo/index.html",
-    owner: "features",
-    title: "SEO + AEO Automation for Founders | Infinite",
-    llmsSummary: "Shipped metered research, review, publishing, search reporting, and sampled AI-citation workflow.",
-    lastmod: "2026-08-30",
-    changefreq: "monthly",
-    priority: "0.8",
-  }),
-  route({
-    id: "feature-x-instagram-content",
-    path: "/features/x-instagram-content/",
-    source: "features/x-instagram-content/index.html",
-    owner: "features",
-    title: "X + Instagram Content Generation for Founders | Infinite",
-    llmsSummary: "Shipped X and Instagram research, bounded drafting, human review, and supported publishing workflow.",
-    lastmod: "2026-08-30",
-    changefreq: "monthly",
-    priority: "0.8",
-  }),
-  route({
-    id: "feature-ads",
-    path: "/features/ads/",
-    source: "features/ads/index.html",
-    owner: "features",
-    title: "AI Ad Operations for Meta and Google Ads | Infinite",
-    llmsSummary: "Shipped Meta-first evidence, paused proposals, confirmations, policy guards, Google Ads infrastructure, and history.",
-    lastmod: "2026-08-30",
-    changefreq: "monthly",
-    priority: "0.8",
-  }),
-  route({
-    id: "feature-email",
-    path: "/features/email/",
-    source: "features/email/index.html",
-    owner: "features",
-    title: "Email Operations in Infinite: Current Availability | Infinite",
-    llmsSummary: "Current availability and launch requirements for retained email operations infrastructure; not a public product surface.",
-    lastmod: "2026-08-30",
-    changefreq: "monthly",
-    priority: "0.6",
-  }),
-  route({
-    id: "feature-websites-ab-testing",
-    path: "/features/websites-ab-testing/",
-    source: "features/websites-ab-testing/index.html",
-    owner: "features",
-    title: "Websites, Landing Pages, and A/B Test Ideas | Infinite",
-    llmsSummary: "Landing-page CRO planning and test ideas for existing pages; not a builder or live A/B-test runtime.",
-    lastmod: "2026-08-30",
-    changefreq: "monthly",
-    priority: "0.6",
-  }),
-  route({
     id: "agents",
     path: "/agents/",
     source: "agents/index.html",
@@ -282,12 +205,12 @@ export const SITEMAP_ROUTES = Object.freeze(PUBLIC_ROUTES.filter((route) => rout
 
 export const FOOTER_COLUMNS = deepFreeze([
   footerColumn("Product", [
-    internal("AI Marketing Agents", "/features/ai-marketing-agents/", "feature-ai-marketing-agents"),
-    internal("SEO + AEO", "/features/seo-aeo/", "feature-seo-aeo"),
-    internal("X + Instagram Content", "/features/x-instagram-content/", "feature-x-instagram-content"),
-    internal("AI Ads", "/features/ads/", "feature-ads"),
-    internal("Email Newsletters", "/features/email/", "feature-email"),
-    internal("Websites + A/B Ideas", "/features/websites-ab-testing/", "feature-websites-ab-testing"),
+    internal("AI Marketing Agents", "/#inventory", "home", "inventory"),
+    internal("SEO + AEO", "/#inventory", "home", "inventory"),
+    internal("X + Instagram Content", "/#inventory", "home", "inventory"),
+    internal("AI Ads", "/#inventory", "home", "inventory"),
+    internal("Email Newsletters", "/#inventory", "home", "inventory"),
+    internal("Websites + A/B Ideas", "/#inventory", "home", "inventory"),
   ]),
   footerColumn("Agents & Open Source", [
     internal("Agent Ecosystem", "/agents/", "agents"),
@@ -467,12 +390,13 @@ function footerColumn(label, links) {
   return { label, links };
 }
 
-function internal(label, href, ctaId) {
+function internal(label, href, ctaId, requiredFragment) {
   return {
     label,
     href,
     ctaId,
     ctaLocation: "site-footer",
+    ...(requiredFragment ? { requiredFragment } : {}),
   };
 }
 
