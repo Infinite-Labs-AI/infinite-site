@@ -1,7 +1,7 @@
 /* ---- shell ---------------------------------------------------------- */
 .nav{height:88px;display:flex;align-items:center;justify-content:space-between;max-width:1380px;padding:0 40px;margin:auto;gap:25px}
 .logo{font-family:var(--display);font-size:37px;line-height:1;letter-spacing:-1.6px;font-weight:500;display:flex;align-items:center;gap:9px}
-.asterisk{font-family:Arial,sans-serif;color:var(--blue);font-size:27px;letter-spacing:0;line-height:1}
+.asterisk{display:block;flex:none;width:32px;height:32px;border-radius:8px}
 .navlinks{display:flex;gap:22px;align-items:center;font-size:12px}
 .nav-back{color:#6f7590;display:flex;align-items:center;gap:7px}
 .nav-back:hover{color:var(--ink)}
