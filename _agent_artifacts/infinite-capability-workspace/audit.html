@@ -19,7 +19,7 @@ button{cursor:pointer;color:inherit}
 .skip{position:absolute;left:-9999px}
 .skip:focus{left:12px;top:12px;background:#fff;padding:10px 14px;border-radius:8px;z-index:60}
 </style>
-<link rel="stylesheet" href="audit-page.css?v=7">
+<link rel="stylesheet" href="audit-page.css?v=9">
 </head>
 <body data-type="space">
 <a class="skip" href="#audit-main">Skip to content</a>
@@ -38,8 +38,8 @@ button{cursor:pointer;color:inherit}
   <div class="scan-inner">
 
    <span class="scan-eyebrow"><i class="pulse" aria-hidden="true"></i><b data-phase-label>Audit started</b></span>
-   <h1 id="scan-title">We're going through<br><em data-site>your site</em>.</h1>
-   <p class="scan-sub">Four agents are reading it right now. This is what each one is doing.</p>
+   <h1 id="scan-title">We're going through<br><em data-site>your site</em></h1>
+   <p class="scan-sub">Four agents are combing your site right now, hunting down the gaps that cost you customers.</p>
 
    <div class="scan-stage" aria-hidden="true">
     <div class="scan-window">
@@ -88,9 +88,14 @@ button{cursor:pointer;color:inherit}
 
  <aside class="book" aria-labelledby="book-title">
   <div class="book-inner">
-   <span class="book-eyebrow">STEP TWO</span>
-   <h2 id="book-title">While that runs,<br><em>grab twenty minutes.</em></h2>
-   <p class="book-sub">Book a time to go through the audit line by line, and pick the first thing to change.</p>
+   <div class="book-head">
+    <span class="book-eyebrow">STEP TWO</span>
+    <h2 id="book-title">While that runs,<br><em>grab twenty minutes.</em></h2>
+    <p class="book-sub">We'll walk you through what the agents found and show you the fastest way to more revenue.</p>
+    <div class="book-arrow" aria-hidden="true">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg>
+    </div>
+   </div>
 
    <div class="book-embed" id="cal-inline"></div>
 
@@ -107,12 +112,6 @@ button{cursor:pointer;color:inherit}
     </div>
     <p class="book-fallback-note"><b>Cal.com booking grid loads here.</b>Set <code>CAL_LINK</code> in <code>audit-page.js</code> to the Infinite event and this panel is replaced by the live embed.</p>
    </div>
-
-   <ul class="book-agenda">
-    <li>Which conversations are worth replying to first</li>
-    <li>The searches you're missing, and the pages that would win them</li>
-    <li>The one change to test on your landing page</li>
-   </ul>
   </div>
  </aside>
 

@@ -50,9 +50,9 @@
 .scan-meter-fill{display:block;height:100%;width:0;border-radius:2px;background:var(--blue);transition:width .5s cubic-bezier(.4,0,.2,1)}
 
 /* ---- left: the four passes ------------------------------------------ */
-.scan-steps{list-style:none;margin:26px 0 0;padding:0}
+.scan-steps{list-style:none;margin:26px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;column-gap:34px}
 .scan-steps li{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:15px;padding:14px 2px;border-top:1px solid #e0e4f5;transition:opacity .35s}
-.scan-steps li:last-child{border-bottom:1px solid #e0e4f5}
+.scan-steps li:nth-last-child(-n+2){border-bottom:1px solid #e0e4f5}
 .step-n{font:400 10px var(--mono);color:#a2a7c6}
 .step-body b{display:block;font:500 14px/1.4 var(--sans);color:#2c3049}
 .step-body small{display:block;font:400 12px/1.5 var(--sans);color:#767c9b;margin-top:2px}
@@ -74,7 +74,11 @@ li[data-state="done"] .step-mark::after{content:"";position:absolute;left:5px;to
 .book-eyebrow{font:9px var(--mono);letter-spacing:.11em;color:#8d93b4}
 .book h2{font:400 34px/1.1 var(--display);letter-spacing:-.045em;color:#22243a;margin:14px 0 0}
 .book h2 em{font-style:normal;color:var(--blue)}
-.book-sub{font-size:14px;line-height:1.65;color:#6b7089;margin:13px 0 26px;max-width:380px}
+.book-head{position:relative;margin-bottom:26px}
+.book-sub{font-size:14px;line-height:1.65;color:#6b7089;margin:13px 0 0;max-width:380px}
+.book-arrow{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--blue);line-height:0}
+.book-arrow svg{width:26px;height:26px;animation:book-bob 1.7s ease-in-out infinite}
+@keyframes book-bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(6px);opacity:1}}
 .book-embed{width:100%;min-height:520px;display:none}
 .book-embed[data-live]{display:block}
 
@@ -100,6 +104,7 @@ li[data-state="done"] .step-mark::after{content:"";position:absolute;left:5px;to
  .book{border-left:0;border-top:1px solid var(--line)}
  .scan h1{font-size:38px}
  .book h2{font-size:29px}
+ .book-arrow{position:static;transform:none;display:flex;justify-content:center;margin-top:16px}
  .nav{height:74px;padding:0 22px}
  .logo{font-size:30px}
  .nav-back{display:none}
@@ -108,19 +113,17 @@ li[data-state="done"] .step-mark::after{content:"";position:absolute;left:5px;to
  .scan h1{font-size:31px}
  .scan-page{--stage-h:236px}
  .wf::after{display:none}
+ .scan-steps{grid-template-columns:1fr;column-gap:0}
+ .scan-steps li:nth-last-child(-n+2){border-bottom:0}
+ .scan-steps li:last-child{border-bottom:1px solid #e0e4f5}
 }
 
 /* ---- motion --------------------------------------------------------- */
 @media(prefers-reduced-motion:reduce){
- .scan-beam,.wf i,.wf::after,.pulse,li[data-state="running"] .step-mark{animation:none}
+ .scan-beam,.wf i,.wf::after,.pulse,li[data-state="running"] .step-mark,.book-arrow svg{animation:none}
  .wf::after{opacity:1}
  .scan-meter-fill{transition:none}
 }
-
-/* ---- what the call covers -------------------------------------------- */
-.book-agenda{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--line)}
-.book-agenda li{position:relative;padding:13px 0 13px 26px;border-bottom:1px solid #f0f2f9;font-size:13px;line-height:1.55;color:#5f6584}
-.book-agenda li::before{content:"";position:absolute;left:4px;top:19px;width:5px;height:5px;border-radius:50%;background:#c3c7e8}
 
 /* The wireframe runs past the fold of its own window; fade the cut so it reads
    as more page below rather than a clipped block. */
